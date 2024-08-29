@@ -1,424 +1,276 @@
-import { createSignal, createEffect, For, onMount, Show, mergeProps, on, createMemo } from 'solid-js';
-import { v4 as uuidv4 } from 'uuid';
-import { sendMessageQuery, isStreamAvailableQuery, IncomingInput, getChatbotConfig, FeedbackRatingType } from '@/queries/sendMessageQuery';
-import { TextInput } from './inputs/textInput';
-import { GuestBubble } from './bubbles/GuestBubble';
-import { BotBubble } from './bubbles/BotBubble';
-import { LoadingBubble } from './bubbles/LoadingBubble';
-import { SourceBubble } from './bubbles/SourceBubble';
-import { StarterPromptBubble } from './bubbles/StarterPromptBubble';
-import { BotMessageTheme, FooterTheme, TextInputTheme, UserMessageTheme, FeedbackTheme } from '@/features/bubble/types';
-import { Badge } from './Badge';
-import socketIOClient from 'socket.io-client';
-import { Popup } from '@/features/popup';
-import { Avatar } from '@/components/avatars/Avatar';
-import { DeleteButton, SendButton } from '@/components/buttons/SendButton';
-import { CircleDotIcon, TrashIcon } from './icons';
-import { CancelButton } from './buttons/CancelButton';
-import { cancelAudioRecording, startAudioRecording, stopAudioRecording } from '@/utils/audioRecording';
-import { LeadCaptureBubble } from '@/components/bubbles/LeadCaptureBubble';
-import { removeLocalStorageChatHistory, getLocalStorageChatflow, setLocalStorageChatflow } from '@/utils';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  sendMessageQuery,
+  isStreamAvailableQuery,
+  IncomingInput,
+  getChatbotConfig,
+  FeedbackRatingType
+} from "../utils/sendMessageQuery";
+import { TextInput } from "./inputs";
+import { GuestBubble } from "./bubbles/GuestBubble";
+import { BotBubble } from "./bubbles/BotBubble";
+import { LoadingBubble } from "./bubbles/LoadingBubble";
+import { SourceBubble } from "./bubbles/SourceBubble";
+import { StarterPromptBubble } from "./bubbles/StarterPromptBubble";
+import {
+  BotMessageTheme,
+  FooterTheme,
+  TextInputTheme,
+  UserMessageTheme,
+  FeedbackTheme
+} from "../features/bubble/types";
+import { Badge } from "./Badge";
+import socketIOClient from "socket.io-client";
+import { Popup } from "@/features/popup";
+import { Avatar } from "@/components/avatars/Avatar";
+import { DeleteButton, SendButton } from "@/components/buttons/SendButton";
+import { CircleDotIcon, TrashIcon } from "./icons";
+import { CancelButton } from "./buttons/CancelButton";
+import {
+  cancelAudioRecording,
+  startAudioRecording,
+  stopAudioRecording
+} from "@/utils/audioRecording";
+import { LeadCaptureBubble } from "@/components/bubbles/LeadCaptureBubble";
+import {
+  removeLocalStorageChatHistory,
+  getLocalStorageChatflow,
+  setLocalStorageChatflow
+} from "@/utils";
 
-export type FileEvent<T = EventTarget> = {
-  target: T;
+const uuidv4 = () => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
-export type FormEvent<T = EventTarget> = {
-  preventDefault: () => void;
-  currentTarget: T;
-};
+const defaultWelcomeMessage = "Hi there! How can I help?";
 
-type ImageUploadConstraits = {
-  fileTypes: string[];
-  maxUploadSize: number;
-};
+const Bot = (botProps) => {
+  const chatContainerRef = useRef(null);
+  const bottomSpacerRef = useRef(null);
+  const botContainerRef = useRef(null);
+  const audioRef = useRef(null);
 
-export type UploadsConfig = {
-  imgUploadSizeAndTypes: ImageUploadConstraits[];
-  isImageUploadAllowed: boolean;
-  isSpeechToTextEnabled: boolean;
-};
-
-type FilePreviewData = string | ArrayBuffer;
-
-type FilePreview = {
-  data: FilePreviewData;
-  mime: string;
-  name: string;
-  preview: string;
-  type: string;
-};
-
-type messageType = 'apiMessage' | 'userMessage' | 'usermessagewaiting' | 'leadCaptureMessage';
-
-export type IAgentReasoning = {
-  agentName?: string;
-  messages?: string[];
-  usedTools?: any[];
-  sourceDocuments?: any[];
-  instructions?: string;
-  nextAgent?: string;
-};
-
-export type IAction = {
-  id?: string;
-  elements?: Array<{
-    type: string;
-    label: string;
-  }>;
-  mapping?: {
-    approve: string;
-    reject: string;
-    toolCalls: any[];
-  };
-};
-
-export type FileUpload = Omit<FilePreview, 'preview'>;
-
-export type MessageType = {
-  messageId?: string;
-  message: string;
-  type: messageType;
-  sourceDocuments?: any;
-  fileAnnotations?: any;
-  fileUploads?: Partial<FileUpload>[];
-  agentReasoning?: IAgentReasoning[];
-  action?: IAction | null;
-  rating?: FeedbackRatingType;
-};
-
-type observerConfigType = (accessor: string | boolean | object | MessageType[]) => void;
-export type observersConfigType = Record<'observeUserInput' | 'observeLoading' | 'observeMessages', observerConfigType>;
-
-export type BotProps = {
-  chatflowid: string;
-  apiHost?: string;
-  chatflowConfig?: Record<string, unknown>;
-  welcomeMessage?: string;
-  errorMessage?: string;
-  botMessage?: BotMessageTheme;
-  userMessage?: UserMessageTheme;
-  textInput?: TextInputTheme;
-  feedback?: FeedbackTheme;
-  poweredByTextColor?: string;
-  badgeBackgroundColor?: string;
-  bubbleBackgroundColor?: string;
-  bubbleTextColor?: string;
-  showTitle?: boolean;
-  showAgentMessages?: boolean;
-  title?: string;
-  titleAvatarSrc?: string;
-  fontSize?: number;
-  isFullPage?: boolean;
-  footer?: FooterTheme;
-  observersConfig?: observersConfigType;
-  starterPrompts?: string[];
-  starterPromptFontSize?: number;
-};
-
-export type LeadsConfig = {
-  status: boolean;
-  title?: string;
-  name?: boolean;
-  email?: boolean;
-  phone?: boolean;
-  successMessage?: string;
-};
-
-const defaultWelcomeMessage = 'Hi there! How can I help?';
-
-/*const sourceDocuments = [
+  const [userInput, setUserInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sourcePopupOpen, setSourcePopupOpen] = useState(false);
+  const [sourcePopupSrc, setSourcePopupSrc] = useState({});
+  const [messages, setMessages] = useState([
     {
-        "pageContent": "I know some are talking about “living with COVID-19”. Tonight – I say that we will never just accept living with COVID-19. \r\n\r\nWe will continue to combat the virus as we do other diseases. And because this is a virus that mutates and spreads, we will stay on guard. \r\n\r\nHere are four common sense steps as we move forward safely.  \r\n\r\nFirst, stay protected with vaccines and treatments. We know how incredibly effective vaccines are. If you’re vaccinated and boosted you have the highest degree of protection. \r\n\r\nWe will never give up on vaccinating more Americans. Now, I know parents with kids under 5 are eager to see a vaccine authorized for their children. \r\n\r\nThe scientists are working hard to get that done and we’ll be ready with plenty of vaccines when they do. \r\n\r\nWe’re also ready with anti-viral treatments. If you get COVID-19, the Pfizer pill reduces your chances of ending up in the hospital by 90%.",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "loc": {
-            "lines": {
-              "from": 450,
-              "to": 462
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "sistance,  and  polishing  [65].  For  instance,  AI  tools  generate\nsuggestions based on inputting keywords or topics. The tools\nanalyze  search  data,  trending  topics,  and  popular  queries  to\ncreate  fresh  content.  What’s  more,  AIGC  assists  in  writing\narticles and posting blogs on specific topics. While these tools\nmay not be able to produce high-quality content by themselves,\nthey can provide a starting point for a writer struggling with\nwriter’s block.\nH.  Cons of AIGC\nOne of the main concerns among the public is the potential\nlack  of  creativity  and  human  touch  in  AIGC.  In  addition,\nAIGC sometimes lacks a nuanced understanding of language\nand context, which may lead to inaccuracies and misinterpre-\ntations. There are also concerns about the ethics and legality\nof using AIGC, particularly when it results in issues such as\ncopyright  infringement  and  data  privacy.  In  this  section,  we\nwill discuss some of the disadvantages of AIGC (Table IV).",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "pdf": {
-            "version": "1.10.100",
-            "info": {
-              "PDFFormatVersion": "1.5",
-              "IsAcroFormPresent": false,
-              "IsXFAPresent": false,
-              "Title": "",
-              "Author": "",
-              "Subject": "",
-              "Keywords": "",
-              "Creator": "LaTeX with hyperref",
-              "Producer": "pdfTeX-1.40.21",
-              "CreationDate": "D:20230414003603Z",
-              "ModDate": "D:20230414003603Z",
-              "Trapped": {
-                "name": "False"
-              }
-            },
-            "metadata": null,
-            "totalPages": 17
-          },
-          "loc": {
-            "pageNumber": 8,
-            "lines": {
-              "from": 301,
-              "to": 317
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "Main article: Views of Elon Musk",
-        "metadata": {
-          "source": "https://en.wikipedia.org/wiki/Elon_Musk",
-          "loc": {
-            "lines": {
-              "from": 2409,
-              "to": 2409
-            }
-          }
-        }
-    },
-    {
-        "pageContent": "First Name: John\nLast Name: Doe\nAddress: 120 jefferson st.\nStates: Riverside\nCode: NJ\nPostal: 8075",
-        "metadata": {
-          "source": "blob",
-          "blobType": "",
-          "line": 1,
-          "loc": {
-            "lines": {
-              "from": 1,
-              "to": 6
-            }
-          }
-        }
-    },
-]*/
+      message: botProps.welcomeMessage ?? defaultWelcomeMessage,
+      type: "apiMessage"
+    }
+  ]);
 
-const defaultBackgroundColor = '#ffffff';
-const defaultTextColor = '#303235';
-
-export const Bot = (botProps: BotProps & { class?: string }) => {
-  // set a default value for showTitle if not set and merge with other props
-  const props = mergeProps({ showTitle: true }, botProps);
-  let chatContainer: HTMLDivElement | undefined;
-  let bottomSpacer: HTMLDivElement | undefined;
-  let botContainer: HTMLDivElement | undefined;
-
-  const [userInput, setUserInput] = createSignal('');
-  const [loading, setLoading] = createSignal(false);
-  const [sourcePopupOpen, setSourcePopupOpen] = createSignal(false);
-  const [sourcePopupSrc, setSourcePopupSrc] = createSignal({});
-  const [messages, setMessages] = createSignal<MessageType[]>(
-    [
-      {
-        message: props.welcomeMessage ?? defaultWelcomeMessage,
-        type: 'apiMessage',
-      },
-    ],
-    { equals: false },
+  const [socketIOClientId, setSocketIOClientId] = useState("");
+  const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] =
+    useState(false);
+  const [chatId, setChatId] = useState(
+    botProps.chatflowConfig?.vars?.customerId
+      ? `${botProps.chatflowConfig?.vars.customerId.toString()}+${uuidv4()}`
+      : uuidv4()
   );
+  const [starterPrompts, setStarterPrompts] = useState([]);
+  const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false);
+  const [uploadsConfig, setUploadsConfig] = useState();
+  const [leadsConfig, setLeadsConfig] = useState();
+  const [isLeadSaved, setIsLeadSaved] = useState(false);
+  const [leadEmail, setLeadEmail] = useState("");
 
-  const [socketIOClientId, setSocketIOClientId] = createSignal('');
-  const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = createSignal(false);
-  const [chatId, setChatId] = createSignal(
-    (props.chatflowConfig?.vars as any)?.customerId ? `${(props.chatflowConfig?.vars as any).customerId.toString()}+${uuidv4()}` : uuidv4(),
-  );
-  const [starterPrompts, setStarterPrompts] = createSignal<string[]>([], { equals: false });
-  const [chatFeedbackStatus, setChatFeedbackStatus] = createSignal<boolean>(false);
-  const [uploadsConfig, setUploadsConfig] = createSignal<UploadsConfig>();
-  const [leadsConfig, setLeadsConfig] = createSignal<LeadsConfig>();
-  const [isLeadSaved, setIsLeadSaved] = createSignal(false);
-  const [leadEmail, setLeadEmail] = createSignal('');
+  const [previews, setPreviews] = useState([]);
+  const [elapsedTime, setElapsedTime] = useState("00:00");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingNotSupported, setRecordingNotSupported] = useState(false);
+  const [isLoadingRecording, setIsLoadingRecording] = useState(false);
 
-  // drag & drop file input
-  // TODO: fix this type
-  const [previews, setPreviews] = createSignal<FilePreview[]>([]);
+  const [isDragActive, setIsDragActive] = useState(false);
 
-  // audio recording
-  const [elapsedTime, setElapsedTime] = createSignal('00:00');
-  const [isRecording, setIsRecording] = createSignal(false);
-  const [recordingNotSupported, setRecordingNotSupported] = createSignal(false);
-  const [isLoadingRecording, setIsLoadingRecording] = createSignal(false);
-
-  // drag & drop
-  const [isDragActive, setIsDragActive] = createSignal(false);
-
-  onMount(() => {
+  useEffect(() => {
     if (botProps?.observersConfig) {
-      const { observeUserInput, observeLoading, observeMessages } = botProps.observersConfig;
-      typeof observeUserInput === 'function' &&
-        // eslint-disable-next-line solid/reactivity
-        createMemo(() => {
-          observeUserInput(userInput());
-        });
-      typeof observeLoading === 'function' &&
-        // eslint-disable-next-line solid/reactivity
-        createMemo(() => {
-          observeLoading(loading());
-        });
-      typeof observeMessages === 'function' &&
-        // eslint-disable-next-line solid/reactivity
-        createMemo(() => {
-          observeMessages(messages());
-        });
+      const { observeUserInput, observeLoading, observeMessages } =
+        botProps.observersConfig;
+      if (typeof observeUserInput === "function") {
+        observeUserInput(userInput);
+      }
+      if (typeof observeLoading === "function") {
+        observeLoading(loading);
+      }
+      if (typeof observeMessages === "function") {
+        observeMessages(messages);
+      }
     }
 
-    if (!bottomSpacer) return;
-    setTimeout(() => {
-      chatContainer?.scrollTo(0, chatContainer.scrollHeight);
-    }, 50);
-  });
+    if (bottomSpacerRef.current) {
+      setTimeout(() => {
+        chatContainerRef.current?.scrollTo(
+          0,
+          chatContainerRef.current.scrollHeight
+        );
+      }, 50);
+    }
+  }, [bottomSpacerRef, botProps]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
-      chatContainer?.scrollTo(0, chatContainer.scrollHeight);
+      chatContainerRef.current?.scrollTo(
+        0,
+        chatContainerRef.current.scrollHeight
+      );
     }, 50);
   };
 
-  /**
-   * Add each chat message into localStorage
-   */
-  const addChatMessage = (allMessage: MessageType[]) => {
-    const messages = allMessage.map((item) => {
+  const addChatMessage = (allMessage) => {
+    const formattedMessages = allMessage.map((item) => {
       if (item.fileUploads) {
         const fileUploads = item?.fileUploads.map((file) => ({
           type: file.type,
           name: file.name,
-          mime: file.mime,
+          mime: file.mime
         }));
         return { ...item, fileUploads };
       }
       return item;
     });
-    setLocalStorageChatflow(props.chatflowid, chatId(), { chatHistory: messages });
+    setLocalStorageChatflow(botProps.chatflowid, chatId, {
+      chatHistory: formattedMessages
+    });
   };
 
-  // Define the audioRef
-  let audioRef: HTMLAudioElement | undefined;
-  // CDN link for default receive sound
-  const defaultReceiveSound = 'https://cdn.jsdelivr.net/gh/FlowiseAI/FlowiseChatEmbed@latest/src/assets/receive_message.mp3';
   const playReceiveSound = () => {
-    if (props.textInput?.receiveMessageSound) {
-      let audioSrc = defaultReceiveSound;
-      if (props.textInput?.receiveSoundLocation) {
-        audioSrc = props.textInput?.receiveSoundLocation;
+    if (botProps.textInput?.receiveMessageSound) {
+      let audioSrc =
+        "https://cdn.jsdelivr.net/gh/FlowiseAI/FlowiseChatEmbed@latest/src/assets/receive_message.mp3";
+      if (botProps.textInput?.receiveSoundLocation) {
+        audioSrc = botProps.textInput?.receiveSoundLocation;
       }
-      audioRef = new Audio(audioSrc);
-      audioRef.play();
+      audioRef.current = new Audio(audioSrc);
+      audioRef.current.play();
     }
   };
 
   let hasSoundPlayed = false;
-  // TODO: this has the bug where first message is not showing: https://github.com/FlowiseAI/FlowiseChatEmbed/issues/158
-  // The solution is to use SSE
+
   const updateLastMessage = (
-    text: string,
-    messageId: string,
-    sourceDocuments: any,
-    fileAnnotations: any,
-    agentReasoning: IAgentReasoning[] = [],
-    action: IAction,
-    resultText: string,
+    text,
+    messageId,
+    sourceDocuments,
+    fileAnnotations,
+    agentReasoning = [],
+    action,
+    resultText
   ) => {
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
+    setMessages((prevMessages) => {
+      const updatedMessages = prevMessages.map((item, i) => {
+        if (i === prevMessages.length - 1) {
           if (resultText && !hasSoundPlayed) {
             playReceiveSound();
             hasSoundPlayed = true;
           }
-          return { ...item, message: item.message + text, messageId, sourceDocuments, fileAnnotations, agentReasoning, action };
+          return {
+            ...item,
+            message: item.message + text,
+            messageId,
+            sourceDocuments,
+            fileAnnotations,
+            agentReasoning,
+            action
+          };
         }
         return item;
       });
-      addChatMessage(updated);
-      return [...updated];
+      addChatMessage(updatedMessages);
+      return [...updatedMessages];
     });
 
-    // Set hasSoundPlayed to false if resultText exists
     if (resultText) {
       hasSoundPlayed = false;
     }
   };
 
-  const updateLastMessageSourceDocuments = (sourceDocuments: any) => {
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
+  const updateLastMessageSourceDocuments = (sourceDocuments) => {
+    setMessages((prevMessages) => {
+      const updatedMessages = prevMessages.map((item, i) => {
+        if (i === prevMessages.length - 1) {
           return { ...item, sourceDocuments };
         }
         return item;
       });
-      addChatMessage(updated);
-      return [...updated];
+      addChatMessage(updatedMessages);
+      return [...updatedMessages];
     });
   };
 
-  const updateLastMessageAgentReasoning = (agentReasoning: string | IAgentReasoning[]) => {
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
-          return { ...item, agentReasoning: typeof agentReasoning === 'string' ? JSON.parse(agentReasoning) : agentReasoning };
+  const updateLastMessageAgentReasoning = (agentReasoning) => {
+    setMessages((prevMessages) => {
+      const updatedMessages = prevMessages.map((item, i) => {
+        if (i === prevMessages.length - 1) {
+          return {
+            ...item,
+            agentReasoning:
+              typeof agentReasoning === "string"
+                ? JSON.parse(agentReasoning)
+                : agentReasoning
+          };
         }
         return item;
       });
-      addChatMessage(updated);
-      return [...updated];
+      addChatMessage(updatedMessages);
+      return [...updatedMessages];
     });
   };
 
-  const updateLastMessageAction = (action: IAction) => {
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
-          return { ...item, action: typeof action === 'string' ? JSON.parse(action) : action };
+  const updateLastMessageAction = (action) => {
+    setMessages((prevMessages) => {
+      const updatedMessages = prevMessages.map((item, i) => {
+        if (i === prevMessages.length - 1) {
+          return {
+            ...item,
+            action: typeof action === "string" ? JSON.parse(action) : action
+          };
         }
         return item;
       });
-      addChatMessage(updated);
-      return [...updated];
+      addChatMessage(updatedMessages);
+      return [...updatedMessages];
     });
   };
 
   const clearPreviews = () => {
-    // Revoke the data uris to avoid memory leaks
-    previews().forEach((file) => URL.revokeObjectURL(file.preview));
+    previews.forEach((file) => URL.revokeObjectURL(file.preview));
     setPreviews([]);
   };
 
-  // Handle errors
-  const handleError = (message = 'Oops! There seems to be an error. Please try again.') => {
+  const handleError = (
+    message = "Oops! There seems to be an error. Please try again."
+  ) => {
     setMessages((prevMessages) => {
-      const messages: MessageType[] = [...prevMessages, { message: props.errorMessage || message, type: 'apiMessage' }];
-      addChatMessage(messages);
-      return messages;
+      const errorMessage = botProps.errorMessage || message;
+      const updatedMessages = [
+        ...prevMessages,
+        { message: errorMessage, type: "apiMessage" }
+      ];
+      addChatMessage(updatedMessages);
+      return updatedMessages;
     });
     setLoading(false);
-    setUserInput('');
+    setUserInput("");
     scrollToBottom();
   };
 
-  const promptClick = (prompt: string) => {
+  const promptClick = (prompt) => {
     handleSubmit(prompt);
   };
 
-  // Handle form submission
-  const handleSubmit = async (value: string, action?: IAction | undefined | null) => {
+  const handleSubmit = async (value, action) => {
     setUserInput(value);
 
-    if (value.trim() === '') {
-      const containsAudio = previews().filter((item) => item.type === 'audio').length > 0;
-      if (!(previews().length >= 1 && containsAudio)) {
+    if (value.trim() === "") {
+      const containsAudio =
+        previews.filter((item) => item.type === "audio").length > 0;
+      if (!(previews.length >= 1 && containsAudio)) {
         return;
       }
     }
@@ -426,104 +278,126 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     setLoading(true);
     scrollToBottom();
 
-    const urls = previews().map((item) => {
+    const urls = previews.map((item) => {
       return {
         data: item.data,
         type: item.type,
         name: item.name,
-        mime: item.mime,
+        mime: item.mime
       };
     });
 
     clearPreviews();
 
     setMessages((prevMessages) => {
-      const messages: MessageType[] = [...prevMessages, { message: value, type: 'userMessage', fileUploads: urls }];
-      addChatMessage(messages);
-      return messages;
+      const updatedMessages = [
+        ...prevMessages,
+        { message: value, type: "userMessage", fileUploads: urls }
+      ];
+      addChatMessage(updatedMessages);
+      return updatedMessages;
     });
 
-    const body: IncomingInput = {
+    const body = {
       question: value,
-      chatId: chatId(),
+      chatId: chatId
     };
 
     if (urls && urls.length > 0) body.uploads = urls;
 
-    if (props.chatflowConfig) body.overrideConfig = props.chatflowConfig;
+    if (botProps.chatflowConfig) body.overrideConfig = botProps.chatflowConfig;
 
-    if (leadEmail()) body.leadEmail = leadEmail();
+    if (leadEmail) body.leadEmail = leadEmail;
 
     if (action) body.action = action;
 
-    if (isChatFlowAvailableToStream()) {
-      body.socketIOClientId = socketIOClientId();
+    if (isChatFlowAvailableToStream) {
+      body.socketIOClientId = socketIOClientId;
     } else {
-      setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { message: "", type: "apiMessage" }
+      ]);
     }
 
     const result = await sendMessageQuery({
-      chatflowid: props.chatflowid,
-      apiHost: props.apiHost,
-      body,
+      chatflowid: botProps.chatflowid,
+      apiHost: botProps.apiHost,
+      body
     });
 
     if (result.data) {
       const data = result.data;
       const question = data.question;
-      if (value === '' && question) {
-        setMessages((data) => {
-          const messages = data.map((item, i) => {
-            if (i === data.length - 2) {
+      if (value === "" && question) {
+        setMessages((prevMessages) => {
+          const updatedMessages = prevMessages.map((item, i) => {
+            if (i === prevMessages.length - 2) {
               return { ...item, message: question };
             }
             return item;
           });
-          addChatMessage(messages);
-          return [...messages];
+          addChatMessage(updatedMessages);
+          return [...updatedMessages];
         });
       }
       if (urls && urls.length > 0) {
-        setMessages((data) => {
-          const messages = data.map((item, i) => {
-            if (i === data.length - 2) {
+        setMessages((prevMessages) => {
+          const updatedMessages = prevMessages.map((item, i) => {
+            if (i === prevMessages.length - 2) {
               if (item.fileUploads) {
                 const fileUploads = item?.fileUploads.map((file) => ({
                   type: file.type,
                   name: file.name,
-                  mime: file.mime,
+                  mime: file.mime
                 }));
                 return { ...item, fileUploads };
               }
             }
             return item;
           });
-          addChatMessage(messages);
-          return [...messages];
+          addChatMessage(updatedMessages);
+          return [...updatedMessages];
         });
       }
-      if (!isChatFlowAvailableToStream()) {
-        let text = '';
+      if (!isChatFlowAvailableToStream) {
+        let text = "";
         if (data.text) text = data.text;
         else if (data.json) text = JSON.stringify(data.json, null, 2);
         else text = JSON.stringify(data, null, 2);
 
-        updateLastMessage(text, data?.chatMessageId, data?.sourceDocuments, data?.fileAnnotations, data?.agentReasoning, data?.action, data.text);
+        updateLastMessage(
+          text,
+          data?.chatMessageId,
+          data?.sourceDocuments,
+          data?.fileAnnotations,
+          data?.agentReasoning,
+          data?.action,
+          data.text
+        );
       } else {
-        updateLastMessage('', data?.chatMessageId,data?.sourceDocuments, data?.fileAnnotations, data?.agentReasoning, data?.action, data.text);
+        updateLastMessage(
+          "",
+          data?.chatMessageId,
+          data?.sourceDocuments,
+          data?.fileAnnotations,
+          data?.agentReasoning,
+          data?.action,
+          data.text
+        );
       }
       setLoading(false);
-      setUserInput('');
+      setUserInput("");
       scrollToBottom();
     }
     if (result.error) {
       const error = result.error;
       console.error(error);
-      if (typeof error === 'object') {
-        handleError(`Error: ${error?.message.replaceAll('Error:', ' ')}`);
+      if (typeof error === "object") {
+        handleError(`Error: ${error?.message.replace("Error:", " ")}`);
         return;
       }
-      if (typeof error === 'string') {
+      if (typeof error === "string") {
         handleError(error);
         return;
       }
@@ -532,69 +406,75 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
   };
 
-  const handleActionClick = async (label: string, action: IAction | undefined | null) => {
+  const handleActionClick = async (label, action) => {
     setUserInput(label);
-    setMessages((data) => {
-      const updated = data.map((item, i) => {
-        if (i === data.length - 1) {
+    setMessages((prevMessages) => {
+      const updatedMessages = prevMessages.map((item, i) => {
+        if (i === prevMessages.length - 1) {
           return { ...item, action: null };
         }
         return item;
       });
-      addChatMessage(updated);
-      return [...updated];
+      addChatMessage(updatedMessages);
+      return [...updatedMessages];
     });
     handleSubmit(label, action);
   };
 
   const clearChat = () => {
     try {
-      removeLocalStorageChatHistory(props.chatflowid);
+      removeLocalStorageChatHistory(botProps.chatflowid);
       setChatId(
-        (props.chatflowConfig?.vars as any)?.customerId ? `${(props.chatflowConfig?.vars as any).customerId.toString()}+${uuidv4()}` : uuidv4(),
+        botProps.chatflowConfig?.vars?.customerId
+          ? `${botProps.chatflowConfig?.vars.customerId.toString()}+${uuidv4()}`
+          : uuidv4()
       );
-      const messages: MessageType[] = [
+      const initialMessages = [
         {
-          message: props.welcomeMessage ?? defaultWelcomeMessage,
-          type: 'apiMessage',
-        },
+          message: botProps.welcomeMessage ?? defaultWelcomeMessage,
+          type: "apiMessage"
+        }
       ];
-      if (leadsConfig()?.status && !getLocalStorageChatflow(props.chatflowid)?.lead) {
-        messages.push({ message: '', type: 'leadCaptureMessage' });
+      if (
+        leadsConfig?.status &&
+        !getLocalStorageChatflow(botProps.chatflowid)?.lead
+      ) {
+        initialMessages.push({ message: "", type: "leadCaptureMessage" });
       }
-      setMessages(messages);
-    } catch (error: any) {
-      const errorData = error.response.data || `${error.response.status}: ${error.response.statusText}`;
-      console.error(`error: ${errorData}`);
+      setMessages(initialMessages);
+    } catch (error) {
+      console.error(`Error clearing chat: ${error}`);
     }
   };
 
-  createEffect(() => {
-    if (props.starterPrompts && props.starterPrompts.length > 0) {
-      const prompts = Object.values(props.starterPrompts).map((prompt) => prompt);
-
-      return setStarterPrompts(prompts.filter((prompt) => prompt !== ''));
+  useEffect(() => {
+    if (botProps.starterPrompts && botProps.starterPrompts.length > 0) {
+      const prompts = Object.values(botProps.starterPrompts).filter(
+        (prompt) => prompt !== ""
+      );
+      setStarterPrompts(prompts);
     }
-  });
+  }, [botProps.starterPrompts]);
 
-  // Auto scroll chat to bottom
-  createEffect(() => {
-    if (messages()) {
-      if (messages().length > 1) {
-        setTimeout(() => {
-          chatContainer?.scrollTo(0, chatContainer.scrollHeight);
-        }, 400);
-      }
+  useEffect(() => {
+    if (messages.length > 1) {
+      setTimeout(() => {
+        chatContainerRef.current?.scrollTo(
+          0,
+          chatContainerRef.current.scrollHeight
+        );
+      }, 400);
     }
-  });
+  }, [messages]);
 
-  createEffect(() => {
-    if (props.fontSize && botContainer) botContainer.style.fontSize = `${props.fontSize}px`;
-  });
+  useEffect(() => {
+    if (botProps.fontSize && botContainerRef.current) {
+      botContainerRef.current.style.fontSize = `${botProps.fontSize}px`;
+    }
+  }, [botProps.fontSize]);
 
-  // eslint-disable-next-line solid/reactivity
-  createEffect(async () => {
-    const chatMessage = getLocalStorageChatflow(props.chatflowid);
+  useEffect(() => {
+    const chatMessage = getLocalStorageChatflow(botProps.chatflowid);
     if (chatMessage && Object.keys(chatMessage).length) {
       if (chatMessage.chatId) setChatId(chatMessage.chatId);
       const savedLead = chatMessage.lead;
@@ -602,104 +482,130 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
         setIsLeadSaved(!!savedLead);
         setLeadEmail(savedLead.email);
       }
-      const loadedMessages: MessageType[] =
+      const loadedMessages =
         chatMessage?.chatHistory?.length > 0
-          ? chatMessage.chatHistory?.map((message: MessageType) => {
-              const chatHistory: MessageType = {
+          ? chatMessage.chatHistory.map((message) => {
+              const chatHistory = {
                 messageId: message?.messageId,
                 message: message.message,
                 type: message.type,
-                rating: message.rating,
+                rating: message.rating
               };
-              if (message.sourceDocuments) chatHistory.sourceDocuments = message.sourceDocuments;
-              if (message.fileAnnotations) chatHistory.fileAnnotations = message.fileAnnotations;
-              if (message.fileUploads) chatHistory.fileUploads = message.fileUploads;
-              if (message.agentReasoning) chatHistory.agentReasoning = message.agentReasoning;
+              if (message.sourceDocuments)
+                chatHistory.sourceDocuments = message.sourceDocuments;
+              if (message.fileAnnotations)
+                chatHistory.fileAnnotations = message.fileAnnotations;
+              if (message.fileUploads)
+                chatHistory.fileUploads = message.fileUploads;
+              if (message.agentReasoning)
+                chatHistory.agentReasoning = message.agentReasoning;
               if (message.action) chatHistory.action = message.action;
               return chatHistory;
             })
-          : [{ message: props.welcomeMessage ?? defaultWelcomeMessage, type: 'apiMessage' }];
+          : [
+              {
+                message: botProps.welcomeMessage ?? defaultWelcomeMessage,
+                type: "apiMessage"
+              }
+            ];
 
-      const filteredMessages = loadedMessages.filter((message) => message.message !== '' && message.type !== 'leadCaptureMessage');
-      setMessages([...filteredMessages]);
+      const filteredMessages = loadedMessages.filter(
+        (message) =>
+          message.message !== "" && message.type !== "leadCaptureMessage"
+      );
+      setMessages(filteredMessages);
     }
 
-    // Determine if particular chatflow is available for streaming
-    const { data } = await isStreamAvailableQuery({
-      chatflowid: props.chatflowid,
-      apiHost: props.apiHost,
-    });
+    const fetchStreamingStatus = async () => {
+      const { data } = await isStreamAvailableQuery({
+        chatflowid: botProps.chatflowid,
+        apiHost: botProps.apiHost
+      });
 
-    if (data) {
-      setIsChatFlowAvailableToStream(data?.isStreaming ?? false);
-    }
+      if (data) {
+        setIsChatFlowAvailableToStream(data?.isStreaming ?? false);
+      }
+    };
 
-    // Get the chatbotConfig
-    const result = await getChatbotConfig({
-      chatflowid: props.chatflowid,
-      apiHost: props.apiHost,
-    });
+    const fetchChatbotConfig = async () => {
+      const result = await getChatbotConfig({
+        chatflowid: botProps.chatflowid,
+        apiHost: botProps.apiHost
+      });
 
-    if (result.data) {
-      const chatbotConfig = result.data;
-      if ((!props.starterPrompts || props.starterPrompts?.length === 0) && chatbotConfig.starterPrompts) {
-        const prompts: string[] = [];
-        Object.getOwnPropertyNames(chatbotConfig.starterPrompts).forEach((key) => {
-          prompts.push(chatbotConfig.starterPrompts[key].prompt);
-        });
-        setStarterPrompts(prompts.filter((prompt) => prompt !== ''));
-      }
-      if (chatbotConfig.chatFeedback) {
-        const chatFeedbackStatus = chatbotConfig.chatFeedback.status;
-        setChatFeedbackStatus(chatFeedbackStatus);
-      }
-      if (chatbotConfig.uploads) {
-        setUploadsConfig(chatbotConfig.uploads);
-      }
-      if (chatbotConfig.leads) {
-        setLeadsConfig(chatbotConfig.leads);
-        if (chatbotConfig.leads?.status && !getLocalStorageChatflow(props.chatflowid)?.lead) {
-          setMessages((prevMessages) => [...prevMessages, { message: '', type: 'leadCaptureMessage' }]);
+      if (result.data) {
+        const chatbotConfig = result.data;
+        if (
+          (!botProps.starterPrompts || botProps.starterPrompts?.length === 0) &&
+          chatbotConfig.starterPrompts
+        ) {
+          const prompts = Object.values(chatbotConfig.starterPrompts).filter(
+            (prompt) => prompt !== ""
+          );
+          setStarterPrompts(prompts);
+        }
+        if (chatbotConfig.chatFeedback) {
+          setChatFeedbackStatus(chatbotConfig.chatFeedback.status);
+        }
+        if (chatbotConfig.uploads) {
+          setUploadsConfig(chatbotConfig.uploads);
+        }
+        if (chatbotConfig.leads) {
+          setLeadsConfig(chatbotConfig.leads);
+          if (
+            chatbotConfig.leads?.status &&
+            !getLocalStorageChatflow(botProps.chatflowid)?.lead
+          ) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { message: "", type: "leadCaptureMessage" }
+            ]);
+          }
         }
       }
-    }
+    };
 
-    const socket = socketIOClient(props.apiHost as string);
+    fetchStreamingStatus();
+    fetchChatbotConfig();
 
-    socket.on('connect', () => {
+    const socket = socketIOClient(botProps.apiHost);
+
+    socket.on("connect", () => {
       setSocketIOClientId(socket.id);
     });
 
-    socket.on('start', () => {
-      setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }]);
+    socket.on("start", () => {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { message: "", type: "apiMessage" }
+      ]);
     });
 
-    socket.on('sourceDocuments', updateLastMessageSourceDocuments);
+    socket.on("sourceDocuments", updateLastMessageSourceDocuments);
 
-    socket.on('agentReasoning', updateLastMessageAgentReasoning);
+    socket.on("agentReasoning", updateLastMessageAgentReasoning);
 
-    socket.on('action', updateLastMessageAction);
+    socket.on("action", updateLastMessageAction);
 
-    socket.on('token', updateLastMessage);
+    socket.on("token", updateLastMessage);
 
-    // eslint-disable-next-line solid/reactivity
     return () => {
-      setUserInput('');
+      setUserInput("");
       setLoading(false);
       setMessages([
         {
-          message: props.welcomeMessage ?? defaultWelcomeMessage,
-          type: 'apiMessage',
-        },
+          message: botProps.welcomeMessage ?? defaultWelcomeMessage,
+          type: "apiMessage"
+        }
       ]);
       if (socket) {
         socket.disconnect();
-        setSocketIOClientId('');
+        setSocketIOClientId("");
       }
     };
-  });
+  }, []);
 
-  const isValidURL = (url: string): URL | undefined => {
+  const isValidURL = (url) => {
     try {
       return new URL(url);
     } catch (err) {
@@ -707,12 +613,15 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
   };
 
-  const removeDuplicateURL = (message: MessageType) => {
-    const visitedURLs: string[] = [];
-    const newSourceDocuments: any = [];
+  const removeDuplicateURL = (message) => {
+    const visitedURLs = [];
+    const newSourceDocuments = [];
 
-    message.sourceDocuments.forEach((source: any) => {
-      if (isValidURL(source.metadata.source) && !visitedURLs.includes(source.metadata.source)) {
+    message.sourceDocuments.forEach((source) => {
+      if (
+        isValidURL(source.metadata.source) &&
+        !visitedURLs.includes(source.metadata.source)
+      ) {
         visitedURLs.push(source.metadata.source);
         newSourceDocuments.push(source);
       } else if (!isValidURL(source.metadata.source)) {
@@ -722,56 +631,64 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     return newSourceDocuments;
   };
 
-  const addRecordingToPreviews = (blob: Blob) => {
-    let mimeType = '';
-    const pos = blob.type.indexOf(';');
+  const addRecordingToPreviews = (blob) => {
+    let mimeType = "";
+    const pos = blob.type.indexOf(";");
     if (pos === -1) {
       mimeType = blob.type;
     } else {
       mimeType = blob.type.substring(0, pos);
     }
 
-    // read blob and add to previews
     const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = () => {
-      const base64data = reader.result as FilePreviewData;
-      const upload: FilePreview = {
+      const base64data = reader.result;
+      const upload = {
         data: base64data,
-        preview: '../assets/wave-sound.jpg',
-        type: 'audio',
+        preview: "../assets/wave-sound.jpg",
+        type: "audio",
         name: `audio_${Date.now()}.wav`,
-        mime: mimeType,
+        mime: mimeType
       };
       setPreviews((prevPreviews) => [...prevPreviews, upload]);
     };
   };
 
-  const isFileAllowedForUpload = (file: File) => {
+  const isFileAllowedForUpload = (file) => {
     let acceptFile = false;
-    if (uploadsConfig() && uploadsConfig()?.isImageUploadAllowed && uploadsConfig()?.imgUploadSizeAndTypes) {
+    if (
+      uploadsConfig &&
+      uploadsConfig.isImageUploadAllowed &&
+      uploadsConfig.imgUploadSizeAndTypes
+    ) {
       const fileType = file.type;
       const sizeInMB = file.size / 1024 / 1024;
-      uploadsConfig()?.imgUploadSizeAndTypes.map((allowed) => {
-        if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+      uploadsConfig.imgUploadSizeAndTypes.map((allowed) => {
+        if (
+          allowed.fileTypes.includes(fileType) &&
+          sizeInMB <= allowed.maxUploadSize
+        ) {
           acceptFile = true;
         }
       });
     }
     if (!acceptFile) {
-      alert(`Cannot upload file. Kindly check the allowed file types and maximum allowed size.`);
+      alert(
+        `Cannot upload file. Kindly check the allowed file types and maximum allowed size.`
+      );
     }
     return acceptFile;
   };
 
-  const handleFileChange = async (event: FileEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event) => {
     const files = event.target.files;
     if (!files || files.length === 0) {
       return;
     }
     const filesList = [];
     for (const file of files) {
-      if (isFileAllowedForUpload(file) === false) {
+      if (!isFileAllowedForUpload(file)) {
         return;
       }
       const reader = new FileReader();
@@ -786,34 +703,34 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
             resolve({
               data: result,
               preview: URL.createObjectURL(file),
-              type: 'file',
+              type: "file",
               name: name,
-              mime: file.type,
+              mime: file.type
             });
           };
           reader.readAsDataURL(file);
-        }),
+        })
       );
     }
 
     const newFiles = await Promise.all(filesList);
-    setPreviews((prevPreviews) => [...prevPreviews, ...(newFiles as FilePreview[])]);
+    setPreviews((prevPreviews) => [...prevPreviews, ...newFiles]);
   };
 
-  const handleDrag = (e: DragEvent) => {
-    if (uploadsConfig()?.isImageUploadAllowed) {
+  const handleDrag = (e) => {
+    if (uploadsConfig?.isImageUploadAllowed) {
       e.preventDefault();
       e.stopPropagation();
-      if (e.type === 'dragenter' || e.type === 'dragover') {
+      if (e.type === "dragenter" || e.type === "dragover") {
         setIsDragActive(true);
-      } else if (e.type === 'dragleave') {
+      } else if (e.type === "dragleave") {
         setIsDragActive(false);
       }
     }
   };
 
-  const handleDrop = async (e: InputEvent | DragEvent) => {
-    if (!uploadsConfig()?.isImageUploadAllowed) {
+  const handleDrop = async (e) => {
+    if (!uploadsConfig?.isImageUploadAllowed) {
       return;
     }
     e.preventDefault();
@@ -821,7 +738,7 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     const files = [];
     if (e.dataTransfer && e.dataTransfer.files.length > 0) {
       for (const file of e.dataTransfer.files) {
-        if (isFileAllowedForUpload(file) === false) {
+        if (!isFileAllowedForUpload(file)) {
           return;
         }
         const reader = new FileReader();
@@ -834,54 +751,53 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
               }
               const { result } = evt.target;
               let previewUrl;
-              if (file.type.startsWith('audio/')) {
-                previewUrl = '../assets/wave-sound.jpg';
-              } else if (file.type.startsWith('image/')) {
+              if (file.type.startsWith("audio/")) {
+                previewUrl = "../assets/wave-sound.jpg";
+              } else if (file.type.startsWith("image/")) {
                 previewUrl = URL.createObjectURL(file);
               }
               resolve({
                 data: result,
                 preview: previewUrl,
-                type: 'file',
+                type: "file",
                 name: name,
-                mime: file.type,
+                mime: file.type
               });
             };
             reader.readAsDataURL(file);
-          }),
+          })
         );
       }
 
       const newFiles = await Promise.all(files);
-      setPreviews((prevPreviews) => [...prevPreviews, ...(newFiles as FilePreview[])]);
+      setPreviews((prevPreviews) => [...prevPreviews, ...newFiles]);
     }
 
     if (e.dataTransfer && e.dataTransfer.items) {
       for (const item of e.dataTransfer.items) {
-        if (item.kind === 'string' && item.type.match('^text/uri-list')) {
-          item.getAsString((s: string) => {
-            const upload: FilePreview = {
+        if (item.kind === "string" && item.type.match("^text/uri-list")) {
+          item.getAsString((s) => {
+            const upload = {
               data: s,
               preview: s,
-              type: 'url',
-              name: s.substring(s.lastIndexOf('/') + 1),
-              mime: '',
+              type: "url",
+              name: s.substring(s.lastIndexOf("/") + 1),
+              mime: ""
             };
             setPreviews((prevPreviews) => [...prevPreviews, upload]);
           });
-        } else if (item.kind === 'string' && item.type.match('^text/html')) {
-          item.getAsString((s: string) => {
-            if (s.indexOf('href') === -1) return;
-            //extract href
-            const start = s.substring(s.indexOf('href') + 6);
+        } else if (item.kind === "string" && item.type.match("^text/html")) {
+          item.getAsString((s) => {
+            if (s.indexOf("href") === -1) return;
+            const start = s.substring(s.indexOf("href") + 6);
             const hrefStr = start.substring(0, start.indexOf('"'));
 
-            const upload: FilePreview = {
+            const upload = {
               data: hrefStr,
               preview: hrefStr,
-              type: 'url',
-              name: hrefStr.substring(hrefStr.lastIndexOf('/') + 1),
-              mime: '',
+              type: "url",
+              name: hrefStr.substring(hrefStr.lastIndexOf("/") + 1),
+              mime: ""
             };
             setPreviews((prevPreviews) => [...prevPreviews, upload]);
           });
@@ -890,16 +806,20 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     }
   };
 
-  const handleDeletePreview = (itemToDelete: FilePreview) => {
-    if (itemToDelete.type === 'file') {
-      URL.revokeObjectURL(itemToDelete.preview); // Clean up for file
+  const handleDeletePreview = (itemToDelete) => {
+    if (itemToDelete.type === "file") {
+      URL.revokeObjectURL(itemToDelete.preview);
     }
-    setPreviews(previews().filter((item) => item !== itemToDelete));
+    setPreviews(previews.filter((item) => item !== itemToDelete));
   };
 
   const onMicrophoneClicked = () => {
     setIsRecording(true);
-    startAudioRecording(setIsRecording, setRecordingNotSupported, setElapsedTime);
+    startAudioRecording(
+      setIsRecording,
+      setRecordingNotSupported,
+      setElapsedTime
+    );
   };
 
   const onRecordingCancelled = () => {
@@ -913,45 +833,43 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
     stopAudioRecording(addRecordingToPreviews);
   };
 
-  const getInputDisabled = (): boolean => {
-    const messagesArray = messages();
+  const getInputDisabled = () => {
     const disabled =
-      loading() ||
-      !props.chatflowid ||
-      (leadsConfig()?.status && !isLeadSaved()) ||
-      (messagesArray[messagesArray.length - 1].action && Object.keys(messagesArray[messagesArray.length - 1].action as any).length > 0);
-    if (disabled) {
-      return true;
-    }
-    return false;
+      loading ||
+      !botProps.chatflowid ||
+      (leadsConfig?.status && !isLeadSaved) ||
+      (messages[messages.length - 1].action &&
+        Object.keys(messages[messages.length - 1].action).length > 0);
+    return !!disabled;
   };
 
-  createEffect(
-    // listen for changes in previews
-    on(previews, (uploads) => {
-      // wait for audio recording to load and then send
-      const containsAudio = uploads.filter((item) => item.type === 'audio').length > 0;
-      if (uploads.length >= 1 && containsAudio) {
-        setIsRecording(false);
-        setRecordingNotSupported(false);
-        promptClick('');
-      }
+  useEffect(() => {
+    const containsAudio =
+      previews.filter((item) => item.type === "audio").length > 0;
+    if (previews.length >= 1 && containsAudio) {
+      setIsRecording(false);
+      setRecordingNotSupported(false);
+      promptClick("");
+    }
 
-      return () => {
-        setPreviews([]);
-      };
-    }),
-  );
+    return () => {
+      setPreviews([]);
+    };
+  }, [previews]);
+
   return (
     <>
       <div
-        ref={botContainer}
-        class={'relative flex w-full h-full text-base overflow-hidden bg-cover bg-center flex-col items-center chatbot-container ' + props.class}
+        ref={botContainerRef}
+        className={
+          "relative flex w-full h-full text-base overflow-hidden bg-cover bg-center flex-col items-center chatbot-container " +
+          botProps.class
+        }
         onDragEnter={handleDrag}
       >
-        {isDragActive() && (
+        {isDragActive && (
           <div
-            class="absolute top-0 left-0 bottom-0 right-0 w-full h-full z-50"
+            className="absolute top-0 left-0 bottom-0 right-0 w-full h-full z-50"
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragEnd={handleDrag}
@@ -959,276 +877,314 @@ export const Bot = (botProps: BotProps & { class?: string }) => {
             onDrop={handleDrop}
           />
         )}
-        {isDragActive() && uploadsConfig()?.isImageUploadAllowed && (
+        {isDragActive && uploadsConfig?.isImageUploadAllowed && (
           <div
-            class="absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white z-40 gap-2 border-2 border-dashed"
-            style={{ 'border-color': props.bubbleBackgroundColor }}
+            className="absolute top-0 left-0 bottom-0 right-0 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm text-white z-40 gap-2 border-2 border-dashed"
+            style={{ borderColor: botProps.bubbleBackgroundColor }}
           >
-            <h2 class="text-xl font-semibold">Drop here to upload</h2>
-            <For each={uploadsConfig()?.imgUploadSizeAndTypes}>
-              {(allowed) => {
-                return (
-                  <>
-                    <span>{allowed.fileTypes?.join(', ')}</span>
-                    <span>Max Allowed Size: {allowed.maxUploadSize} MB</span>
-                  </>
-                );
-              }}
-            </For>
+            <h2 className="text-xl font-semibold">Drop here to upload</h2>
+            {uploadsConfig?.imgUploadSizeAndTypes.map((allowed) => (
+              <React.Fragment key={allowed.fileTypes.join()}>
+                <span>{allowed.fileTypes?.join(", ")}</span>
+                <span>Max Allowed Size: {allowed.maxUploadSize} MB</span>
+              </React.Fragment>
+            ))}
           </div>
         )}
 
-        {props.showTitle ? (
+        {botProps.showTitle && (
           <div
-            class="flex flex-row items-center w-full h-[50px] absolute top-0 left-0 z-10"
+            className="flex flex-row items-center w-full h-[50px] absolute top-0 left-0 z-10"
             style={{
-              background: props.bubbleBackgroundColor,
-              color: props.bubbleTextColor,
-              'border-top-left-radius': props.isFullPage ? '0px' : '6px',
-              'border-top-right-radius': props.isFullPage ? '0px' : '6px',
+              background: botProps.bubbleBackgroundColor,
+              color: botProps.bubbleTextColor,
+              borderTopLeftRadius: botProps.isFullPage ? "0px" : "6px",
+              borderTopRightRadius: botProps.isFullPage ? "0px" : "6px"
             }}
           >
-            <Show when={props.titleAvatarSrc}>
+            {botProps.titleAvatarSrc && (
               <>
-                <div style={{ width: '15px' }} />
-                <Avatar initialAvatarSrc={props.titleAvatarSrc} />
+                <div style={{ width: "15px" }} />
+                <Avatar initialAvatarSrc={botProps.titleAvatarSrc} />
               </>
-            </Show>
-            <Show when={props.title}>
-              <span class="px-3 whitespace-pre-wrap font-semibold max-w-full">{props.title}</span>
-            </Show>
+            )}
+            {botProps.title && (
+              <span className="px-3 whitespace-pre-wrap font-semibold max-w-full">
+                {botProps.title}
+              </span>
+            )}
             <div style={{ flex: 1 }} />
             <DeleteButton
-              sendButtonColor={props.bubbleTextColor}
+              sendButtonColor={botProps.bubbleTextColor}
               type="button"
-              isDisabled={messages().length === 1}
-              class="my-2 ml-2"
-              on:click={clearChat}
+              isDisabled={messages.length === 1}
+              className="my-2 ml-2"
+              onClick={clearChat}
             >
-              <span style={{ 'font-family': 'Poppins, sans-serif' }}>Clear</span>
+              <span style={{ fontFamily: "Poppins, sans-serif" }}>Clear</span>
             </DeleteButton>
           </div>
-        ) : null}
-        <div class="flex flex-col w-full h-full justify-start z-0">
+        )}
+        <div className="flex flex-col w-full h-full justify-start z-0">
           <div
-            ref={chatContainer}
-            class="overflow-y-scroll flex flex-col flex-grow min-w-full w-full px-3 pt-[70px] relative scrollable-container chatbot-chat-view scroll-smooth"
+            ref={chatContainerRef}
+            className="overflow-y-scroll flex flex-col flex-grow min-w-full w-full px-3 pt-[70px] relative scrollable-container chatbot-chat-view scroll-smooth"
           >
-            <For each={[...messages()]}>
-              {(message, index) => {
-                return (
-                  <>
-                    {message.type === 'userMessage' && (
-                      <GuestBubble
-                        message={message}
-                        apiHost={props.apiHost}
-                        chatflowid={props.chatflowid}
-                        chatId={chatId()}
-                        backgroundColor={props.userMessage?.backgroundColor}
-                        textColor={props.userMessage?.textColor}
-                        showAvatar={props.userMessage?.showAvatar}
-                        avatarSrc={props.userMessage?.avatarSrc}
-                        fontSize={props.fontSize}
-                      />
-                    )}
-                    {message.type === 'apiMessage' && (
-                      <BotBubble
-                        message={message}
-                        fileAnnotations={message.fileAnnotations}
-                        chatflowid={props.chatflowid}
-                        chatId={chatId()}
-                        apiHost={props.apiHost}
-                        backgroundColor={props.botMessage?.backgroundColor}
-                        textColor={props.botMessage?.textColor}
-                        feedbackColor={props.feedback?.color}
-                        showAvatar={props.botMessage?.showAvatar}
-                        avatarSrc={props.botMessage?.avatarSrc}
-                        chatFeedbackStatus={chatFeedbackStatus()}
-                        fontSize={props.fontSize}
-                        isLoading={loading() && index() === messages().length - 1}
-                        showAgentMessages={props.showAgentMessages}
-                        handleActionClick={(label, action) => handleActionClick(label, action)}
-                      />
-                    )}
-                    {message.type === 'leadCaptureMessage' && leadsConfig()?.status && !getLocalStorageChatflow(props.chatflowid)?.lead && (
-                      <LeadCaptureBubble
-                        message={message}
-                        chatflowid={props.chatflowid}
-                        chatId={chatId()}
-                        apiHost={props.apiHost}
-                        backgroundColor={props.botMessage?.backgroundColor}
-                        textColor={props.botMessage?.textColor}
-                        fontSize={props.fontSize}
-                        showAvatar={props.botMessage?.showAvatar}
-                        avatarSrc={props.botMessage?.avatarSrc}
-                        leadsConfig={leadsConfig()}
-                        sendButtonColor={props.textInput?.sendButtonColor}
-                        isLeadSaved={isLeadSaved()}
-                        setIsLeadSaved={setIsLeadSaved}
-                        setLeadEmail={setLeadEmail}
-                      />
-                    )}
-                    {message.type === 'userMessage' && loading() && index() === messages().length - 1 && <LoadingBubble />}
-                    {message.type === 'apiMessage' && message.message === '' && loading() && index() === messages().length - 1 && <LoadingBubble />}
-                    {message.sourceDocuments && message.sourceDocuments.length && (
-                      <div style={{ display: 'flex', 'flex-direction': 'row', width: '100%', 'flex-wrap': 'wrap' }}>
-                        <For each={[...removeDuplicateURL(message)]}>
-                          {(src) => {
-                            const URL = isValidURL(src.metadata.source);
-                            return (
-                              <SourceBubble
-                                pageContent={URL ? URL.pathname : src.pageContent}
-                                metadata={src.metadata}
-                                onSourceClick={() => {
-                                  if (URL) {
-                                    window.open(src.metadata.source, '_blank');
-                                  } else {
-                                    setSourcePopupSrc(src);
-                                    setSourcePopupOpen(true);
-                                  }
-                                }}
-                              />
-                            );
-                          }}
-                        </For>
-                      </div>
-                    )}
-                  </>
-                );
-              }}
-            </For>
-          </div>
-          <Show when={messages().length === 1}>
-            <Show when={starterPrompts().length > 0}>
-              <div class="w-full flex flex-row flex-wrap px-5 py-[10px] gap-2">
-                <For each={[...starterPrompts()]}>
-                  {(key) => (
-                    <StarterPromptBubble
-                      prompt={key}
-                      onPromptClick={() => promptClick(key)}
-                      starterPromptFontSize={botProps.starterPromptFontSize} // Pass it here as a number
+            {messages.map((message, index) => (
+              <React.Fragment key={index}>
+                {message.type === "userMessage" && (
+                  <GuestBubble
+                    message={message}
+                    apiHost={botProps.apiHost}
+                    chatflowid={botProps.chatflowid}
+                    chatId={chatId}
+                    backgroundColor={botProps.userMessage?.backgroundColor}
+                    textColor={botProps.userMessage?.textColor}
+                    showAvatar={botProps.userMessage?.showAvatar}
+                    avatarSrc={botProps.userMessage?.avatarSrc}
+                    fontSize={botProps.fontSize}
+                  />
+                )}
+                {message.type === "apiMessage" && (
+                  <BotBubble
+                    message={message}
+                    fileAnnotations={message.fileAnnotations}
+                    chatflowid={botProps.chatflowid}
+                    chatId={chatId}
+                    apiHost={botProps.apiHost}
+                    backgroundColor={botProps.botMessage?.backgroundColor}
+                    textColor={botProps.botMessage?.textColor}
+                    feedbackColor={botProps.feedback?.color}
+                    showAvatar={botProps.botMessage?.showAvatar}
+                    avatarSrc={botProps.botMessage?.avatarSrc}
+                    chatFeedbackStatus={chatFeedbackStatus}
+                    fontSize={botProps.fontSize}
+                    isLoading={loading && index === messages.length - 1}
+                    showAgentMessages={botProps.showAgentMessages}
+                    handleActionClick={handleActionClick}
+                  />
+                )}
+                {message.type === "leadCaptureMessage" &&
+                  leadsConfig?.status &&
+                  !getLocalStorageChatflow(botProps.chatflowid)?.lead && (
+                    <LeadCaptureBubble
+                      message={message}
+                      chatflowid={botProps.chatflowid}
+                      chatId={chatId}
+                      apiHost={botProps.apiHost}
+                      backgroundColor={botProps.botMessage?.backgroundColor}
+                      textColor={botProps.botMessage?.textColor}
+                      fontSize={botProps.fontSize}
+                      showAvatar={botProps.botMessage?.showAvatar}
+                      avatarSrc={botProps.botMessage?.avatarSrc}
+                      leadsConfig={leadsConfig}
+                      sendButtonColor={botProps.textInput?.sendButtonColor}
+                      isLeadSaved={isLeadSaved}
+                      setIsLeadSaved={setIsLeadSaved}
+                      setLeadEmail={setLeadEmail}
                     />
                   )}
-                </For>
-              </div>
-            </Show>
-          </Show>
-          <Show when={previews().length > 0}>
-            <div class="w-full flex items-center justify-start gap-2 px-5 pt-2 border-t border-[#eeeeee]">
-              <For each={[...previews()]}>
-                {(item) => (
-                  <>
-                    {item.mime.startsWith('image/') ? (
-                      <button
-                        class="group w-12 h-12 flex items-center justify-center relative rounded-[10px] overflow-hidden transition-colors duration-200"
-                        onClick={() => handleDeletePreview(item)}
-                      >
-                        <img class="w-full h-full bg-cover" src={item.data as string} />
-                        <span class="absolute hidden group-hover:flex items-center justify-center z-10 w-full h-full top-0 left-0 bg-black/10 rounded-[10px] transition-colors duration-200">
-                          <TrashIcon />
-                        </span>
-                      </button>
-                    ) : (
-                      <div
-                        class={`inline-flex basis-auto flex-grow-0 flex-shrink-0 justify-between items-center rounded-xl h-12 p-1 mr-1 bg-gray-500`}
-                        style={{
-                          width: `${
-                            chatContainer ? (botProps.isFullPage ? chatContainer?.offsetWidth / 4 : chatContainer?.offsetWidth / 2) : '200'
-                          }px`,
-                        }}
-                      >
-                        <audio class="block bg-cover bg-center w-full h-full rounded-none text-transparent" controls src={item.data as string} />
-                        <button class="w-7 h-7 flex items-center justify-center bg-transparent p-1" onClick={() => handleDeletePreview(item)}>
-                          <TrashIcon color="white" />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </For>
-            </div>
-          </Show>
-          <div class="w-full px-5 pt-2 pb-1">
-            {isRecording() ? (
-              <>
-                {recordingNotSupported() ? (
-                  <div class="w-full flex items-center justify-between p-4 border border-[#eeeeee]">
-                    <div class="w-full flex items-center justify-between gap-3">
-                      <span class="text-base">To record audio, use modern browsers like Chrome or Firefox that support audio recording.</span>
-                      <button
-                        class="py-2 px-4 justify-center flex items-center bg-red-500 text-white rounded-md"
-                        type="button"
-                        onClick={() => onRecordingCancelled()}
-                      >
-                        Okay
-                      </button>
-                    </div>
-                  </div>
-                ) : (
+                {message.type === "userMessage" &&
+                  loading &&
+                  index === messages.length - 1 && <LoadingBubble />}
+                {message.type === "apiMessage" &&
+                  message.message === "" &&
+                  loading &&
+                  index === messages.length - 1 && <LoadingBubble />}
+                {message.sourceDocuments && message.sourceDocuments.length && (
                   <div
-                    class="h-[58px] flex items-center justify-between chatbot-input border border-[#eeeeee]"
-                    data-testid="input"
                     style={{
-                      margin: 'auto',
-                      'background-color': props.textInput?.backgroundColor ?? defaultBackgroundColor,
-                      color: props.textInput?.textColor ?? defaultTextColor,
+                      display: "flex",
+                      flexDirection: "row",
+                      width: "100%",
+                      flexWrap: "wrap"
                     }}
                   >
-                    <div class="flex items-center gap-3 px-4 py-2">
-                      <span>
-                        <CircleDotIcon color="red" />
-                      </span>
-                      <span>{elapsedTime() || '00:00'}</span>
-                      {isLoadingRecording() && <span class="ml-1.5">Sending...</span>}
-                    </div>
-                    <div class="flex items-center">
-                      <CancelButton buttonColor={props.textInput?.sendButtonColor} type="button" class="m-0" on:click={onRecordingCancelled}>
-                        <span style={{ 'font-family': 'Poppins, sans-serif' }}>Send</span>
-                      </CancelButton>
-                      <SendButton
-                        sendButtonColor={props.textInput?.sendButtonColor}
-                        type="button"
-                        isDisabled={loading()}
-                        class="m-0"
-                        on:click={onRecordingStopped}
-                      >
-                        <span style={{ 'font-family': 'Poppins, sans-serif' }}>Send</span>
-                      </SendButton>
-                    </div>
+                    {removeDuplicateURL(message).map((src, idx) => {
+                      const URL = isValidURL(src.metadata.source);
+                      return (
+                        <SourceBubble
+                          key={idx}
+                          pageContent={URL ? URL.pathname : src.pageContent}
+                          metadata={src.metadata}
+                          onSourceClick={() => {
+                            if (URL) {
+                              window.open(src.metadata.source, "_blank");
+                            } else {
+                              setSourcePopupSrc(src);
+                              setSourcePopupOpen(true);
+                            }
+                          }}
+                        />
+                      );
+                    })}
                   </div>
                 )}
-              </>
+              </React.Fragment>
+            ))}
+          </div>
+          {messages.length === 1 && starterPrompts.length > 0 && (
+            <div className="w-full flex flex-row flex-wrap px-5 py-[10px] gap-2">
+              {starterPrompts.map((key) => (
+                <StarterPromptBubble
+                  key={key}
+                  prompt={key}
+                  onPromptClick={() => promptClick(key)}
+                  starterPromptFontSize={botProps.starterPromptFontSize}
+                />
+              ))}
+            </div>
+          )}
+          {previews.length > 0 && (
+            <div className="w-full flex items-center justify-start gap-2 px-5 pt-2 border-t border-[#eeeeee]">
+              {previews.map((item, index) => (
+                <React.Fragment key={index}>
+                  {item.mime.startsWith("image/") ? (
+                    <button
+                      className="group w-12 h-12 flex items-center justify-center relative rounded-[10px] overflow-hidden transition-colors duration-200"
+                      onClick={() => handleDeletePreview(item)}
+                    >
+                      <img
+                        className="w-full h-full bg-cover"
+                        src={item.data}
+                        alt={item.name}
+                      />
+                      <span className="absolute hidden group-hover:flex items-center justify-center z-10 w-full h-full top-0 left-0 bg-black/10 rounded-[10px] transition-colors duration-200">
+                        <TrashIcon />
+                      </span>
+                    </button>
+                  ) : (
+                    <div
+                      className="inline-flex basis-auto flex-grow-0 flex-shrink-0 justify-between items-center rounded-xl h-12 p-1 mr-1 bg-gray-500"
+                      style={{
+                        width: botContainerRef.current
+                          ? botProps.isFullPage
+                            ? botContainerRef.current.offsetWidth / 4
+                            : botContainerRef.current.offsetWidth / 2
+                          : "200"
+                      }}
+                    >
+                      <audio
+                        className="block bg-cover bg-center w-full h-full rounded-none text-transparent"
+                        controls
+                        src={item.data}
+                      />
+                      <button
+                        className="w-7 h-7 flex items-center justify-center bg-transparent p-1"
+                        onClick={() => handleDeletePreview(item)}
+                      >
+                        <TrashIcon color="white" />
+                      </button>
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          )}
+          <div className="w-full px-5 pt-2 pb-1">
+            {isRecording ? (
+              recordingNotSupported ? (
+                <div className="w-full flex items-center justify-between p-4 border border-[#eeeeee]">
+                  <div className="w-full flex items-center justify-between gap-3">
+                    <span className="text-base">
+                      To record audio, use modern browsers like Chrome or
+                      Firefox that support audio recording.
+                    </span>
+                    <button
+                      className="py-2 px-4 justify-center flex items-center bg-red-500 text-white rounded-md"
+                      type="button"
+                      onClick={onRecordingCancelled}
+                    >
+                      Okay
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="h-[58px] flex items-center justify-between chatbot-input border border-[#eeeeee]"
+                  data-testid="input"
+                  style={{
+                    margin: "auto",
+                    backgroundColor:
+                      botProps.textInput?.backgroundColor ?? "#ffffff",
+                    color: botProps.textInput?.textColor ?? "#303235"
+                  }}
+                >
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <span>
+                      <CircleDotIcon color="red" />
+                    </span>
+                    <span>{elapsedTime || "00:00"}</span>
+                    {isLoadingRecording && (
+                      <span className="ml-1.5">Sending...</span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <CancelButton
+                      buttonColor={botProps.textInput?.sendButtonColor}
+                      type="button"
+                      className="m-0"
+                      onClick={onRecordingCancelled}
+                    >
+                      <span style={{ fontFamily: "Poppins, sans-serif" }}>
+                        Cancel
+                      </span>
+                    </CancelButton>
+                    <SendButton
+                      sendButtonColor={botProps.textInput?.sendButtonColor}
+                      type="button"
+                      isDisabled={loading}
+                      className="m-0"
+                      onClick={onRecordingStopped}
+                    >
+                      <span style={{ fontFamily: "Poppins, sans-serif" }}>
+                        Send
+                      </span>
+                    </SendButton>
+                  </div>
+                </div>
+              )
             ) : (
               <TextInput
-                backgroundColor={props.textInput?.backgroundColor}
-                textColor={props.textInput?.textColor}
-                placeholder={props.textInput?.placeholder}
-                sendButtonColor={props.textInput?.sendButtonColor}
-                maxChars={props.textInput?.maxChars}
-                maxCharsWarningMessage={props.textInput?.maxCharsWarningMessage}
-                autoFocus={props.textInput?.autoFocus}
-                fontSize={props.fontSize}
+                backgroundColor={botProps.textInput?.backgroundColor}
+                textColor={botProps.textInput?.textColor}
+                placeholder={botProps.textInput?.placeholder}
+                sendButtonColor={botProps.textInput?.sendButtonColor}
+                maxChars={botProps.textInput?.maxChars}
+                maxCharsWarningMessage={
+                  botProps.textInput?.maxCharsWarningMessage
+                }
+                autoFocus={botProps.textInput?.autoFocus}
+                fontSize={botProps.fontSize}
                 disabled={getInputDisabled()}
-                defaultValue={userInput()}
+                defaultValue={userInput}
                 onSubmit={handleSubmit}
-                uploadsConfig={uploadsConfig()}
+                uploadsConfig={uploadsConfig}
                 setPreviews={setPreviews}
                 onMicrophoneClicked={onMicrophoneClicked}
                 handleFileChange={handleFileChange}
-                sendMessageSound={props.textInput?.sendMessageSound}
-                sendSoundLocation={props.textInput?.sendSoundLocation}
+                sendMessageSound={botProps.textInput?.sendMessageSound}
+                sendSoundLocation={botProps.textInput?.sendSoundLocation}
               />
             )}
           </div>
           <Badge
-            footer={props.footer}
-            badgeBackgroundColor={props.badgeBackgroundColor}
-            poweredByTextColor={props.poweredByTextColor}
-            botContainer={botContainer}
+            footer={botProps.footer}
+            badgeBackgroundColor={botProps.badgeBackgroundColor}
+            poweredByTextColor={botProps.poweredByTextColor}
+            botContainer={botContainerRef.current}
           />
         </div>
       </div>
-      {sourcePopupOpen() && <Popup isOpen={sourcePopupOpen()} value={sourcePopupSrc()} onClose={() => setSourcePopupOpen(false)} />}
+      {sourcePopupOpen && (
+        <Popup
+          isOpen={sourcePopupOpen}
+          value={sourcePopupSrc}
+          onClose={() => setSourcePopupOpen(false)}
+        />
+      )}
     </>
   );
 };
+
+export default Bot;

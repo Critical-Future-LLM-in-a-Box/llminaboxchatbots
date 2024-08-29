@@ -1,8 +1,8 @@
-import { Show } from 'solid-js';
+import React from "react";
 
-const defaultTooltipMessage = 'Hi There 👋!';
-const defaultTooltipBackgroundColor = 'black';
-const defaultTooltipTextColor = 'white';
+const defaultTooltipMessage = "Hi There 👋!";
+const defaultTooltipBackgroundColor = "black";
+const defaultTooltipTextColor = "white";
 const defaultTooltipFontSize = 16; // Default font size for tooltip
 
 type TooltipProps = {
@@ -15,9 +15,10 @@ type TooltipProps = {
   tooltipFontSize?: number; // Add tooltipFontSize to props
 };
 
-const Tooltip = (props: TooltipProps) => {
+const Tooltip: React.FC<TooltipProps> = (props) => {
   const tooltipMessage = props.tooltipMessage ?? defaultTooltipMessage;
-  const backgroundColor = props.tooltipBackgroundColor ?? defaultTooltipBackgroundColor;
+  const backgroundColor =
+    props.tooltipBackgroundColor ?? defaultTooltipBackgroundColor;
   const textColor = props.tooltipTextColor ?? defaultTooltipTextColor;
   const fontSize = `${props.tooltipFontSize ?? defaultTooltipFontSize}px`; // Use tooltipFontSize if provided, otherwise default to 16px
 
@@ -25,38 +26,29 @@ const Tooltip = (props: TooltipProps) => {
   const formattedTooltipMessage =
     tooltipMessage.length > 20
       ? tooltipMessage
-          .split(' ')
+          .split(" ")
           .reduce<string[][]>(
             (acc, curr) => {
               const last = acc[acc.length - 1];
-              if (last && last.join(' ').length + curr.length <= 20) {
+              if (last && last.join(" ").length + curr.length <= 20) {
                 last.push(curr);
               } else {
                 acc.push([curr]);
               }
               return acc;
             },
-            [[]],
+            [[]]
           )
-          .map((arr) => arr.join(' '))
-          .join('\n')
+          .map((arr) => arr.join(" "))
+          .join("\n")
       : tooltipMessage;
 
   return (
-    <Show when={props.showTooltip}>
-      <div
-        class="tooltip"
-        style={{
-          right: `calc(${props.position.right}px + 20px)`,
-          bottom: `${props.position.bottom + props.buttonSize + 10}px`,
-          '--tooltip-background-color': backgroundColor,
-          '--tooltip-text-color': textColor,
-          '--tooltip-font-size': fontSize,
-        }}
-      >
-        {formattedTooltipMessage}
-      </div>
-    </Show>
+    <>
+      {props.showTooltip && (
+        <div className="tooltip">{formattedTooltipMessage}</div>
+      )}
+    </>
   );
 };
 

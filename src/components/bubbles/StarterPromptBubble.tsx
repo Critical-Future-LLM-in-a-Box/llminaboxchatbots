@@ -1,28 +1,49 @@
+import React from "react";
+import { Box, Typography } from "@mui/material";
+
 type Props = {
   prompt: string;
   onPromptClick?: () => void;
   starterPromptFontSize?: number;
 };
-export const StarterPromptBubble = (props: Props) => (
+
+const StarterPromptBubble: React.FC<Props> = (props) => (
   <>
-    <div
-      data-modal-target="defaultModal"
-      data-modal-toggle="defaultModal"
-      class="flex justify-start items-start animate-fade-in host-container hover:brightness-90 active:brightness-75"
+    <Box
+      component="div"
+      sx={{
+        "display": "flex",
+        "justifyContent": "start",
+        "alignItems": "start",
+        "animation": "fade-in 0.3s",
+        "&:hover": {
+          filter: "brightness(90%)"
+        },
+        "&:active": {
+          filter: "brightness(75%)"
+        }
+      }}
       onClick={() => props.onPromptClick?.()}
     >
-      <span
-        class="px-2 py-1 ml-1 whitespace-pre-wrap max-w-full chatbot-host-bubble"
-        data-testid="host-bubble"
-        style={{
-          width: 'max-content',
-          'font-size': props.starterPromptFontSize ? `${props.starterPromptFontSize}px` : '15px', // Convert to string with unit
-          'border-radius': '15px',
-          cursor: 'pointer',
+      <Typography
+        component="span"
+        sx={{
+          padding: "2px",
+          margin: "1px",
+          whiteSpace: "pre-wrap",
+          maxWidth: "100%",
+          borderRadius: "15px",
+          cursor: "pointer",
+          fontSize: props.starterPromptFontSize
+            ? `${props.starterPromptFontSize}px`
+            : "15px"
         }}
+        data-testid="host-bubble"
       >
         {props.prompt}
-      </span>
-    </div>
+      </Typography>
+    </Box>
   </>
 );
+
+export default StarterPromptBubble;

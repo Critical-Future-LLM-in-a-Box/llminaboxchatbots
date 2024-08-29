@@ -1,4 +1,4 @@
-import DeviceDetector from 'device-detector-js';
+import DeviceDetector from "device-detector-js";
 
 /**
  * @fileoverview This file contains the API to handle audio recording.
@@ -6,7 +6,7 @@ import DeviceDetector from 'device-detector-js';
  */
 
 // audio-recording.js ---------------
-let elapsedTime = '00:00';
+let elapsedTime = "00:00";
 
 /** Stores the actual start time when an audio recording begins to take place to ensure elapsed time start time is accurate*/
 let audioRecordStartTime: Date;
@@ -25,7 +25,7 @@ export function getElaspedTime() {
 export function startAudioRecording(
   onRecordingStart: (value: boolean) => void,
   onUnsupportedBrowser: (value: boolean) => void,
-  setElapsedTime: (value: string) => void,
+  setElapsedTime: (value: string) => void
 ) {
   //start recording using the audio recording API
   audioRecorder
@@ -44,7 +44,11 @@ export function startAudioRecording(
     .catch((error) => {
       //on error
       //No Browser Support Error
-      if (error.message.includes('mediaDevices API or getUserMedia method is not supported in this browser.')) {
+      if (
+        error.message.includes(
+          "mediaDevices API or getUserMedia method is not supported in this browser."
+        )
+      ) {
         if (onUnsupportedBrowser) {
           onUnsupportedBrowser(true);
         }
@@ -54,47 +58,51 @@ export function startAudioRecording(
 
       //Error handling structure
       switch (error.name) {
-        case 'AbortError': //error from navigator.mediaDevices.getUserMedia
+        case "AbortError": //error from navigator.mediaDevices.getUserMedia
           // eslint-disable-next-line no-console
-          console.log('An AbortError has occurred.');
+          console.log("An AbortError has occurred.");
           break;
-        case 'NotAllowedError': //error from navigator.mediaDevices.getUserMedia
+        case "NotAllowedError": //error from navigator.mediaDevices.getUserMedia
           // eslint-disable-next-line no-console
-          console.log('A NotAllowedError has occurred. User might have denied permission.');
+          console.log(
+            "A NotAllowedError has occurred. User might have denied permission."
+          );
           break;
-        case 'NotFoundError': //error from navigator.mediaDevices.getUserMedia
+        case "NotFoundError": //error from navigator.mediaDevices.getUserMedia
           // eslint-disable-next-line no-console
-          console.log('A NotFoundError has occurred.');
+          console.log("A NotFoundError has occurred.");
           break;
-        case 'NotReadableError': //error from navigator.mediaDevices.getUserMedia
+        case "NotReadableError": //error from navigator.mediaDevices.getUserMedia
           // eslint-disable-next-line no-console
-          console.log('A NotReadableError has occurred.');
+          console.log("A NotReadableError has occurred.");
           break;
-        case 'SecurityError': //error from navigator.mediaDevices.getUserMedia or from the MediaRecorder.start
+        case "SecurityError": //error from navigator.mediaDevices.getUserMedia or from the MediaRecorder.start
           // eslint-disable-next-line no-console
-          console.log('A SecurityError has occurred.');
+          console.log("A SecurityError has occurred.");
           break;
-        case 'TypeError': //error from navigator.mediaDevices.getUserMedia
+        case "TypeError": //error from navigator.mediaDevices.getUserMedia
           // eslint-disable-next-line no-console
-          console.log('A TypeError has occurred.');
+          console.log("A TypeError has occurred.");
           break;
-        case 'InvalidStateError': //error from the MediaRecorder.start
+        case "InvalidStateError": //error from the MediaRecorder.start
           // eslint-disable-next-line no-console
-          console.log('An InvalidStateError has occurred.');
+          console.log("An InvalidStateError has occurred.");
           break;
-        case 'UnknownError': //error from the MediaRecorder.start
+        case "UnknownError": //error from the MediaRecorder.start
           // eslint-disable-next-line no-console
-          console.log('An UnknownError has occurred.');
+          console.log("An UnknownError has occurred.");
           break;
         default:
           // eslint-disable-next-line no-console
-          console.log('An error occurred with the error name ' + error.name);
+          console.log("An error occurred with the error name " + error.name);
       }
     });
 }
 /** Stop the currently started audio recording & sends it
  */
-export function stopAudioRecording(addRecordingToPreviews: null | ((blob: Blob) => void)) {
+export function stopAudioRecording(
+  addRecordingToPreviews: null | ((blob: Blob) => void)
+) {
   //stop the recording using the audio recording API
   audioRecorder
     .stop()
@@ -108,13 +116,13 @@ export function stopAudioRecording(addRecordingToPreviews: null | ((blob: Blob) 
     .catch((error) => {
       //Error handling structure
       switch (error.name) {
-        case 'InvalidStateError': //error from the MediaRecorder.stop
+        case "InvalidStateError": //error from the MediaRecorder.stop
           // eslint-disable-next-line no-console
-          console.log('An InvalidStateError has occurred.');
+          console.log("An InvalidStateError has occurred.");
           break;
         default:
           // eslint-disable-next-line no-console
-          console.log('An error occurred with the error name ' + error.name);
+          console.log("An error occurred with the error name " + error.name);
       }
     });
 }
@@ -131,7 +139,7 @@ export function cancelAudioRecording() {
 /** Computes the elapsed recording time since the moment the function is called in the format h:m:s*/
 function handleElapsedRecordingTime(setElapsedTime: (value: string) => void) {
   //display initial time when recording begins
-  elapsedTime = '00:00';
+  elapsedTime = "00:00";
   // set elapsed time so it can be displayed in the component
   setElapsedTime(elapsedTime);
 
@@ -160,18 +168,23 @@ function displayElapsedTimeDuringAudioRecording() {
  */
 function elapsedTimeReachedMaximumNumberOfHours() {
   //Split the elapsed time by the symbol that separates the hours, minutes and seconds :
-  const elapsedTimeSplit = elapsedTime.split(':');
+  const elapsedTimeSplit = elapsedTime.split(":");
 
   //Turn the maximum recording time in hours to a string and pad it with zero if less than 10
   const maximumRecordingTimeInHoursAsString =
-    maximumRecordingTimeInHours < 10 ? '0' + maximumRecordingTimeInHours : maximumRecordingTimeInHours.toString();
+    maximumRecordingTimeInHours < 10
+      ? "0" + maximumRecordingTimeInHours
+      : maximumRecordingTimeInHours.toString();
 
   //if the elapsed time reach hours and also reach the maximum recording time in hours return true
-  return elapsedTimeSplit.length === 3 && elapsedTimeSplit[0] === maximumRecordingTimeInHoursAsString;
+  return (
+    elapsedTimeSplit.length === 3 &&
+    elapsedTimeSplit[0] === maximumRecordingTimeInHoursAsString
+  );
 }
 
 function padLeft(num: number, size: number) {
-  return `${num}`.padStart(size, '0');
+  return `${num}`.padStart(size, "0");
 }
 
 /** Computes the elapsedTime since the moment the function is called in the format mm:ss or hh:mm:ss
@@ -212,9 +225,15 @@ function computeElapsedTime(startTime: Date) {
   const totalHours = hours + days * 24;
 
   if (totalHours === 0) {
-    return padLeft(minutes, 2) + ':' + padLeft(seconds, 2);
+    return padLeft(minutes, 2) + ":" + padLeft(seconds, 2);
   } else {
-    return padLeft(totalHours, 2) + ':' + padLeft(minutes, 2) + ':' + padLeft(seconds, 2);
+    return (
+      padLeft(totalHours, 2) +
+      ":" +
+      padLeft(minutes, 2) +
+      ":" +
+      padLeft(seconds, 2)
+    );
   }
 }
 
@@ -246,13 +265,17 @@ export const audioRecorder: AudioRecorder = {
     if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) {
       //Feature is not supported in browser
       //return a custom error
-      return Promise.reject(new Error('mediaDevices API or getUserMedia method is not supported in this browser.'));
+      return Promise.reject(
+        new Error(
+          "mediaDevices API or getUserMedia method is not supported in this browser."
+        )
+      );
     } else {
       // Feature is supported in browser
       const deviceDetector = new DeviceDetector();
       const userAgent = navigator.userAgent;
       const device = deviceDetector.parse(userAgent);
-      const isSafari = device.client?.name === 'Mobile Safari';
+      const isSafari = device.client?.name === "Mobile Safari";
 
       //create an audio stream
       return (
@@ -271,10 +294,13 @@ export const audioRecorder: AudioRecorder = {
             audioRecorder.audioBlobs = [];
 
             //add a dataavailable event listener in order to store the audio data Blobs when recording
-            audioRecorder.mediaRecorder.addEventListener('dataavailable', (event) => {
-              //store audio Blob object
-              audioRecorder.audioBlobs.push(event.data);
-            });
+            audioRecorder.mediaRecorder.addEventListener(
+              "dataavailable",
+              (event) => {
+                //store audio Blob object
+                audioRecorder.audioBlobs.push(event.data);
+              }
+            );
 
             //start the recording by calling the start method on the media recorder
             if (isSafari) {
@@ -300,9 +326,11 @@ export const audioRecorder: AudioRecorder = {
       const mimeType = audioRecorder.mediaRecorder?.mimeType;
 
       //listen to the stop event in order to create & return a single Blob object
-      audioRecorder.mediaRecorder?.addEventListener('stop', () => {
+      audioRecorder.mediaRecorder?.addEventListener("stop", () => {
         //create a single blob object, as we might have gathered a few Blob objects that needs to be joined as one
-        const audioBlob = new Blob(audioRecorder.audioBlobs, { type: mimeType });
+        const audioBlob = new Blob(audioRecorder.audioBlobs, {
+          type: mimeType
+        });
 
         //resolve promise with the single audio blob representing the recorded audio
         resolve(audioBlob);
@@ -339,5 +367,5 @@ export const audioRecorder: AudioRecorder = {
     If a DOM element which is removed is reference-free (no references pointing to it), the element itself is picked
     up by the garbage collector as well as any event handlers/listeners associated with it.
     getEventListeners(audioRecorder.mediaRecorder) will return an empty array of events.*/
-  },
+  }
 };

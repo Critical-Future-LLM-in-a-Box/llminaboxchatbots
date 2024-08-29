@@ -1,32 +1,50 @@
+import { Box, Typography } from "@mui/material";
+
 type Props = {
   pageContent: string;
   metadata: object;
   onSourceClick?: () => void;
 };
+
 export const SourceBubble = (props: Props) => (
   <>
-    <div
-      data-modal-target="defaultModal"
-      data-modal-toggle="defaultModal"
-      class="flex justify-start mb-2 items-start animate-fade-in host-container hover:brightness-90 active:brightness-75"
+    <Box
+      component="div"
+      sx={{
+        "display": "flex",
+        "justifyContent": "start",
+        "marginBottom": 2,
+        "alignItems": "start",
+        "animation": "fade-in 0.3s",
+        "&:hover": {
+          filter: "brightness(90%)"
+        },
+        "&:active": {
+          filter: "brightness(75%)"
+        }
+      }}
       onClick={() => props.onSourceClick?.()}
     >
-      <span
-        class="px-2 py-1 ml-1 whitespace-pre-wrap max-w-full chatbot-host-bubble"
-        data-testid="host-bubble"
-        style={{
-          width: 'max-content',
-          'max-width': '80px',
-          'font-size': '13px',
-          'border-radius': '15px',
-          cursor: 'pointer',
-          'text-overflow': 'ellipsis',
-          overflow: 'hidden',
-          'white-space': 'nowrap',
+      <Typography
+        component="span"
+        sx={{
+          paddingX: 2,
+          paddingY: 1,
+          marginLeft: 1,
+          whiteSpace: "pre-wrap",
+          maxWidth: "100%",
+          fontFamily: "inherit",
+          fontSize: "13px",
+          borderRadius: "15px",
+          cursor: "pointer",
+          textOverflow: "ellipsis",
+          overflow: "hidden",
+          textTransform: "none"
         }}
+        data-testid="host-bubble"
       >
         {props.pageContent}
-      </span>
-    </div>
+      </Typography>
+    </Box>
   </>
 );

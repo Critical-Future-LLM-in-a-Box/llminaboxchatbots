@@ -1,5 +1,5 @@
-import { FileUpload, IAction } from '@/components/Bot';
-import { sendRequest } from '@/utils/index';
+import { FileUpload, IAction } from "../components/Bot";
+import { sendRequest } from "../utils/utils";
 
 export type IncomingInput = {
   question: string;
@@ -18,7 +18,7 @@ export type MessageRequest = {
   body?: IncomingInput;
 };
 
-export type FeedbackRatingType = 'THUMBS_UP' | 'THUMBS_DOWN';
+export type FeedbackRatingType = "THUMBS_UP" | "THUMBS_DOWN";
 
 export type FeedbackInput = {
   chatId: string;
@@ -52,50 +52,74 @@ export type LeadCaptureRequest = {
   body: Partial<LeadCaptureInput>;
 };
 
-export const sendFeedbackQuery = ({ chatflowid, apiHost = 'http://localhost:3000', body }: CreateFeedbackRequest) =>
+export const sendFeedbackQuery = ({
+  chatflowid,
+  apiHost = "http://localhost:3000",
+  body
+}: CreateFeedbackRequest) =>
   sendRequest({
-    method: 'POST',
+    method: "POST",
     url: `${apiHost}/api/v1/feedback/${chatflowid}`,
-    body,
+    body
   });
 
-export const updateFeedbackQuery = ({ id, apiHost = 'http://localhost:3000', body }: UpdateFeedbackRequest) =>
+export const updateFeedbackQuery = ({
+  id,
+  apiHost = "http://localhost:3000",
+  body
+}: UpdateFeedbackRequest) =>
   sendRequest({
-    method: 'PUT',
+    method: "PUT",
     url: `${apiHost}/api/v1/feedback/${id}`,
-    body,
+    body
   });
 
-export const sendMessageQuery = ({ chatflowid, apiHost = 'http://localhost:3000', body }: MessageRequest) =>
+export const sendMessageQuery = ({
+  chatflowid,
+  apiHost = "http://localhost:3000",
+  body
+}: MessageRequest) =>
   sendRequest<any>({
-    method: 'POST',
+    method: "POST",
     url: `${apiHost}/api/v1/prediction/${chatflowid}`,
-    body,
+    body
   });
 
-export const getChatbotConfig = ({ chatflowid, apiHost = 'http://localhost:3000' }: MessageRequest) =>
+export const getChatbotConfig = ({
+  chatflowid,
+  apiHost = "http://localhost:3000"
+}: MessageRequest) =>
   sendRequest<any>({
-    method: 'GET',
-    url: `${apiHost}/api/v1/public-chatbotConfig/${chatflowid}`,
+    method: "GET",
+    url: `${apiHost}/api/v1/public-chatbotConfig/${chatflowid}`
   });
 
-export const isStreamAvailableQuery = ({ chatflowid, apiHost = 'http://localhost:3000' }: MessageRequest) =>
+export const isStreamAvailableQuery = ({
+  chatflowid,
+  apiHost = "http://localhost:3000"
+}: MessageRequest) =>
   sendRequest<any>({
-    method: 'GET',
-    url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`,
+    method: "GET",
+    url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`
   });
 
-export const sendFileDownloadQuery = ({ apiHost = 'http://localhost:3000', body }: MessageRequest) =>
+export const sendFileDownloadQuery = ({
+  apiHost = "http://localhost:3000",
+  body
+}: MessageRequest) =>
   sendRequest<any>({
-    method: 'POST',
+    method: "POST",
     url: `${apiHost}/api/v1/openai-assistants-file`,
     body,
-    type: 'blob',
+    type: "blob"
   });
 
-export const addLeadQuery = ({ apiHost = 'http://localhost:3000', body }: LeadCaptureRequest) =>
+export const addLeadQuery = ({
+  apiHost = "http://localhost:3000",
+  body
+}: LeadCaptureRequest) =>
   sendRequest<any>({
-    method: 'POST',
+    method: "POST",
     url: `${apiHost}/api/v1/leads/`,
-    body,
+    body
   });

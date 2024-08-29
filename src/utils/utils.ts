@@ -1,10 +1,21 @@
-export const isNotDefined = <T>(value: T | undefined | null): value is undefined | null => value === undefined || value === null;
+export const isNotDefined = <T>(
+  value: T | undefined | null
+): value is undefined | null => value === undefined || value === null;
 
-export const isDefined = <T>(value: T | undefined | null): value is NonNullable<T> => value !== undefined && value !== null;
+export const isDefined = <T>(
+  value: T | undefined | null
+): value is NonNullable<T> => value !== undefined && value !== null;
 
-export const isEmpty = (value: string | undefined | null): value is undefined => value === undefined || value === null || value === '';
+export const isEmpty = (value: string | undefined | null): value is undefined =>
+  value === undefined || value === null || value === "";
 
-export const isNotEmpty = (value: string | undefined | null): value is string => value !== undefined && value !== null && value !== '';
+export const isNotEmpty = (value: string | undefined | null): value is string =>
+  value !== undefined && value !== null && value !== "";
+
+export const isMobile = () => {
+  if (typeof window === "undefined") return false;
+  return window.innerWidth < 768;
+};
 
 export const sendRequest = async <ResponseData>(
   params:
@@ -14,26 +25,29 @@ export const sendRequest = async <ResponseData>(
         body?: Record<string, unknown> | FormData;
         type?: string;
       }
-    | string,
+    | string
 ): Promise<{ data?: ResponseData; error?: Error }> => {
   try {
-    const url = typeof params === 'string' ? params : params.url;
+    const url = typeof params === "string" ? params : params.url;
     const response = await fetch(url, {
-      method: typeof params === 'string' ? 'GET' : params.method,
-      mode: 'cors',
+      method: typeof params === "string" ? "GET" : params.method,
+      mode: "cors",
       headers:
-        typeof params !== 'string' && isDefined(params.body)
+        typeof params !== "string" && isDefined(params.body)
           ? {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json"
             }
           : undefined,
-      body: typeof params !== 'string' && isDefined(params.body) ? JSON.stringify(params.body) : undefined,
+      body:
+        typeof params !== "string" && isDefined(params.body)
+          ? JSON.stringify(params.body)
+          : undefined
     });
     let data: any;
-    const contentType = response.headers.get('Content-Type');
-    if (contentType && contentType.includes('application/json')) {
+    const contentType = response.headers.get("Content-Type");
+    if (contentType && contentType.includes("application/json")) {
       data = await response.json();
-    } else if (typeof params !== 'string' && params.type === 'blob') {
+    } else if (typeof params !== "string" && params.type === "blob") {
       data = await response.blob();
     } else {
       data = await response.text();
@@ -41,7 +55,7 @@ export const sendRequest = async <ResponseData>(
     if (!response.ok) {
       let errorMessage;
 
-      if (typeof data === 'object' && 'error' in data) {
+      if (typeof data === "object" && "error" in data) {
         errorMessage = data.error;
       } else {
         errorMessage = data || response.statusText;
@@ -57,7 +71,11 @@ export const sendRequest = async <ResponseData>(
   }
 };
 
-export const setLocalStorageChatflow = (chatflowid: string, chatId: string, saveObj: Record<string, any> = {}) => {
+export const setLocalStorageChatflow = (
+  chatflowid: string,
+  chatId: string,
+  saveObj: Record<string, any> = {}
+) => {
   const chatDetails = localStorage.getItem(`${chatflowid}_EXTERNAL`);
   const obj = { ...saveObj };
   if (chatId) obj.chatId = chatId;
@@ -67,7 +85,10 @@ export const setLocalStorageChatflow = (chatflowid: string, chatId: string, save
   } else {
     try {
       const parsedChatDetails = JSON.parse(chatDetails);
-      localStorage.setItem(`${chatflowid}_EXTERNAL`, JSON.stringify({ ...parsedChatDetails, ...obj }));
+      localStorage.setItem(
+        `${chatflowid}_EXTERNAL`,
+        JSON.stringify({ ...parsedChatDetails, ...obj })
+      );
     } catch (e) {
       const chatId = chatDetails;
       obj.chatId = chatId;
@@ -104,11 +125,13 @@ export const removeLocalStorageChatHistory = (chatflowid: string) => {
   }
 };
 
-export const getBubbleButtonSize = (size: 'small' | 'medium' | 'large' | number | undefined) => {
+export const getBubbleButtonSize = (
+  size: "small" | "medium" | "large" | number | undefined
+) => {
   if (!size) return 48;
-  if (typeof size === 'number') return size;
-  if (size === 'small') return 32;
-  if (size === 'medium') return 48;
-  if (size === 'large') return 64;
+  if (typeof size === "number") return size;
+  if (size === "small") return 32;
+  if (size === "medium") return 48;
+  if (size === "large") return 64;
   return 48;
 };

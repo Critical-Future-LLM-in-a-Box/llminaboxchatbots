@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>llminabox</title>
+    <script
+      defer
+      type="module"
+    >
+      const chatbot = await import("./index.js");
+      chatbot.init();
+    </script>
+    <script>
+      new EventSource("/esbuild").addEventListener("change", () =>
+        location.reload()
+      );
+    </script>
+  </head>
+  <body>
+    <llminabox></llminabox>
+  </body>
+</html>

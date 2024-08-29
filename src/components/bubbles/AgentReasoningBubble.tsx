@@ -1,5 +1,6 @@
-import { onMount } from 'solid-js';
-import { Marked } from '@ts-stack/markdown';
+import React, { useEffect, useRef } from "react";
+import { marked } from "marked";
+import { Box } from "@mui/material";
 
 type Props = {
   agentName: string;
@@ -9,37 +10,40 @@ type Props = {
   fontSize?: number;
 };
 
-const defaultBackgroundColor = '#f7f8ff';
-const defaultTextColor = '#303235';
+const defaultBackgroundColor = "#f7f8ff";
+const defaultTextColor = "#303235";
 const defaultFontSize = 16;
 
-Marked.setOptions({ isNoP: true });
+marked.setOptions({});
 
-export const AgentReasoningBubble = (props: Props) => {
-  let botMessageEl: HTMLDivElement | undefined;
+export const AgentReasoningBubble: React.FC<Props> = (props) => {
+  const botMessageRef = useRef<HTMLDivElement>(null);
 
-  onMount(() => {
-    if (botMessageEl) {
-      botMessageEl.innerHTML = Marked.parse(`**✅ ${props.agentName}** \n\n${props.agentMessage}`);
-      botMessageEl.querySelectorAll('a').forEach((link) => {
-        link.target = '_blank';
+  useEffect(() => {
+    if (botMessageRef.current) {
+      botMessageRef.current.innerHTML = marked(
+        `**✅ ${props.agentName}** \n\n${props.agentMessage}`
+      );
+      botMessageRef.current.querySelectorAll("a").forEach((link) => {
+        link.setAttribute("target", "_blank");
       });
     }
-  });
+  }, [props.agentName, props.agentMessage]);
 
   return (
-    <div class="mb-6">
+    <Box mb={6}>
       {props.agentMessage && (
-        <span
-          ref={botMessageEl}
-          class="prose"
-          style={{
-            'background-color': props.backgroundColor ?? defaultBackgroundColor,
+        <Box
+          ref={botMessageRef}
+          sx={{
+            backgroundColor: props.backgroundColor ?? defaultBackgroundColor,
             color: props.textColor ?? defaultTextColor,
-            'font-size': props.fontSize ? `${props.fontSize}px` : `${defaultFontSize}px`,
+            fontSize: props.fontSize
+              ? `${props.fontSize}px`
+              : `${defaultFontSize}px`
           }}
         />
       )}
-    </div>
+    </Box>
   );
 };

@@ -1,5 +1,5 @@
-import { FooterTheme } from '@/features/bubble/types';
-import { Show, onCleanup, onMount } from 'solid-js';
+import { useEffect, useRef } from "react";
+import { FooterTheme } from "../features/bubble/types";
 
 type Props = {
   footer?: FooterTheme;
@@ -8,69 +8,86 @@ type Props = {
   badgeBackgroundColor?: string;
 };
 
-const defaultTextColor = '#303235';
+const defaultTextColor = "#303235";
 
 export const Badge = (props: Props) => {
-  let liteBadge: HTMLAnchorElement | undefined;
+  const liteBadgeRef = useRef<HTMLAnchorElement>(null);
   let observer: MutationObserver | undefined;
 
   const appendBadgeIfNecessary = (mutations: MutationRecord[]) => {
     mutations.forEach((mutation) => {
       mutation.removedNodes.forEach((removedNode) => {
-        if ('id' in removedNode && liteBadge && removedNode.id == 'lite-badge') {
+        if (
+          "id" in removedNode &&
+          liteBadgeRef.current &&
+          removedNode.id === "lite-badge"
+        ) {
           console.log("Sorry, you can't remove the brand 😅");
-          props.botContainer?.append(liteBadge);
+          props.botContainer?.append(liteBadgeRef.current);
         }
       });
     });
   };
 
-  onMount(() => {
+  useEffect(() => {
     if (!document || !props.botContainer) return;
     observer = new MutationObserver(appendBadgeIfNecessary);
     observer.observe(props.botContainer, {
       subtree: false,
-      childList: true,
+      childList: true
     });
-  });
 
-  onCleanup(() => {
-    if (observer) observer.disconnect();
-  });
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, [props.botContainer]);
 
   return (
     <>
-      <Show when={props.footer?.showFooter === undefined || props.footer?.showFooter === null || props.footer?.showFooter === true}>
+      {props.footer?.showFooter === undefined ||
+      props.footer?.showFooter === null ||
+      props.footer?.showFooter === true ? (
         <span
-          class="w-full text-center px-[10px] pt-[6px] pb-[10px] m-auto text-[13px]"
+          className="w-full text-center px-[10px] pt-[6px] pb-[10px] m-auto text-[13px]"
           style={{
-            color: props.footer?.textColor ?? props.poweredByTextColor ?? defaultTextColor,
-            'background-color': props.badgeBackgroundColor ?? '#ffffff',
+            color:
+              props.footer?.textColor ??
+              props.poweredByTextColor ??
+              defaultTextColor,
+            backgroundColor: props.badgeBackgroundColor ?? "#ffffff"
           }}
         >
-          {props.footer?.text ?? 'Powered by'}
+          {props.footer?.text ?? "Powered by"}
           <a
-            ref={liteBadge}
-            href={props.footer?.companyLink ?? 'https://flowiseai.com'}
+            ref={liteBadgeRef}
+            href={props.footer?.companyLink ?? "https://flowiseai.com"}
             target="_blank"
             rel="noopener noreferrer"
-            class="lite-badge"
+            className="lite-badge"
             id="lite-badge"
-            style={{ 'font-weight': 'bold', color: props.footer?.textColor ?? props.poweredByTextColor ?? defaultTextColor }}
+            style={{
+              fontWeight: "bold",
+              color:
+                props.footer?.textColor ??
+                props.poweredByTextColor ??
+                defaultTextColor
+            }}
           >
-            <span>&nbsp;{props.footer?.company ?? 'Flowise'}</span>
+            <span>&nbsp;{props.footer?.company ?? "Flowise"}</span>
           </a>
         </span>
-      </Show>
-      <Show when={props.footer?.showFooter === false}>
+      ) : (
         <span
-          class="w-full text-center px-[10px] pt-[6px] pb-[10px] m-auto text-[13px]"
+          className="w-full text-center px-[10px] pt-[6px] pb-[10px] m-auto text-[13px]"
           style={{
-            color: props.footer?.textColor ?? props.poweredByTextColor ?? defaultTextColor,
-            'background-color': props.badgeBackgroundColor ?? '#ffffff',
+            color:
+              props.footer?.textColor ??
+              props.poweredByTextColor ??
+              defaultTextColor,
+            backgroundColor: props.badgeBackgroundColor ?? "#ffffff"
           }}
         />
-      </Show>
+      )}
     </>
   );
 };

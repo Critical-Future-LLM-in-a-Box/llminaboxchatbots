@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <title>Document</title>
+    <script
+      defer
+      type="module"
+    >
+      (async () => {
+        const themeColor = "#1d0462";
+
+        const Chatbot = await import(
+          "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
+        );
+
+        Chatbot.default.init({
+          chatflowid: "c5426e3a-ec37-485f-a40a-82e24b31851f",
+          apiHost: "https://llm.criticalfutureglobal.com",
+          theme: {
+            button: {
+              backgroundColor: themeColor,
+              right: 20,
+              bottom: 20,
+              size: 80,
+              dragAndDrop: false,
+              customIconSrc:
+                "https://res.cloudinary.com/dqictrckh/image/upload/v1723195863/mai-1_phku6o.gif"
+            },
+            chatWindow: {
+              showTitle: true,
+              title: "Critical Future AI Expert",
+              titleAvatarSrc: "",
+              welcomeMessage: "Hi there, How can I help you?",
+              errorMessage: "Error",
+              backgroundColor: "#efefef",
+              height: 600,
+              width: 600,
+              fontSize: 16,
+              botMessage: {
+                backgroundColor: themeColor + "22",
+                textColor: "#242424",
+                showAvatar: true,
+                avatarSrc:
+                  "https://res.cloudinary.com/dqictrckh/image/upload/v1723047150/maya_dlviq1.png"
+              },
+              userMessage: {
+                backgroundColor: themeColor + "66",
+                textColor: "#212121",
+                showAvatar: true,
+                avatarSrc:
+                  "https://w7.pngwing.com/pngs/39/283/png-transparent-user-user-people-linear-icon-user-infographic-people-monochrome-thumbnail.png"
+              },
+              textInput: {
+                placeholder: "How can I help you?",
+                backgroundColor: "#fefefe",
+                textColor: "#303235",
+                sendButtonColor: themeColor,
+                maxChars: 200,
+                maxCharsWarningMessage: "You exceeded the character limit."
+              },
+              footer: {
+                textColor: "#303235",
+                text: "Powered by",
+                company: "Critical Future",
+                companyLink: "https://criticalfutureglobal.com/"
+              }
+            }
+          }
+        });
+
+        const botButton = document
+          .querySelector("body > flowise-chatbot")
+          .shadowRoot.querySelector("button");
+        botButton.style.position = "fixed";
+        botButton.style.top = "20px";
+
+        const buttonImage = botButton.querySelector("img");
+        buttonImage.style.width = "100%";
+        buttonImage.style.height = "100%";
+
+        function waitForElement(selector, callback) {
+          const interval = setInterval(() => {
+            const element = document.querySelector(selector);
+            if (element && element.shadowRoot) {
+              clearInterval(interval);
+              callback(element.shadowRoot.querySelector("div"));
+            }
+          }, 100);
+        }
+
+        function addNewSection(parentElement) {
+          parentElement.style.justifyContent = "center";
+          parentElement.style.display = "flex";
+          parentElement.style.flexDirection = "row";
+
+          const newSection = document.createElement("div");
+          newSection.style.minWidth = "40%";
+          newSection.style.maxWidth = "100%";
+          newSection.style.display = "flex";
+          newSection.style.flexDirection = "column";
+          newSection.style.alignItems = "center";
+          newSection.style.justifyContent = "space-between";
+          newSection.style.background = themeColor + "11";
+
+          const header = document.createElement("div");
+          header.style.width = "100%";
+          header.style.height = "50px";
+          header.style.backgroundColor = themeColor;
+          header.style.position = "relative";
+          const afterElement = document.createElement("div");
+          afterElement.style.content = "";
+          afterElement.style.position = "absolute";
+          afterElement.style.width = "10px";
+          afterElement.style.height = "100%";
+          afterElement.style.backgroundColor = "#212121";
+          afterElement.style.right = "-10px";
+          header.appendChild(afterElement);
+
+          const profileAvatar = document.createElement("img");
+          profileAvatar.width = 200;
+          profileAvatar.height = 200;
+          profileAvatar.style.borderRadius = "50%";
+          profileAvatar.alt = "profile-avatar";
+          profileAvatar.src =
+            "https://drive.google.com/file/d/17ii6uEiqZVuQ32la_C_9E4iBMcTc6SFF/preview";
+
+          const buttonGroup = document.createElement("div");
+          const button = document.createElement("button");
+          button.textContent = "About";
+          button.onclick = () => {
+            window.open(
+              "https://criticalfutureglobal.com/llm-in-a-box-a-revolutionary-ai-solution-2/",
+              "_blank"
+            );
+          };
+          button.style.display = "block";
+          button.style.minWidth = "200px";
+          button.style.padding = "10px";
+          button.style.marginBottom = "50px";
+          button.style.borderRadius = "10px";
+          button.style.border = "1px solid #007bff";
+          button.style.color = "white";
+          button.style.fontWeight = "bold";
+          button.style.cursor = "pointer";
+          button.style.transition = "background-color 0.5s ease";
+          button.style.backgroundColor = themeColor;
+          button.addEventListener("mouseover", () => {
+            button.style.backgroundColor = "#0056b3";
+          });
+          button.addEventListener("mouseout", () => {
+            button.style.backgroundColor = themeColor;
+          });
+          buttonGroup.appendChild(button);
+
+          newSection.appendChild(header);
+          newSection.appendChild(profileAvatar);
+          newSection.appendChild(buttonGroup);
+
+          parentElement.prepend(newSection);
+
+          const mediaQuery = window.matchMedia("(max-width: 600px)");
+          mediaQuery.addEventListener("change", (e) => {
+            if (e.matches) {
+              newSection.style.display = "none";
+              parentElement.style.display = "block";
+            } else {
+              newSection.style.display = "flex";
+              parentElement.style.display = "flex";
+            }
+          });
+        }
+
+        waitForElement("flowise-chatbot", addNewSection);
+      })();
+    </script>
+  </head>
+  <body></body>
+</html>
