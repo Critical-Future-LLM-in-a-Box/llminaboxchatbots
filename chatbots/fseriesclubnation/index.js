@@ -1,7 +1,7 @@
 (async () => {
   const url = location.href;
   const themeColor = "#212121";
-  const chatflowid = "";
+  const chatflowid = "713ac6ba-4a32-40a0-9408-89478be4337b";
   const apiHost = "https://llm.criticalfutureglobal.com";
 
   const ChatbotModule =
@@ -9,7 +9,7 @@
 
   const importChatbot = () => import(ChatbotModule);
 
-  function createChatbotConfig(heigth = 600, width = 600) {
+  function createChatbotConfig(heigth = 500, width = 500) {
     return {
       chatflowid: chatflowid,
       apiHost: apiHost,
