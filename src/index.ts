@@ -1,32 +1,28 @@
-import { observersConfigType } from "./components/Bot";
+declare const window: Window & { Chatbot: config };
 
-declare const window: Window & { Chatbot: BotProps };
-
-export type BotProps = {
+export type config = {
   chatflowid: string;
   apiHost?: string;
   chatflowConfig?: Record<string, unknown>;
-  observersConfig?: observersConfigType;
 };
 
-export const defaultProps: BotProps = {
+export const defaultConfig: config = {
   chatflowid: "",
   apiHost: "https://llm.criticalfutureglobal.com",
   chatflowConfig: {}
-  // observersConfig: {}
 };
 
-export function init(props = defaultProps) {
+export function init(chatbotConfig = defaultConfig) {
   const llminaboxChatbot =
     document.querySelector("llminabox") ?? document.querySelector("#llminabox");
 
   if (llminaboxChatbot) {
-    Object.assign(llminaboxChatbot, props);
+    Object.assign(llminaboxChatbot, chatbotConfig);
   } else {
     const llminaboxChatbot = document.createElement("llminabox");
-    Object.assign(llminaboxChatbot, props);
+    Object.assign(llminaboxChatbot, chatbotConfig);
     document.body.appendChild(llminaboxChatbot);
   }
 
-  window.Chatbot = props;
+  window.Chatbot = chatbotConfig;
 }
