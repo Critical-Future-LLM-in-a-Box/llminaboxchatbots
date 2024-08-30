@@ -142,7 +142,7 @@
   function waitForElement(selector) {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector));
+        resolve(document.querySelector(selector));
       }
 
       const observer = new MutationObserver((mutations) => {
@@ -175,9 +175,11 @@
 
     Chatbot.initFull(fullChatbotConfig);
 
-    waitForElement("flowise-fullchatbot").then((element) => {
-      createSectionWithProfile(element, 400);
-    });
+    const flowiseFullChatbot = document.querySelector("flowise-fullchatbot");
+
+    setTimeout(() => {
+      createSectionWithProfile(flowiseFullChatbot, 400);
+    }, 1000);
   } else {
     const standardChatbotConfig = createChatbotConfig(600, 600);
 
