@@ -6,6 +6,7 @@
 
   const ChatbotModule =
     "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+
   const importChatbot = () => import(ChatbotModule);
 
   function createChatbotConfig(heigth = 600, width = 600) {
