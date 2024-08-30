@@ -38,7 +38,7 @@
           },
           textInput: {
             placeholder: "How can I help you?",
-            backgroundColor: "#fefefe",
+            backgroundColor: themeColor + "11",
             sendButtonColor: themeColor,
             maxChars: 2000,
             maxCharsWarningMessage: "You exceeded the character limit."
@@ -159,6 +159,12 @@
     });
   }
 
+  function addStyle(element, css) {
+    const style = document.createElement("style");
+    style.textContent = css;
+    element.prepend(style);
+  }
+
   const { default: Chatbot } = await importChatbot();
 
   if (url === "https://criticalfutureglobal.com/") {
@@ -169,18 +175,25 @@
 
     Chatbot.initFull(fullChatbotConfig);
 
-    setTimeout(() => {
-      waitForElement("flowise-fullchatbot").then((element) => {
-        createSectionWithProfile(element, 400);
-      });
-    }, 1000);
+    waitForElement("flowise-fullchatbot").then((element) => {
+      createSectionWithProfile(element, 400);
+    });
   } else {
     const standardChatbotConfig = createChatbotConfig(600, 600);
 
     Chatbot.init(standardChatbotConfig);
 
-    waitForElement("flowise-chatbot").then((element) =>
-      createSectionWithProfile(element, 200)
-    );
+    waitForElement("flowise-chatbot").then((element) => {
+      createSectionWithProfile(element, 200);
+      addStyle(
+        element.shadowRoot,
+        `
+      button > img.rounded-full {
+        width: 100% !important;
+        height: 100% !important;
+      }
+    `
+      );
+    });
   }
 })();
