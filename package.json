@@ -7,18 +7,23 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "node build.js --dev",
-    "build": "",
+    "build": "node build.js",
     "lint": "",
     "lint-fix": "",
     "format": "",
     "format:check": ""
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.20",
     "esbuild": "^0.23.1",
+    "esbuild-plugin-css-in-js": "^0.0.1",
+    "esbuild-plugin-tailwindcss": "^1.2.1",
     "eslint": "^9.9.1",
     "eslint-config-flat-recommended": "^1.1.0",
     "open": "^10.1.0",
+    "postcss": "^8.4.41",
     "prettier": "^3.3.3",
+    "tailwindcss": "^3.4.10",
     "typescript": "^5.5.4"
   },
   "dependencies": {
@@ -28,9 +33,12 @@
     "@mui/material": "^6.0.0",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
+    "clsx": "^2.1.1",
     "device-detector-js": "^3.0.3",
     "marked": "^14.1.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "tailwind-merge": "^2.5.2"
   }
 }

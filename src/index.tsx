@@ -1,3 +1,8 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Chatbot from "./components/Chatbot";
+import "./public/index.css";
+
 declare const window: Window & { Chatbot: config };
 
 export type config = {
@@ -17,12 +22,10 @@ export function init(chatbotConfig = defaultConfig) {
     document.querySelector("llminabox") ?? document.querySelector("#llminabox");
 
   if (llminaboxChatbot) {
-    Object.assign(llminaboxChatbot, chatbotConfig);
+    ReactDOM.createRoot(llminaboxChatbot).render(<Chatbot />);
   } else {
-    const llminaboxChatbot = document.createElement("llminabox");
-    Object.assign(llminaboxChatbot, chatbotConfig);
-    document.body.appendChild(llminaboxChatbot);
+    ReactDOM.createRoot(document.createElement("llminabox")).render(
+      <Chatbot />
+    );
   }
-
-  window.Chatbot = chatbotConfig;
 }

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/index.ts"],
-  "sourcesContent": ["import { observersConfigType } from \"./components/Bot\";\r\n\r\ndeclare const window: Window & { Chatbot: BotProps };\r\n\r\nexport type BotProps = {\r\n  chatflowid: string;\r\n  apiHost?: string;\r\n  chatflowConfig?: Record<string, unknown>;\r\n  observersConfig?: observersConfigType;\r\n};\r\n\r\nexport const defaultProps: BotProps = {\r\n  chatflowid: \"\",\r\n  apiHost: \"https://llm.criticalfutureglobal.com\",\r\n  chatflowConfig: {}\r\n  // observersConfig: {}\r\n};\r\n\r\nexport function init(props = defaultProps) {\r\n  const llminaboxChatbot =\r\n    document.querySelector(\"llminabox\") ?? document.querySelector(\"#llminabox\");\r\n\r\n  if (llminaboxChatbot) {\r\n    Object.assign(llminaboxChatbot, props);\r\n  } else {\r\n    const llminaboxChatbot = document.createElement(\"llminabox\");\r\n    Object.assign(llminaboxChatbot, props);\r\n    document.body.appendChild(llminaboxChatbot);\r\n  }\r\n\r\n  window.Chatbot = props;\r\n}\r\n"],
-  "mappings": ";AAWO,aAAM,eAAyB;AAAA,EACpC,YAAY;AAAA,EACZ,SAAS;AAAA,EACT,gBAAgB,CAAC;AAAA;AAEnB;AAEO,gBAAS,KAAK,QAAQ,cAAc;AACzC,QAAM,mBACJ,SAAS,cAAc,WAAW,KAAK,SAAS,cAAc,YAAY;AAE5E,MAAI,kBAAkB;AACpB,WAAO,OAAO,kBAAkB,KAAK;AAAA,EACvC,OAAO;AACL,UAAMA,oBAAmB,SAAS,cAAc,WAAW;AAC3D,WAAO,OAAOA,mBAAkB,KAAK;AACrC,aAAS,KAAK,YAAYA,iBAAgB;AAAA,EAC5C;AAEA,SAAO,UAAU;AACnB;",
-  "names": ["llminaboxChatbot"]
-}
