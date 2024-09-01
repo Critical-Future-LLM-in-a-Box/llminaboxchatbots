@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Send as SendIcon, Close as CloseIcon } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import ReactMarkdown from "react-markdown";
-import { Card, CardHeader, CardContent, CardFooter } from "./Card";
-import { Avatar, AvatarImage, AvatarFallback } from "./Avatar";
 import { Input } from "./Input";
-import { Send as SendIcon, Close as CloseIcon } from "@mui/icons-material";
+import { Card, CardHeader, CardContent, CardFooter } from "./Card";
+import { AvatarComponent, AvatarImage, AvatarFallback } from "./Avatar";
 
 interface Message {
   role: string;
@@ -24,6 +24,7 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [currentTime, setCurrentTime] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setMessages((prevMessages) =>
@@ -91,16 +92,18 @@ export default function Chatbot() {
   };
 
   return (
-    <Card className="w-full max-w-md bg-white shadow-lg rounded-lg overflow-hidden">
+    <Card
+      className="w-full max-w-md bg-white shadow-lg rounded-lg overflow-hidden"
+      style={{ minWidth: "400px", minHeight: "400px" }}
+    >
       <CardHeader className="flex flex-row items-center justify-between border-b p-4">
         <div className="flex items-center gap-4">
-          <Avatar>
+          <AvatarComponent>
             <AvatarImage
-              src="cat.webp"
+              src=""
               alt="Chatbot Avatar"
             />
-            <AvatarFallback>CB</AvatarFallback>
-          </Avatar>
+          </AvatarComponent>
           <div>
             <p className="text-lg font-semibold">Supporbot</p>
             <p className="flex items-center text-sm text-gray-500">
@@ -165,11 +168,12 @@ export default function Chatbot() {
           onSubmit={sendMessage}
         >
           <Input
+            ref={messageInput}
+            type="text"
+            className="flex-1 mr-2"
+            value={message}
             id="message"
             placeholder="Type your message..."
-            className="flex-1 mr-2"
-            autoComplete="off"
-            value={message}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               setMessage(e.target.value)
             }
