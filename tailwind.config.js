@@ -2,7 +2,7 @@
 export default {
   content: ["./src/**/*.{html,js,jsx,ts,tsx}"],
   presets: [],
-  darkMode: "media", // or 'class'
+  darkMode: "media",
   theme: {
     accentColor: ({ theme }) => ({
       ...theme("colors"),
