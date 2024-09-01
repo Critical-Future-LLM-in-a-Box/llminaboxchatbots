@@ -29,7 +29,7 @@
             backgroundColor: themeColor + "22",
             showAvatar: true,
             avatarSrc:
-              "https://res.cloudinary.com/dqictrckh/image/upload/v1723047150/maya_dlviq1.png"
+              "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai.png"
           },
           userMessage: {
             backgroundColor: themeColor + "66",
@@ -96,7 +96,7 @@
     profileImage.style.borderRadius = "50%";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://res.cloudinary.com/dqictrckh/image/upload/v1723195863/mai-1_phku6o.gif";
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/mai1.gif";
 
     profileContainer.appendChild(profileImage);
 
