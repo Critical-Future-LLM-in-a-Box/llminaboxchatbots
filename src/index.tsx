@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import Chatbot from "./components/Chatbot";
-import "./public/index.css";
+import "./index.css";
 
 declare const window: Window & { Chatbot: config };
 
@@ -21,11 +21,9 @@ export function init(chatbotConfig = defaultConfig) {
   const llminaboxChatbot =
     document.querySelector("llminabox") ?? document.querySelector("#llminabox");
 
-  if (llminaboxChatbot) {
-    ReactDOM.createRoot(llminaboxChatbot).render(<Chatbot />);
-  } else {
-    ReactDOM.createRoot(document.createElement("llminabox")).render(
-      <Chatbot />
-    );
-  }
+  llminaboxChatbot
+    ? ReactDOM.createRoot(llminaboxChatbot).render(<Chatbot />)
+    : ReactDOM.createRoot(document.createElement("llminabox")).render(
+        <Chatbot />
+      );
 }
