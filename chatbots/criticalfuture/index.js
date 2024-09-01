@@ -96,7 +96,7 @@
     profileImage.style.borderRadius = "50%";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/mai1.gif";
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/mai1.gif?raw=true";
 
     profileContainer.appendChild(profileImage);
 
