@@ -10,10 +10,8 @@
     <script
       defer
       type="module"
-    >
-      const chatbot = await import("./index.js");
-      chatbot.init();
-    </script>
+      src="./index.js"
+    ></script>
     <script>
       new EventSource("/esbuild").addEventListener("change", () =>
         location.reload()

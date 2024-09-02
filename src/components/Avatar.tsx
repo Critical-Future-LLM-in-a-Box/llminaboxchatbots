@@ -1,37 +1,44 @@
-import { useEffect, useState } from "react";
-import { isMobile, isNotEmpty } from "../utils/utils";
-import PersonIcon from "@mui/icons-material/Person";
+import React from "react";
+import Avatar from "@mui/material/Avatar";
+import { styled } from "@mui/material/styles";
+import { cn } from "../utils";
 
-export const Avatar = (props: { initialAvatarSrc?: string }) => {
-  const [avatarSrc, setAvatarSrc] = useState(props.initialAvatarSrc);
+const StyledAvatar = styled(Avatar)`
+  &.custom-avatar {
+    width: 40px;
+    height: 40px;
+  }
+`;
 
-  useEffect(() => {
-    if (
-      avatarSrc?.startsWith("{{") &&
-      props.initialAvatarSrc?.startsWith("http")
-    ) {
-      setAvatarSrc(props.initialAvatarSrc);
-    }
-  }, [avatarSrc, props.initialAvatarSrc]);
+export const AvatarComponent = React.forwardRef<
+  HTMLDivElement,
+  { [key: string]: string | any }
+>(({ className, ...props }, ref) => (
+  <StyledAvatar
+    ref={ref}
+    className={cn("relative", className)}
+    {...props}
+  />
+));
 
-  return (
-    <div>
-      <figure
-        className={
-          "flex justify-center items-center rounded-full text-white relative flex-shrink-0 " +
-          (isMobile() ? "w-6 h-6 text-sm" : "w-10 h-10 text-xl")
-        }
-      >
-        {isNotEmpty(avatarSrc) ? (
-          <img
-            src={avatarSrc}
-            alt="Bot avatar"
-            className="rounded-full object-cover w-full h-full"
-          />
-        ) : (
-          <PersonIcon />
-        )}
-      </figure>
-    </div>
-  );
-};
+export const AvatarImage = React.forwardRef<
+  HTMLDivElement,
+  { [key: string]: string | any }
+>(({ className, ...props }, ref) => (
+  <StyledAvatar
+    ref={ref}
+    className={cn("aspect-square", className)}
+    {...props}
+  />
+));
+
+export const AvatarFallback = React.forwardRef<
+  HTMLDivElement,
+  { [key: string]: string | any }
+>(({ className, ...props }, ref) => (
+  <StyledAvatar
+    ref={ref}
+    className={cn("flex items-center justify-center", className)}
+    {...props}
+  />
+));
