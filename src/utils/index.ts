@@ -1,17 +1,18 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+import localforage from "localforage";
 
 export function cn(...inputs: (string | undefined | null | false)[]): string {
   return twMerge(clsx(inputs));
 }
 
-export const isNotDefined = <T>(
-  value: T | undefined | null
-): value is undefined | null => value === undefined || value === null;
-
 export const isDefined = <T>(
   value: T | undefined | null
 ): value is NonNullable<T> => value !== undefined && value !== null;
+
+export const isNotDefined = <T>(
+  value: T | undefined | null
+): value is undefined | null => value === undefined || value === null;
 
 export const isEmpty = (value: string | undefined | null): value is undefined =>
   value === undefined || value === null || value === "";
@@ -88,67 +89,189 @@ export const sendRequest = async <ResponseData>(
   }
 };
 
-export const setLocalStorageChatflow = (
+export const getLocalStorageChat = async (chatflowid: string) => {
+  const localChat = await localforage.getItem(`chat:${chatflowid}`);
+  return localChat ?? "";
+};
+
+export const setLocalStorageChat = async (
   chatflowid: string,
   chatId: string,
-  saveObj: Record<string, any> = {}
+  ObjToSave: string
 ) => {
-  const chatDetails = localStorage.getItem(`${chatflowid}_EXTERNAL`);
-  const obj = { ...saveObj };
-  if (chatId) obj.chatId = chatId;
+  const localChat = await localforage.getItem(`chat:${chatflowid}`);
 
-  if (!chatDetails) {
-    localStorage.setItem(`${chatflowid}_EXTERNAL`, JSON.stringify(obj));
+  if (!localChat) {
+    await localforage.setItem(`chat:${chatflowid}`, ObjToSave);
   } else {
-    try {
-      const parsedChatDetails = JSON.parse(chatDetails);
-      localStorage.setItem(
-        `${chatflowid}_EXTERNAL`,
-        JSON.stringify({ ...parsedChatDetails, ...obj })
-      );
-    } catch (e) {
-      const chatId = chatDetails;
-      obj.chatId = chatId;
-      localStorage.setItem(`${chatflowid}_EXTERNAL`, JSON.stringify(obj));
-    }
+    await localforage.setItem(
+      `chat:${chatId}/flow:${chatflowid}`,
+      localChat + ObjToSave
+    );
   }
 };
 
-export const getLocalStorageChatflow = (chatflowid: string) => {
-  const chatDetails = localStorage.getItem(`${chatflowid}_EXTERNAL`);
-  if (!chatDetails) return {};
-  try {
-    return JSON.parse(chatDetails);
-  } catch (e) {
-    return {};
-  }
-};
+export const removeLocalStorageChatHistory = (chatflowid: string) => {};
 
-export const removeLocalStorageChatHistory = (chatflowid: string) => {
-  const chatDetails = localStorage.getItem(`${chatflowid}_EXTERNAL`);
-  if (!chatDetails) return;
-  try {
-    const parsedChatDetails = JSON.parse(chatDetails);
-    if (parsedChatDetails.lead) {
-      // Dont remove lead when chat is cleared
-      const obj = { lead: parsedChatDetails.lead };
-      localStorage.removeItem(`${chatflowid}_EXTERNAL`);
-      localStorage.setItem(`${chatflowid}_EXTERNAL`, JSON.stringify(obj));
-    } else {
-      localStorage.removeItem(`${chatflowid}_EXTERNAL`);
-    }
-  } catch (e) {
-    return;
-  }
-};
+// import { FileUpload, IAction } from "@/components/Bot";
+// import { sendRequest } from "@/utils/index";
 
-export const getBubbleButtonSize = (
-  size: "small" | "medium" | "large" | number | undefined
-) => {
-  if (!size) return 48;
-  if (typeof size === "number") return size;
-  if (size === "small") return 32;
-  if (size === "medium") return 48;
-  if (size === "large") return 64;
-  return 48;
-};
+// export type IncomingInput = {
+//   question: string;
+//   uploads?: FileUpload[];
+//   overrideConfig?: Record<string, unknown>;
+//   socketIOClientId?: string;
+//   chatId?: string;
+//   fileName?: string; // Only for assistant
+//   leadEmail?: string;
+//   action?: IAction;
+// };
+
+// type BaseRequest = {
+//   apiHost?: string;
+//   onRequest?: (request: RequestInit) => Promise<void>;
+// };
+
+// export type MessageRequest = BaseRequest & {
+//   chatflowid?: string;
+//   body?: IncomingInput;
+// };
+
+// export type FeedbackRatingType = "THUMBS_UP" | "THUMBS_DOWN";
+
+// export type FeedbackInput = {
+//   chatId: string;
+//   messageId: string;
+//   rating: FeedbackRatingType;
+//   content?: string;
+// };
+
+// export type CreateFeedbackRequest = BaseRequest & {
+//   chatflowid?: string;
+//   body?: FeedbackInput;
+// };
+
+// export type UpdateFeedbackRequest = BaseRequest & {
+//   id: string;
+//   body?: Partial<FeedbackInput>;
+// };
+
+// export type UpsertRequest = BaseRequest & {
+//   chatflowid: string;
+//   apiHost?: string;
+//   formData: FormData;
+// };
+
+// export type LeadCaptureInput = {
+//   chatflowid: string;
+//   chatId: string;
+//   name?: string;
+//   email?: string;
+//   phone?: string;
+// };
+
+// export type LeadCaptureRequest = BaseRequest & {
+//   body: Partial<LeadCaptureInput>;
+// };
+
+// export const sendFeedbackQuery = ({
+//   chatflowid,
+//   apiHost = "http://localhost:3000",
+//   body,
+//   onRequest
+// }: CreateFeedbackRequest) =>
+//   sendRequest({
+//     method: "POST",
+//     url: `${apiHost}/api/v1/feedback/${chatflowid}`,
+//     body,
+//     onRequest: onRequest
+//   });
+
+// export const updateFeedbackQuery = ({
+//   id,
+//   apiHost = "http://localhost:3000",
+//   body,
+//   onRequest
+// }: UpdateFeedbackRequest) =>
+//   sendRequest({
+//     method: "PUT",
+//     url: `${apiHost}/api/v1/feedback/${id}`,
+//     body,
+//     onRequest: onRequest
+//   });
+
+// export const sendMessageQuery = ({
+//   chatflowid,
+//   apiHost = "http://localhost:3000",
+//   body,
+//   onRequest
+// }: MessageRequest) =>
+//   sendRequest<any>({
+//     method: "POST",
+//     url: `${apiHost}/api/v1/prediction/${chatflowid}`,
+//     body,
+//     onRequest: onRequest
+//   });
+
+// export const upsertVectorStoreWithFormData = ({
+//   chatflowid,
+//   apiHost = "http://localhost:3000",
+//   formData,
+//   onRequest
+// }: UpsertRequest) =>
+//   sendRequest({
+//     method: "POST",
+//     url: `${apiHost}/api/v1/vector/upsert/${chatflowid}`,
+//     formData,
+//     headers: {
+//       "Content-Type": "multipart/form-data"
+//     },
+//     onRequest: onRequest
+//   });
+
+// export const getChatbotConfig = ({
+//   chatflowid,
+//   apiHost = "http://localhost:3000",
+//   onRequest
+// }: MessageRequest) =>
+//   sendRequest<any>({
+//     method: "GET",
+//     url: `${apiHost}/api/v1/public-chatbotConfig/${chatflowid}`,
+//     onRequest: onRequest
+//   });
+
+// export const isStreamAvailableQuery = ({
+//   chatflowid,
+//   apiHost = "http://localhost:3000",
+//   onRequest
+// }: MessageRequest) =>
+//   sendRequest<any>({
+//     method: "GET",
+//     url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`,
+//     onRequest: onRequest
+//   });
+
+// export const sendFileDownloadQuery = ({
+//   apiHost = "http://localhost:3000",
+//   body,
+//   onRequest
+// }: MessageRequest) =>
+//   sendRequest<any>({
+//     method: "POST",
+//     url: `${apiHost}/api/v1/openai-assistants-file`,
+//     body,
+//     type: "blob",
+//     onRequest: onRequest
+//   });
+
+// export const addLeadQuery = ({
+//   apiHost = "http://localhost:3000",
+//   body,
+//   onRequest
+// }: LeadCaptureRequest) =>
+//   sendRequest<any>({
+//     method: "POST",
+//     url: `${apiHost}/api/v1/leads/`,
+//     body,
+//     onRequest: onRequest
+//   });
