@@ -91,12 +91,12 @@
     profileContainer.style.overflow = "hidden";
 
     const profileImage = document.createElement("img");
-    profileImage.width = avatarSize;
-    profileImage.height = avatarSize;
-    profileImage.style.borderRadius = "50%";
+    profileImage.style.width = "100%";
+    profileImage.style.height = "100%";
+    profileImage.style.objectFit = "cover";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/mai1.gif?raw=true";
+      "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai.gif";
 
     profileContainer.appendChild(profileImage);
 
