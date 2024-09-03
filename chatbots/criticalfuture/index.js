@@ -100,14 +100,27 @@
 
     profileContainer.appendChild(profileImage);
 
+    const profileVideo = document.createElement("video");
+    profileVideo.width = avatarSize;
+    profileVideo.height = avatarSize;
+    profileVideo.src = "";
+
     const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
     button.textContent = "About";
     button.onclick = () => {
-      window.open(
-        "https://criticalfutureglobal.com/llm-in-a-box-a-revolutionary-ai-solution-2/",
-        "_blank"
-      );
+      if (profileContainer.contains(profileImage)) {
+        profileContainer.removeChild(profileImage);
+        profileContainer.appendChild(profileVideo);
+        profileVideo.play();
+        profileVideo.onended = () => {
+          profileContainer.removeChild(profileVideo);
+          profileContainer.appendChild(profileImage);
+        };
+      } else {
+        profileContainer.removeChild(profileVideo);
+        profileContainer.appendChild(profileImage);
+      }
     };
     button.style.display = "block";
     button.style.minWidth = "200px";
