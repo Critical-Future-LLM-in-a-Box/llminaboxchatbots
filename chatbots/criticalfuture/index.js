@@ -102,8 +102,10 @@
 
     const profileVideo = document.createElement("video");
     profileVideo.width = avatarSize;
-    profileVideo.height = avatarSize;
-    profileVideo.src = "";
+    // profileVideo.height = avatarSize;
+    profileVideo.style.borderRadius = "50%";
+    profileVideo.src =
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/Mai_intro_sonia.mp4";
 
     const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
