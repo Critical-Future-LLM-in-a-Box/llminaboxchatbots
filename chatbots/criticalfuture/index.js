@@ -91,23 +91,38 @@
     profileContainer.style.overflow = "hidden";
 
     const profileImage = document.createElement("img");
-    profileImage.width = avatarSize;
-    profileImage.height = avatarSize;
-    profileImage.style.borderRadius = "50%";
+    profileImage.style.width = "100%";
+    profileImage.style.height = "100%";
+    profileImage.style.objectFit = "cover";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/mai1.gif?raw=true";
+      "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai.gif";
 
     profileContainer.appendChild(profileImage);
+
+    const profileVideo = document.createElement("video");
+    profileVideo.style.width = "100%";
+    profileVideo.style.height = "100%";
+    profileVideo.style.objectFit = "cover";
+    profileVideo.src =
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai_sonia_landscape.mp4";
 
     const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
     button.textContent = "About";
     button.onclick = () => {
-      window.open(
-        "https://criticalfutureglobal.com/llm-in-a-box-a-revolutionary-ai-solution-2/",
-        "_blank"
-      );
+      if (profileContainer.contains(profileImage)) {
+        profileContainer.removeChild(profileImage);
+        profileContainer.appendChild(profileVideo);
+        profileVideo.play();
+        profileVideo.onended = () => {
+          profileContainer.removeChild(profileVideo);
+          profileContainer.appendChild(profileImage);
+        };
+      } else {
+        profileContainer.removeChild(profileVideo);
+        profileContainer.appendChild(profileImage);
+      }
     };
     button.style.display = "block";
     button.style.minWidth = "200px";

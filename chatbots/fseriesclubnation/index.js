@@ -18,7 +18,7 @@
           backgroundColor: themeColor,
           bottom: window.innerWidth < 768 ? 20 : window.innerHeight - 100,
           right: 20,
-          size: 69,
+          size: 75,
           customIconSrc:
             "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs2.gif?raw=true"
         },
