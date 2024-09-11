@@ -5,6 +5,7 @@ import ArrowLeftIcon from "@mui/icons-material/ArrowLeft";
 import ArrowRightIcon from "@mui/icons-material/ArrowRight";
 import { Button, IconButton } from "@mui/material";
 import color from "color";
+import localforage from "localforage";
 import { Input } from "./Input";
 import { Card, CardHeader, CardContent, CardFooter } from "./Card";
 import { AvatarComponent, AvatarImage, AvatarFallback } from "./Avatar";
@@ -30,6 +31,7 @@ export default function Chatbot({ config }: { config: config }) {
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(window.innerWidth > 576);
+  const [voice, setVoice] = useState({ audio: new Audio(), isPlaying: false });
 
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -75,62 +77,114 @@ export default function Chatbot({ config }: { config: config }) {
   }, []);
 
   const handleTTS = async (message: Message) => {
-    const targetUrl = "http://51.20.131.200/get_tts";
+    if (voice.isPlaying) {
+      voice.audio.pause();
+      setVoice((prev) => ({ ...prev, isPlaying: false }));
+    } else {
+      try {
+        const ttsData = await localforage.getItem("ttsData");
+        const ttsArray = Array.isArray(ttsData) ? ttsData : [];
 
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": "G7x9mVt2Q5bK8Jp4S1Zc"
-      },
-      body: JSON.stringify({
-        text: message.content,
-        voice: "en-GB-SoniaNeural",
-        id: new Date(message.timestamp.toString()).getTime()
-      })
-    });
+        const existingTTS = ttsArray.find(
+          (tts) =>
+            tts.messageContent === message.content &&
+            tts.timestamp === message.timestamp
+        );
 
-    const ttsUrl = (await response.json())["file_url"];
+        if (existingTTS) {
+          const audio = new Audio(existingTTS.audioUrl);
+          await audio.play();
+          setVoice((prev) => ({ ...prev, audio, isPlaying: true }));
+        } else {
+          const targetUrl = "http://51.20.131.200/get_tts";
 
-    const audioFetch = await fetch(ttsUrl);
+          const response = await fetch(targetUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": "G7x9mVt2Q5bK8Jp4S1Zc"
+            },
+            body: JSON.stringify({
+              text: message.content,
+              voice: "en-GB-SoniaNeural",
+              id: new Date(message.timestamp.toString()).getTime()
+            })
+          });
 
-    const audioBlob = await audioFetch.blob();
+          if (!response.ok) {
+            throw new Error("Failed to fetch TTS data");
+          }
 
-    const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
+          const ttsUrl = (await response.json())["file_url"];
 
-    const audioUrl = URL.createObjectURL(mp3Blob);
-    const audio = new Audio(audioUrl);
-    await audio.play();
+          const audioFetch = await fetch(ttsUrl);
+
+          if (!audioFetch.ok) {
+            throw new Error("Failed to fetch audio data");
+          }
+
+          const audioBlob = await audioFetch.blob();
+
+          const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
+
+          const audioUrl = URL.createObjectURL(mp3Blob);
+
+          const audio = new Audio(audioUrl);
+
+          await audio.play();
+
+          setVoice((prev) => ({ ...prev, audio, isPlaying: true }));
+
+          // Save TTS data to local storage
+          const newTTS = {
+            messageContent: message.content,
+            timestamp: message.timestamp,
+            audioUrl: audioUrl
+          };
+          ttsArray.push(newTTS);
+          await localforage.setItem("ttsData", ttsArray);
+        }
+      } catch (error) {
+        console.error("Error occurred during TTS:", error);
+      }
+    }
   };
 
   const sendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
 
-    const newMessage: Message = {
-      role: "userMessage",
-      content: message,
-      timestamp: new Date().toLocaleString()
-    };
+      const newMessage: Message = {
+        role: "userMessage",
+        content: message,
+        timestamp: new Date().toLocaleString()
+      };
 
-    setMessages((prevMessages) => [...prevMessages, newMessage]);
-    setMessage("");
-    setIsTyping(true);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setMessage("");
+      setIsTyping(true);
 
-    const assistantMessage: Message = {
-      role: "apiMessage",
-      content: "",
-      timestamp: new Date().toLocaleString()
-    };
+      const assistantMessage: Message = {
+        role: "apiMessage",
+        content: "",
+        timestamp: new Date().toLocaleString()
+      };
 
-    const stream = predictionStreamText();
+      const stream = predictionStreamText();
 
-    for await (const chunk of stream) {
-      assistantMessage.content += chunk;
+      for await (const chunk of stream) {
+        assistantMessage.content += chunk;
 
-      setMessages((prevMessages) => [...prevMessages, { ...assistantMessage }]);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { ...assistantMessage }
+        ]);
+      }
+
+      setIsTyping(false);
+    } catch (error) {
+      console.error("Error occurred during sending message:", error);
     }
-
-    setIsTyping(false);
   };
 
   return (
