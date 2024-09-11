@@ -75,10 +75,9 @@ export default function Chatbot({ config }: { config: config }) {
   }, []);
 
   const handleTTS = async (message: Message) => {
-    const corsProxy = "https://thingproxy.freeboard.io/fetch/";
     const targetUrl = "http://51.20.131.200/get_tts";
 
-    const response = await fetch(corsProxy + targetUrl, {
+    const response = await fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -91,15 +90,17 @@ export default function Chatbot({ config }: { config: config }) {
       })
     });
 
-    // const ttsUrl = (await response.json())[" file_url"];
+    const ttsUrl = (await response.json())["file_url"];
 
-    // console.log(ttsUrl);
+    const audioFetch = await fetch(ttsUrl);
 
-    // const audioFetch = await fetch(corsProxy + ttsUrl);
+    const audioBlob = await audioFetch.blob();
 
-    // const audioBlob = await audioFetch.blob();
+    const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
 
-    // const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
+    const audioUrl = URL.createObjectURL(mp3Blob);
+    const audio = new Audio(audioUrl);
+    await audio.play();
   };
 
   const sendMessage = async (e: React.FormEvent) => {
@@ -240,7 +241,7 @@ export default function Chatbot({ config }: { config: config }) {
                   message.role === "apiMessage"
                     ? "justify-start"
                     : "justify-end"
-                }`}
+                } `}
               >
                 <div className="flex flex-col relative">
                   <div
@@ -255,18 +256,18 @@ export default function Chatbot({ config }: { config: config }) {
                     <ReactMarkdown>{message.content}</ReactMarkdown>
                   </div>
 
-                  {message.timestamp && (
-                    <div className="flex items-center gap-2 p-2">
-                      <span
-                        className={`text-xs text-gray-500 ${
-                          message.role === "apiMessage"
-                            ? "self-start"
-                            : "self-end"
-                        }`}
-                      >
-                        {message.timestamp}
-                      </span>
+                  <div className="flex items-center gap-2 p-2">
+                    <span
+                      className={`text-xs text-gray-500 ${
+                        message.role === "apiMessage"
+                          ? "self-start"
+                          : "self-end"
+                      }`}
+                    >
+                      {message.timestamp}
+                    </span>
 
+                    {message.role === "apiMessage" && (
                       <IconButton
                         size="small"
                         sx={{
@@ -277,8 +278,8 @@ export default function Chatbot({ config }: { config: config }) {
                       >
                         <VolumeUpIcon fontSize="small" />
                       </IconButton>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
