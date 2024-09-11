@@ -1,277 +1,78 @@
+// @ts-nocheck
+
+import { marked } from "marked";
+import DOMPurify from "dompurify";
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import localforage from "localforage";
 
 export function cn(...inputs: (string | undefined | null | false)[]): string {
   return twMerge(clsx(inputs));
 }
 
-export const isDefined = <T>(
-  value: T | undefined | null
-): value is NonNullable<T> => value !== undefined && value !== null;
-
-export const isNotDefined = <T>(
-  value: T | undefined | null
-): value is undefined | null => value === undefined || value === null;
-
-export const isEmpty = (value: string | undefined | null): value is undefined =>
-  value === undefined || value === null || value === "";
-
-export const isNotEmpty = (value: string | undefined | null): value is string =>
-  value !== undefined && value !== null && value !== "";
-
-export const sendRequest = async <ResponseData>(
-  params:
-    | {
-        url: string;
-        method: string;
-        body?: Record<string, unknown> | FormData;
-        type?: string;
-        headers?: Record<string, any>;
-        formData?: FormData;
-        onRequest?: (request: RequestInit) => Promise<void>;
-      }
-    | string
-): Promise<{ data?: ResponseData; error?: Error }> => {
-  try {
-    const url = typeof params === "string" ? params : params.url;
-    const headers =
-      typeof params !== "string" && isDefined(params.body)
-        ? {
-            "Content-Type": "application/json",
-            ...params.headers
-          }
-        : undefined;
-    let body: string | FormData | undefined =
-      typeof params !== "string" && isDefined(params.body)
-        ? JSON.stringify(params.body)
-        : undefined;
-    if (typeof params !== "string" && params.formData) body = params.formData;
-
-    const requestInfo: RequestInit = {
-      method: typeof params === "string" ? "GET" : params.method,
-      mode: "cors",
-      headers,
-      body
-    };
-
-    if (typeof params !== "string" && params.onRequest) {
-      await params.onRequest(requestInfo);
-    }
-
-    const response = await fetch(url, requestInfo);
-
-    let data: any;
-    const contentType = response.headers.get("Content-Type");
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else if (typeof params !== "string" && params.type === "blob") {
-      data = await response.blob();
-    } else {
-      data = await response.text();
-    }
-    if (!response.ok) {
-      let errorMessage;
-
-      if (typeof data === "object" && "error" in data) {
-        errorMessage = data.error;
-      } else {
-        errorMessage = data || response.statusText;
-      }
-
-      throw errorMessage;
-    }
-
-    return { data };
-  } catch (e) {
-    console.error(e);
-    return { error: e as Error };
+export async function* predictionStream(
+  {
+    host = "https://llm.criticalfutureglobal.com",
+    id = "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
+    question = "hello"
+  } = {
+    host: "https://llm.criticalfutureglobal.com",
+    id: "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
+    question: "hello"
   }
-};
+) {
+  const response = await fetch(`${host}/api/v1/prediction/${id}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      question
+    })
+  }).catch((error) => {
+    console.error("An error occurred while fetching prediction:", error);
+  });
 
-export const getLocalStorageChat = async (chatflowid: string) => {
-  const localChat = await localforage.getItem(`chat:${chatflowid}`);
-  return localChat ?? "";
-};
-
-export const setLocalStorageChat = async (
-  chatflowid: string,
-  chatId: string,
-  ObjToSave: string
-) => {
-  const localChat = await localforage.getItem(`chat:${chatflowid}`);
-
-  if (!localChat) {
-    await localforage.setItem(`chat:${chatflowid}`, ObjToSave);
-  } else {
-    await localforage.setItem(
-      `chat:${chatId}/flow:${chatflowid}`,
-      localChat + ObjToSave
-    );
+  if (!response.ok) {
+    throw new Error("Failed to fetch prediction");
   }
-};
 
-export const removeLocalStorageChatHistory = (chatflowid: string) => {};
+  const decoder = new TextDecoder();
+  const reader = response.body.getReader();
 
-// import { FileUpload, IAction } from "@/components/Bot";
-// import { sendRequest } from "@/utils/index";
+  while (true) {
+    const { done, value } = await reader.read();
 
-// export type IncomingInput = {
-//   question: string;
-//   uploads?: FileUpload[];
-//   overrideConfig?: Record<string, unknown>;
-//   socketIOClientId?: string;
-//   chatId?: string;
-//   fileName?: string; // Only for assistant
-//   leadEmail?: string;
-//   action?: IAction;
-// };
+    if (done) break;
 
-// type BaseRequest = {
-//   apiHost?: string;
-//   onRequest?: (request: RequestInit) => Promise<void>;
-// };
+    const result = decoder.decode(value, { stream: true });
 
-// export type MessageRequest = BaseRequest & {
-//   chatflowid?: string;
-//   body?: IncomingInput;
-// };
+    yield result;
+  }
+}
 
-// export type FeedbackRatingType = "THUMBS_UP" | "THUMBS_DOWN";
+export async function* predictionStreamText({ host, id, question } = {}) {
+  let text = "";
 
-// export type FeedbackInput = {
-//   chatId: string;
-//   messageId: string;
-//   rating: FeedbackRatingType;
-//   content?: string;
-// };
+  const stream = await predictionStream({ host, id, question });
 
-// export type CreateFeedbackRequest = BaseRequest & {
-//   chatflowid?: string;
-//   body?: FeedbackInput;
-// };
+  for await (const chunk of stream) {
+    text += chunk;
+    const responseParts = chunk.split('","');
+    if (responseParts.length > 1) {
+      text = responseParts[0];
+      break;
+    }
+  }
 
-// export type UpdateFeedbackRequest = BaseRequest & {
-//   id: string;
-//   body?: Partial<FeedbackInput>;
-// };
+  const responseText = text.split("\\n");
 
-// export type UpsertRequest = BaseRequest & {
-//   chatflowid: string;
-//   apiHost?: string;
-//   formData: FormData;
-// };
+  for (let line of responseText) {
+    if (line === "") return;
 
-// export type LeadCaptureInput = {
-//   chatflowid: string;
-//   chatId: string;
-//   name?: string;
-//   email?: string;
-//   phone?: string;
-// };
+    if (line.startsWith('{"text":"')) {
+      line = line.replace('{"text":"', "");
+    }
 
-// export type LeadCaptureRequest = BaseRequest & {
-//   body: Partial<LeadCaptureInput>;
-// };
-
-// export const sendFeedbackQuery = ({
-//   chatflowid,
-//   apiHost = "http://localhost:3000",
-//   body,
-//   onRequest
-// }: CreateFeedbackRequest) =>
-//   sendRequest({
-//     method: "POST",
-//     url: `${apiHost}/api/v1/feedback/${chatflowid}`,
-//     body,
-//     onRequest: onRequest
-//   });
-
-// export const updateFeedbackQuery = ({
-//   id,
-//   apiHost = "http://localhost:3000",
-//   body,
-//   onRequest
-// }: UpdateFeedbackRequest) =>
-//   sendRequest({
-//     method: "PUT",
-//     url: `${apiHost}/api/v1/feedback/${id}`,
-//     body,
-//     onRequest: onRequest
-//   });
-
-// export const sendMessageQuery = ({
-//   chatflowid,
-//   apiHost = "http://localhost:3000",
-//   body,
-//   onRequest
-// }: MessageRequest) =>
-//   sendRequest<any>({
-//     method: "POST",
-//     url: `${apiHost}/api/v1/prediction/${chatflowid}`,
-//     body,
-//     onRequest: onRequest
-//   });
-
-// export const upsertVectorStoreWithFormData = ({
-//   chatflowid,
-//   apiHost = "http://localhost:3000",
-//   formData,
-//   onRequest
-// }: UpsertRequest) =>
-//   sendRequest({
-//     method: "POST",
-//     url: `${apiHost}/api/v1/vector/upsert/${chatflowid}`,
-//     formData,
-//     headers: {
-//       "Content-Type": "multipart/form-data"
-//     },
-//     onRequest: onRequest
-//   });
-
-// export const getChatbotConfig = ({
-//   chatflowid,
-//   apiHost = "http://localhost:3000",
-//   onRequest
-// }: MessageRequest) =>
-//   sendRequest<any>({
-//     method: "GET",
-//     url: `${apiHost}/api/v1/public-chatbotConfig/${chatflowid}`,
-//     onRequest: onRequest
-//   });
-
-// export const isStreamAvailableQuery = ({
-//   chatflowid,
-//   apiHost = "http://localhost:3000",
-//   onRequest
-// }: MessageRequest) =>
-//   sendRequest<any>({
-//     method: "GET",
-//     url: `${apiHost}/api/v1/chatflows-streaming/${chatflowid}`,
-//     onRequest: onRequest
-//   });
-
-// export const sendFileDownloadQuery = ({
-//   apiHost = "http://localhost:3000",
-//   body,
-//   onRequest
-// }: MessageRequest) =>
-//   sendRequest<any>({
-//     method: "POST",
-//     url: `${apiHost}/api/v1/openai-assistants-file`,
-//     body,
-//     type: "blob",
-//     onRequest: onRequest
-//   });
-
-// export const addLeadQuery = ({
-//   apiHost = "http://localhost:3000",
-//   body,
-//   onRequest
-// }: LeadCaptureRequest) =>
-//   sendRequest<any>({
-//     method: "POST",
-//     url: `${apiHost}/api/v1/leads/`,
-//     body,
-//     onRequest: onRequest
-//   });
+    yield line;
+  }
+}

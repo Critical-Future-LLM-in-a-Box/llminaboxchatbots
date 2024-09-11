@@ -8,17 +8,11 @@
     />
     <title>llminabox</title>
     <script
-      defer
       type="module"
-      src="./index.js"
+      src="/src/index.tsx"
     ></script>
-    <script>
-      new EventSource("/esbuild").addEventListener("change", () =>
-        location.reload()
-      );
-    </script>
   </head>
   <body>
-    <llminabox></llminabox>
+    <llminabox id="llminabox"></llminabox>
   </body>
 </html>
