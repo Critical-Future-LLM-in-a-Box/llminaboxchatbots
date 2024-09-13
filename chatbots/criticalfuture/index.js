@@ -29,7 +29,7 @@
             backgroundColor: themeColor + "22",
             showAvatar: true,
             avatarSrc:
-              "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai.png"
+              "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai.png"
           },
           userMessage: {
             backgroundColor: themeColor + "66",
@@ -96,7 +96,7 @@
     profileImage.style.objectFit = "cover";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai.gif";
+      "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai-new.gif";
 
     profileContainer.appendChild(profileImage);
 
@@ -105,7 +105,7 @@
     profileVideo.style.height = "100%";
     profileVideo.style.objectFit = "cover";
     profileVideo.src =
-      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai_sonia_landscape.mp4";
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
 
     const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
