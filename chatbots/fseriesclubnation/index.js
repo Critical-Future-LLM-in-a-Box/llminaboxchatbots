@@ -18,9 +18,9 @@
           backgroundColor: themeColor,
           bottom: window.innerWidth < 768 ? 20 : window.innerHeight - 100,
           right: 20,
-          size: 75,
+          size: 80,
           customIconSrc:
-            "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs2.gif?raw=true"
+            "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs2.gif?raw=true"
         },
         chatWindow: {
           showTitle: true,
@@ -34,7 +34,7 @@
             backgroundColor: themeColor + "22",
             showAvatar: true,
             avatarSrc:
-              "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs.png?raw=true"
+              "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs.png?raw=true"
           },
           userMessage: {
             backgroundColor: themeColor + "66",
@@ -96,23 +96,38 @@
     profileContainer.style.overflow = "hidden";
 
     const profileImage = document.createElement("img");
-    profileImage.width = avatarSize;
-    profileImage.height = avatarSize;
-    profileImage.style.borderRadius = "50%";
+    profileImage.style.width = "100%";
+    profileImage.style.height = "100%";
+    profileImage.style.objectFit = "cover";
     profileImage.alt = "profile-avatar";
     profileImage.src =
-      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs1.gif?raw=true";
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs1.gif?raw=true";
 
     profileContainer.appendChild(profileImage);
+
+    const profileVideo = document.createElement("video");
+    profileVideo.style.width = "100%";
+    profileVideo.style.height = "100%";
+    profileVideo.style.objectFit = "cover";
+    profileVideo.src =
+      "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/fs/Joe%20intro.mp4";
 
     const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
     button.textContent = "About";
     button.onclick = () => {
-      window.open(
-        "https://criticalfutureglobal.com/llm-in-a-box-a-revolutionary-ai-solution-2/",
-        "_blank"
-      );
+      if (profileContainer.contains(profileImage)) {
+        profileContainer.removeChild(profileImage);
+        profileContainer.appendChild(profileVideo);
+        profileVideo.play();
+        profileVideo.onended = () => {
+          profileContainer.removeChild(profileVideo);
+          profileContainer.appendChild(profileImage);
+        };
+      } else {
+        profileContainer.removeChild(profileVideo);
+        profileContainer.appendChild(profileImage);
+      }
     };
     button.style.display = "block";
     button.style.minWidth = "200px";
@@ -148,7 +163,7 @@
   function waitForElement(selector) {
     return new Promise((resolve) => {
       if (document.querySelector(selector)) {
-        return resolve(document.querySelector(selector));
+        resolve(document.querySelector(selector));
       }
 
       const observer = new MutationObserver((mutations) => {
