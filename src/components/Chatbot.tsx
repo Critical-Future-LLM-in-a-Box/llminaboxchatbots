@@ -15,7 +15,9 @@ export default function Chatbot(): JSX.Element {
       : chatData.config.width + "px"
     : "100vw";
   const height = chatData.config.height
-    ? chatData.config.height + "px"
+    ? chatData.config.height.includes("px")
+      ? chatData.config.height
+      : chatData.config.height + "px"
     : "100vh";
 
   React.useEffect(() => {
