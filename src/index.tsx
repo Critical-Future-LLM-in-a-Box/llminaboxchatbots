@@ -1,54 +1,41 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import ChatbotFull from "./components/ChatbotFull";
-import ChatbotBubble from "./components/ChatbotBubble";
+import { ContextProvider, Config } from "@/context";
+import Chatbot from "@/components/Chatbot";
 import "./index.css";
 
-export type config = {
-  name?: string;
-  apiHost?: string;
-  chatflowid?: string;
-  startingMessage?: string;
-  avatarImage?: string;
-  avatarImageLive?: string;
-  avatarVideo?: string;
-  themeColor?: string;
-  textColor?: string;
-};
-
-export const defaultConfig: config = {
-  name: "Mai",
+export const initConfig: Config = {
   apiHost: "https://llm.criticalfutureglobal.com",
-  chatflowid: "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
-  startingMessage: "How can I assist you today?",
-  avatarImage:
+  // chatflowid: "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
+  name: "Mai",
+  description: "Critical Future Chatbot Assistant",
+  voiceName: "en-GB-SoniaNeural",
+  avatarStaticUrl:
     "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai.png",
-  avatarImageLive:
+  avatarLiveUrl:
     "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai-new.gif",
-  avatarVideo:
+  avatarVideoUrl:
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4",
   themeColor: "#F8F8FF",
-  textColor: "#000000"
+  textColor: "#000000",
+  chatMemory: true,
+  width: "",
+  height: ""
 };
 
-export function init(chatbotConfig: config = defaultConfig) {
-  const llminaboxChatbot =
-    (document.querySelector("llminabox") as HTMLElement) ??
-    (document.querySelector("#llminabox") as HTMLElement);
+export function init(config: Config = initConfig): void {
+  let llminaboxRoot = document.querySelector("llminabox");
 
-  if (llminaboxChatbot) {
-    llminaboxChatbot.style.display = "block";
-    llminaboxChatbot.style.height = "100vh";
-    ReactDOM.createRoot(llminaboxChatbot).render(
-      <ChatbotFull config={chatbotConfig} />
-    );
-  } else {
-    const bubbleLlminabox = document.createElement("llminabox");
-    document.body.appendChild(bubbleLlminabox);
-    ReactDOM.createRoot(bubbleLlminabox).render(
-      <ChatbotBubble config={chatbotConfig} />
-    );
+  if (!llminaboxRoot) {
+    llminaboxRoot = document.createElement("llminabox");
+    document.body.appendChild(llminaboxRoot);
   }
+
+  ReactDOM.createRoot(llminaboxRoot).render(
+    <ContextProvider initConfig={config}>
+      <Chatbot />
+    </ContextProvider>
+  );
 }
 
 init();
