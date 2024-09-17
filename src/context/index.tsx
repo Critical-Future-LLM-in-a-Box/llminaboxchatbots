@@ -6,7 +6,12 @@ export interface Message {
   role: string;
   content: string;
   timestamp: string;
-  audioBlob?: Blob;
+  uploads?: {
+    data: string;
+    type: string;
+    name: string;
+    mime: string;
+  }[];
 }
 
 export interface Config {
