@@ -6,7 +6,7 @@ import "./index.css";
 
 export const initConfig: Config = {
   apiHost: "https://llm.criticalfutureglobal.com",
-  // chatflowid: "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
+  chatflowid: "95e01dd4-ff2f-4055-a6f1-3cfc35261831",
   name: "Mai",
   description: "Critical Future Chatbot Assistant",
   voiceName: "en-GB-SoniaNeural",
