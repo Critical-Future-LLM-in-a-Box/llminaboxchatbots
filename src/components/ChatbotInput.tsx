@@ -32,14 +32,6 @@ export default function ChatbotInput() {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
 
-  const [isApiAcceptingVoice, setIsApiAcceptingVoice] = useState(
-    chatData.isApiAcceptingVoice
-  );
-
-  const [isApiAcceptingImage, setIsApiAcceptingImage] = useState(
-    chatData.isApiAcceptingimage
-  );
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -79,7 +71,8 @@ export default function ChatbotInput() {
   const handleStartRecording = async () => {
     await startAudioRecording(
       (isStarted) => setIsRecording(isStarted),
-      (isUnsupported) => setIsApiAcceptingVoice(!isUnsupported),
+      (isUnsupported) =>
+        dispatch({ type: "SET_API_ACCEPTING_VOICE", payload: !isUnsupported }),
       setElapsedTime
     );
     setIsRecording(true);
@@ -146,7 +139,7 @@ export default function ChatbotInput() {
 
       {fileName && (
         <div className="flex items-center w-full p-2">
-          <p>{fileName}</p>
+          <p className="border p-2">{fileName}</p>
           <IconButton onClick={handleDeleteFile}>
             <Delete color="error" />
           </IconButton>
@@ -173,7 +166,7 @@ export default function ChatbotInput() {
           <TextareaAutosize
             value={userMessage}
             disabled={!chatData.online || chatData.isApiTyping || isRecording}
-            placeholder="Type your message or listen to the recorded audio..."
+            placeholder="Type your message..."
             className="resize-none flex justify-center items-center w-full p-2"
             onChange={handleChange}
             onKeyDown={(e) => {
@@ -187,7 +180,7 @@ export default function ChatbotInput() {
       </div>
 
       <div className="flex flex-nowrap justify-center items-center gap-2 p-2">
-        {isApiAcceptingVoice ? (
+        {chatData.isApiAcceptingVoice ? (
           <IconButton
             onClick={isRecording ? handleStopRecording : handleStartRecording}
             disabled={!chatData.online || chatData.isApiTyping}
@@ -200,7 +193,7 @@ export default function ChatbotInput() {
           </IconButton>
         )}
 
-        {isApiAcceptingImage ? (
+        {chatData.isApiAcceptingimage ? (
           <IconButton component="label">
             <Image />
             <input
@@ -216,7 +209,10 @@ export default function ChatbotInput() {
           </IconButton>
         )}
 
-        <IconButton component="label">
+        <IconButton
+          component="label"
+          disabled={!chatData.online}
+        >
           <AttachFile />
           <input
             type="file"
