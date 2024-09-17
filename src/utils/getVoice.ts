@@ -4,7 +4,7 @@ import { request } from "@/utils/request";
 
 export const fetchVoice = async (chatData: ChatData, message: Message) => {
   const { file_url } = await request<{ file_url: string }>({
-    url: "http://51.20.131.200/get_tts",
+    url: "https://51.20.131.200/get_tts",
     options: {
       method: "POST",
       headers: {

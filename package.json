@@ -38,6 +38,7 @@
     "color": "^4.2.3",
     "device-detector-js": "^3.0.3",
     "dompurify": "^3.1.6",
+    "file-type": "^19.5.0",
     "flowise-sdk": "^1.0.8",
     "localforage": "^1.10.0",
     "marked": "^14.1.2",
