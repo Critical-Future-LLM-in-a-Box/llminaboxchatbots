@@ -1,17 +1,10 @@
 import { Message, ChatData } from "@/context";
 import { request } from "@/utils/request";
 
-export async function canStreamPrediction(chatData: ChatData) {
-  const response = await request<any>({
-    url: `${chatData.config?.apiHost}/api/v1/chatflows-streaming/${chatData.config?.chatflowid}`
-  });
-
-  return response.isStreaming || false;
-}
-
 export async function getPrediction(
   userQuestion: string,
-  chatData: ChatData
+  chatData: ChatData,
+  uploads?: Message["uploads"]
 ): Promise<{ text: string }> {
   return await request<{ text: string }>({
     url: `${chatData.config?.apiHost}/api/v1/prediction/${chatData.config?.chatflowid}`,
@@ -22,75 +15,86 @@ export async function getPrediction(
       },
       body: JSON.stringify({
         question: userQuestion,
-        history: chatData.config?.chatMemory ? chatData.messages : []
+        history: chatData.config?.chatMemory ? chatData.messages : [],
+        uploads: uploads
       })
     }
   });
 }
 
-export async function* getStreamPredictionText(
-  userQuestion: string,
-  chatData: ChatData
-) {
-  const response = await fetch(
-    `${chatData.config?.apiHost}/api/v1/prediction/${chatData.config?.chatflowid}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        question: userQuestion,
-        history: chatData.config?.chatMemory ? chatData.messages : []
-      })
-    }
-  );
+// export async function canStreamPrediction(chatData: ChatData) {
+//   const response = await request<any>({
+//     url: `${chatData.config?.apiHost}/api/v1/chatflows-streaming/${chatData.config?.chatflowid}`
+//   });
 
-  if (!response || !response.ok || !response.body) {
-    throw new Error("Failed to fetch prediction");
-  }
+//   return response.isStreaming || false;
+// }
 
-  const decoder = new TextDecoder();
-  const reader = response.body.getReader();
-  let streamText = "";
+// export async function* getStreamPredictionText(
+//   userQuestion: string,
+//   chatData: ChatData
+// ) {
+//   const response = await fetch(
+//     `${chatData.config?.apiHost}/api/v1/prediction/${chatData.config?.chatflowid}`,
+//     {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json"
+//       },
+//       body: JSON.stringify({
+//         question: userQuestion,
+//         history: chatData.config?.chatMemory ? chatData.messages : []
+//       })
+//     }
+//   );
 
-  let result = await reader.read();
-  while (!result.done) {
-    streamText += decoder.decode(result.value, { stream: true });
+//   if (!response || !response.ok || !response.body) {
+//     throw new Error("Failed to fetch prediction");
+//   }
 
-    if (streamText.startsWith('{"text":"')) {
-      streamText = streamText.replace('{"text":"', "");
-    }
+//   const decoder = new TextDecoder();
+//   const reader = response.body.getReader();
+//   let streamText = "";
 
-    const responseParts = streamText.split('","');
+//   let result = await reader.read();
+//   while (!result.done) {
+//     streamText += decoder.decode(result.value, { stream: true });
 
-    if (responseParts.length > 1) {
-      streamText = responseParts[0];
+//     if (streamText.startsWith('{"text":"')) {
+//       streamText = streamText.replace('{"text":"', "");
+//     }
 
-      const streamLines = streamText.split("\\n");
+//     const responseParts = streamText.split('","');
 
-      for (let line of streamLines) {
-        if (line === "") continue;
+//     if (responseParts.length > 1) {
+//       streamText = responseParts[0];
 
-        yield line.trim();
-      }
+//       const streamLines = streamText.split("\\n");
 
-      break;
-    }
+//       for (let line of streamLines) {
+//         if (line === "") continue;
 
-    result = await reader.read();
-  }
-}
+//         yield line.trim();
+//       }
+
+//       break;
+//     }
+
+//     result = await reader.read();
+//   }
+// }
 
 export async function sendMessage(
   userMessage: string,
   chatData: ChatData,
-  dispatch: Function
+  dispatch: Function,
+  uploads?: Message["uploads"]
 ) {
   const newUserMessage: Message = {
     role: "userMessage",
     content: userMessage,
-    timestamp: new Date().toLocaleString()
+    timestamp: new Date().toLocaleString(),
+    uploads: uploads
   };
 
   let newApiMessage: Message = {
@@ -114,58 +118,26 @@ export async function sendMessage(
     payload: true
   });
 
-  const canStreamPredictionResult = await canStreamPrediction(chatData).catch(
-    (err) => {
-      dispatch({
-        type: "SET_ERROR",
-        payload: err.message
-      });
-    }
-  );
+  const prediction = (await getPrediction(
+    userMessage,
+    chatData,
+    uploads as Message["uploads"]
+  ).catch((err) => {
+    dispatch({
+      type: "SET_ERROR",
+      payload: err.message
+    });
+    dispatch({
+      type: "DELETE_MESSAGE",
+      payload: true
+    });
+  })) as { text: string } | void;
 
-  let accumulatedContent = "";
-
-  if (!canStreamPredictionResult) {
-    const predictionText = await getPrediction(userMessage, chatData).catch(
-      (err) => {
-        dispatch({
-          type: "SET_ERROR",
-          payload: err.message
-        });
-        dispatch({
-          type: "DELETE_MESSAGE",
-          payload: true
-        });
-      }
-    );
-    for await (const line of predictionText as unknown as AsyncGenerator<string>) {
-      accumulatedContent += line;
-
-      dispatch({
-        type: "UPDATE_MESSAGE",
-        payload: accumulatedContent
-      });
-    }
-  } else {
-    const prediction = (await getPrediction(userMessage, chatData).catch(
-      (err) => {
-        dispatch({
-          type: "SET_ERROR",
-          payload: err.message
-        });
-        dispatch({
-          type: "DELETE_MESSAGE",
-          payload: true
-        });
-      }
-    )) as { text: string } | void;
-
-    if (prediction) {
-      dispatch({
-        type: "UPDATE_MESSAGE",
-        payload: prediction.text
-      });
-    }
+  if (prediction) {
+    dispatch({
+      type: "UPDATE_MESSAGE",
+      payload: { ...newApiMessage, content: prediction.text }
+    });
   }
 
   dispatch({
