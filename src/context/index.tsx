@@ -17,6 +17,7 @@ export interface Message {
 export interface Config {
   apiHost?: string;
   chatflowid?: string;
+  sessionid?: string;
   name?: string;
   description?: string;
   voiceName?: string;
@@ -59,6 +60,7 @@ export const createDefaultContextData = (
     config: {
       apiHost: "",
       chatflowid: "",
+      sessionid: "",
       name: "",
       description: "",
       voiceName: "",

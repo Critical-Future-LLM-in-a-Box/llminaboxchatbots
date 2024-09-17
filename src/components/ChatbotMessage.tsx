@@ -66,7 +66,44 @@ export default function MessageCard({
         {chatData.isApiTyping && isLastApiMessage ? (
           <CircularProgress size={16} />
         ) : (
-          <MessageMarked content={message.content} />
+          <>
+            <MessageMarked content={message.content} />
+            {message.uploads && message.uploads.length > 0 && (
+              <div className="mt-2">
+                {message.uploads.map((upload, index) => (
+                  <div
+                    key={index}
+                    className="mb-2"
+                  >
+                    {upload.type === "file" &&
+                    upload.mime.startsWith("image") ? (
+                      <img
+                        src={upload.data}
+                        alt={upload.name}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                    ) : upload.type === "audio" ? (
+                      <audio
+                        controls
+                        src={upload.data}
+                        className="w-full"
+                      >
+                        Your browser does not support the audio element.
+                      </audio>
+                    ) : (
+                      <a
+                        href={upload.data}
+                        download={upload.name}
+                        className="text-blue-500 underline"
+                      >
+                        {upload.name}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

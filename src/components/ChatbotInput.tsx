@@ -21,46 +21,58 @@ export default function ChatbotInput() {
 
   const [userMessage, setUserMessage] = useState("");
 
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null);
-  const [audioURL, setAudioURL] = useState<string | null>(null);
   const [elapsedTime, setElapsedTime] = useState("00:00");
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageURL, setImageURL] = useState<string | null>(null);
 
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!chatData.online) return;
-    if (!userMessage.trim() && !recordedAudio && !imageFile && !uploadedFile)
-      return;
+    if (!userMessage.trim() && !audioBlob && !imageFile) return;
     if (chatData.isApiTyping) return;
 
     if (userMessage.trim()) {
-      setUserMessage("");
       sendMessage(userMessage, chatData, dispatch);
+      setUserMessage("");
     }
 
-    if (recordedAudio) {
-      console.log("Sending recorded audio...");
-      setRecordedAudio(null);
-      setAudioURL(null);
+    if (audioBlob) {
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+      reader.onloadend = () => {
+        sendMessage("", chatData, dispatch, [
+          {
+            data: reader.result as string,
+            mime: audioBlob.type,
+            type: audioBlob.type.split("/")[0],
+            name: `audio.${audioBlob.type.split("/")[1]}`
+          }
+        ]);
+        setAudioBlob(null);
+      };
     }
 
     if (imageFile) {
-      console.log("Sending image file...");
-      setImageFile(null);
-      setImageURL(null);
-    }
+      const reader = new FileReader();
+      reader.readAsDataURL(imageFile);
+      reader.onloadend = () => {
+        console.log(imageFile.type);
 
-    if (uploadedFile) {
-      console.log("Sending uploaded file...");
-      setUploadedFile(null);
-      setFileName(null);
+        sendMessage("", chatData, dispatch, [
+          {
+            data: reader.result as string,
+            mime: imageFile.type,
+            type: "file",
+            name: imageFile.name
+          }
+        ]);
+        setImageFile(null);
+        setImageURL(null);
+      };
     }
   };
 
@@ -79,17 +91,14 @@ export default function ChatbotInput() {
   };
 
   const handleStopRecording = async () => {
-    await stopAudioRecording((blob) => {
-      setRecordedAudio(blob);
-      const audioUrl = URL.createObjectURL(blob);
-      setAudioURL(audioUrl);
+    await stopAudioRecording(async (blob) => {
+      setAudioBlob(blob);
     });
     setIsRecording(false);
   };
 
   const handleDeleteRecording = () => {
-    setRecordedAudio(null);
-    setAudioURL(null);
+    setAudioBlob(null);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,19 +108,6 @@ export default function ChatbotInput() {
       const imageUrl = URL.createObjectURL(file);
       setImageURL(imageUrl);
     }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file);
-      setFileName(file.name);
-    }
-  };
-
-  const handleDeleteFile = () => {
-    setUploadedFile(null);
-    setFileName(null);
   };
 
   const handleDeleteImage = () => {
@@ -137,21 +133,12 @@ export default function ChatbotInput() {
         </div>
       )}
 
-      {fileName && (
-        <div className="flex items-center w-full p-2">
-          <p className="border p-2">{fileName}</p>
-          <IconButton onClick={handleDeleteFile}>
-            <Delete color="error" />
-          </IconButton>
-        </div>
-      )}
-
       <div className="flex flex-1 justify-center items-center">
-        {audioURL && (
+        {audioBlob && (
           <div className="flex flex-nowrap justify-center items-center w-full gap-2 p-2">
             <audio
               controls
-              src={audioURL}
+              src={URL.createObjectURL(audioBlob)}
               className="w-full"
             >
               Your browser does not support the audio element.
@@ -162,7 +149,7 @@ export default function ChatbotInput() {
           </div>
         )}
 
-        {!audioURL && (
+        {!audioBlob && (
           <TextareaAutosize
             value={userMessage}
             disabled={!chatData.online || chatData.isApiTyping || isRecording}
@@ -194,7 +181,10 @@ export default function ChatbotInput() {
         )}
 
         {chatData.isApiAcceptingimage ? (
-          <IconButton component="label">
+          <IconButton
+            component="label"
+            disabled={!chatData.online || chatData.isApiTyping}
+          >
             <Image />
             <input
               type="file"
@@ -208,19 +198,6 @@ export default function ChatbotInput() {
             <ImageNotSupported color="disabled" />
           </IconButton>
         )}
-
-        <IconButton
-          component="label"
-          disabled={!chatData.online}
-        >
-          <AttachFile />
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx,.txt,.ppt,.xls,.xlsx"
-            hidden
-            onChange={handleFileUpload}
-          />
-        </IconButton>
 
         <Button
           type="submit"

@@ -6,6 +6,8 @@ export async function getPrediction(
   chatData: ChatData,
   uploads?: Message["uploads"]
 ): Promise<{ text: string }> {
+  console.log(uploads);
+
   return await request<{ text: string }>({
     url: `${chatData.config?.apiHost}/api/v1/prediction/${chatData.config?.chatflowid}`,
     options: {
@@ -15,8 +17,10 @@ export async function getPrediction(
       },
       body: JSON.stringify({
         question: userQuestion,
-        history: chatData.config?.chatMemory ? chatData.messages : [],
-        uploads: uploads
+        uploads: uploads,
+        overrideConfig: {
+          sessionId: chatData.config?.chatMemory && chatData.config?.sessionid
+        }
       })
     }
   });

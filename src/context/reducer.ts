@@ -12,6 +12,9 @@ export const chatReducer = (
     case "SET_ERROR":
       draft.error = action.payload as string;
       break;
+    case "SET_SESSION_ID":
+      draft.config.sessionid = action.payload as string;
+      break;
     case "SET_CHAT_MEMORY":
       draft.config.chatMemory = !!action.payload as boolean;
       break;
@@ -29,6 +32,7 @@ export const chatReducer = (
       break;
     case "CLEAR_CHAT":
       draft.messages = [...createDefaultContextData().messages];
+      draft.config.sessionid = Math.random().toString(10).substring(2, 12);
       break;
     case "ADD_MESSAGE":
       draft.messages.push(action.payload as Message);
