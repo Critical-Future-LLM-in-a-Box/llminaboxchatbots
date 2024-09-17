@@ -14,9 +14,16 @@ export const getAllowedUploads = async (
     throw new Error(`Error fetching chatbot config: ${response.statusText}`);
   }
 
-  const { isApiAcceptingimage: image, isApiAcceptingVoice: voice } =
-    await response.json();
+  const {
+    uploads: { isImageUploadAllowed: image, isSpeechToTextEnabled: voice }
+  } = await response.json();
 
-  dispatch({ type: "SET_API_ACCEPTING_VOICE", payload: voice });
-  dispatch({ type: "SET_API_ACCEPTING_IMAGE", payload: image });
+  dispatch({
+    type: "SET_API_ACCEPTING_VOICE",
+    payload: voice
+  });
+  dispatch({
+    type: "SET_API_ACCEPTING_IMAGE",
+    payload: image
+  });
 };
