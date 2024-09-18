@@ -20,6 +20,8 @@ export default function ChatbotInput() {
 
     sendMessage(userMessage, chatData, dispatch, userUploads);
 
+    setUserMessage("");
+
     resetUploadState();
   };
 

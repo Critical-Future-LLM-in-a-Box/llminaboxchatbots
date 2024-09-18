@@ -15,7 +15,7 @@ export const fetchVoice = async (chatData: ChatData, message: Message) => {
       body: JSON.stringify({
         text: message.content,
         voice: chatData.config?.voiceName,
-        id: chatData.config?.name
+        id: message.timestamp
       })
     }
   }).catch((err) => {
@@ -30,30 +30,25 @@ export const fetchVoice = async (chatData: ChatData, message: Message) => {
 
   const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
 
-  return URL.createObjectURL(mp3Blob);
+  const mp3Url = URL.createObjectURL(mp3Blob);
+
+  await localforage.setItem(message.timestamp, mp3Url);
+
+  return mp3Url;
 };
 
 export const getVoice = async (chatData: ChatData, message: Message) => {
-  const ttsCacheString: string =
-    (await localforage.getItem("llminabox_tts")) ?? "{}";
+  const storedVoice = await localforage.getItem(message.timestamp);
 
-  let ttsCacheJson: { [key: string]: string };
-  let localVoice: string;
+  if (storedVoice) {
+    return new Audio(storedVoice as string);
+  } else {
+    const audioUrl = await fetchVoice(chatData, message).catch((err) => {
+      throw new Error(err);
+    });
 
-  ttsCacheJson = JSON.parse(ttsCacheString);
-  localVoice = ttsCacheJson[message.timestamp];
-
-  if (localVoice) {
-    return new Audio(localVoice);
-  }
-
-  const audioUrl = await fetchVoice(chatData, message).catch((err) => {
-    throw new Error(err);
-  });
-
-  if (audioUrl) {
-    ttsCacheJson[message.timestamp] = audioUrl;
-    await localforage.setItem("llminabox_tts", JSON.stringify(ttsCacheJson));
-    return new Audio(audioUrl);
+    if (audioUrl) {
+      return new Audio(audioUrl);
+    }
   }
 };

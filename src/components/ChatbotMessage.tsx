@@ -53,7 +53,7 @@ export default function MessageCard({
 
   return (
     <div
-      className={`flex flex-col justify-center w-fit ${
+      className={`flex flex-col justify-center m-2 w-fit ${
         message.role === "apiMessage" ? "self-start" : "self-end"
       }`}
     >
@@ -90,17 +90,11 @@ export default function MessageCard({
                         controls
                         src={upload.data}
                         className="w-full"
-                      >
-                        Your browser does not support the audio element.
-                      </audio>
+                      ></audio>
                     ) : (
-                      <a
-                        href={upload.data}
-                        download={upload.name}
-                        className="text-blue-500 underline"
-                      >
+                      <div className="p-2 border border-gray-300 rounded">
                         {upload.name}
-                      </a>
+                      </div>
                     )}
                   </div>
                 ))}
