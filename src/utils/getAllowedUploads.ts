@@ -15,7 +15,11 @@ export const getAllowedUploads = async (
   }
 
   const {
-    uploads: { isImageUploadAllowed: image, isSpeechToTextEnabled: voice }
+    uploads: {
+      isSpeechToTextEnabled: voice,
+      isImageUploadAllowed: image,
+      isFileUploadAllowed: files
+    }
   } = await response.json();
 
   dispatch({
@@ -25,5 +29,9 @@ export const getAllowedUploads = async (
   dispatch({
     type: "SET_API_ACCEPTING_IMAGE",
     payload: image
+  });
+  dispatch({
+    type: "SET_API_ACCEPTING_FILES",
+    payload: files
   });
 };

@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import { useContextData } from "@/context";
 import { getOnlineStatus } from "@/utils/getOnlineStatus";
 import { getAllowedUploads } from "@/utils/getAllowedUploads";
 import ChatbotHeader from "@/components/ChatbotHeader";
 import ChatbotBody from "@/components/ChatbotBody";
 import ChatbotFooter from "@/components/ChatbotFooter";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Chatbot(): JSX.Element {
   const [chatData, dispatch] = useContextData();
@@ -20,14 +23,24 @@ export default function Chatbot(): JSX.Element {
       : chatData.config.height + "px"
     : "100vh";
 
-  React.useEffect(() => {
+  useEffect(() => {
+    if (chatData.error) {
+      toast.error(chatData.error);
+      dispatch({
+        type: "SET_ERROR",
+        payload: ""
+      });
+    }
+  }, [chatData.error]);
+
+  useEffect(() => {
     getOnlineStatus(chatData, dispatch);
     getAllowedUploads(chatData, dispatch);
-  });
+  }, [chatData, dispatch]);
 
   return (
     <div
-      className="flex flex-col rounded-lg overflow-hidden"
+      className="flex flex-col rounded-lg"
       style={{
         backgroundColor: chatData.config.themeColor,
         color: chatData.config.textColor,
@@ -35,6 +48,14 @@ export default function Chatbot(): JSX.Element {
         height: height
       }}
     >
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar
+        closeOnClick
+        pauseOnFocusLoss
+        theme="colored"
+      />
       <ChatbotHeader />
       <ChatbotBody />
       <ChatbotFooter />

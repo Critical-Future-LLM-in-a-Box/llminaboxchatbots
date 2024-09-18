@@ -15,7 +15,7 @@ export default function MessageCard({
   message: Message;
   isLastApiMessage: boolean;
 }) {
-  const [chatData] = useContextData();
+  const [chatData, dispatch] = useContextData();
 
   const [isFetchingVoice, setIsFetchingVoice] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -41,7 +41,10 @@ export default function MessageCard({
           };
         }
       } catch (error) {
-        console.error("Error fetching voice:", error);
+        dispatch({
+          type: "SET_ERROR",
+          payload: (error as Error).message
+        });
       } finally {
         setIsFetchingVoice(false);
       }

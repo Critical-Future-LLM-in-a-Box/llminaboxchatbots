@@ -28,11 +28,16 @@ export const chatReducer = (
       draft.isApiAcceptingVoice = !!action.payload as boolean;
       break;
     case "SET_API_ACCEPTING_IMAGE":
-      draft.isApiAcceptingimage = !!action.payload as boolean;
+      draft.isApiAcceptingImage = !!action.payload as boolean;
+      break;
+    case "SET_API_ACCEPTING_FILES":
+      draft.isApiAcceptingFiles = !!action.payload as boolean;
       break;
     case "CLEAR_CHAT":
       draft.messages = [...createDefaultContextData().messages];
-      draft.config.sessionid = Math.random().toString(10).substring(2, 12);
+      const newSessionID = Math.random().toString(10).substring(2, 12);
+      draft.config.sessionid = newSessionID;
+      localStorage.setItem("sessionid", newSessionID);
       break;
     case "ADD_MESSAGE":
       draft.messages.push(action.payload as Message);

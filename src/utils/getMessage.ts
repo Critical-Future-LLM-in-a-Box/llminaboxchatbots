@@ -6,8 +6,6 @@ export async function getPrediction(
   chatData: ChatData,
   uploads?: Message["uploads"]
 ): Promise<{ text: string }> {
-  console.log(uploads);
-
   return await request<{ text: string }>({
     url: `${chatData.config?.apiHost}/api/v1/prediction/${chatData.config?.chatflowid}`,
     options: {
@@ -23,6 +21,71 @@ export async function getPrediction(
         }
       })
     }
+  }).catch((err) => {
+    throw new Error(err);
+  });
+}
+
+export async function sendMessage(
+  userMessage: string,
+  chatData: ChatData,
+  dispatch: Function,
+  uploads?: Message["uploads"]
+) {
+  const newUserMessage: Message = {
+    role: "userMessage",
+    content: userMessage,
+    timestamp: new Date().toLocaleString(),
+    uploads: uploads
+  };
+
+  let newApiMessage: Message = {
+    role: "apiMessage",
+    content: "",
+    timestamp: new Date().toLocaleString()
+  };
+
+  dispatch({
+    type: "ADD_MESSAGE",
+    payload: newUserMessage
+  });
+
+  dispatch({
+    type: "ADD_MESSAGE",
+    payload: newApiMessage
+  });
+
+  dispatch({
+    type: "SET_API_TYPING",
+    payload: true
+  });
+
+  const prediction = (await getPrediction(
+    userMessage,
+    chatData,
+    uploads as Message["uploads"]
+  ).catch((err) => {
+    dispatch({
+      type: "SET_ERROR",
+      payload: err.message
+    });
+
+    dispatch({
+      type: "DELETE_MESSAGE",
+      payload: true
+    });
+  })) as { text: string } | void;
+
+  if (prediction) {
+    dispatch({
+      type: "UPDATE_MESSAGE",
+      payload: { ...newApiMessage, content: prediction.text }
+    });
+  }
+
+  dispatch({
+    type: "SET_API_TYPING",
+    payload: false
   });
 }
 
@@ -87,65 +150,3 @@ export async function getPrediction(
 //     result = await reader.read();
 //   }
 // }
-
-export async function sendMessage(
-  userMessage: string,
-  chatData: ChatData,
-  dispatch: Function,
-  uploads?: Message["uploads"]
-) {
-  const newUserMessage: Message = {
-    role: "userMessage",
-    content: userMessage,
-    timestamp: new Date().toLocaleString(),
-    uploads: uploads
-  };
-
-  let newApiMessage: Message = {
-    role: "apiMessage",
-    content: "",
-    timestamp: new Date().toLocaleString()
-  };
-
-  dispatch({
-    type: "ADD_MESSAGE",
-    payload: newUserMessage
-  });
-
-  dispatch({
-    type: "ADD_MESSAGE",
-    payload: newApiMessage
-  });
-
-  dispatch({
-    type: "SET_API_TYPING",
-    payload: true
-  });
-
-  const prediction = (await getPrediction(
-    userMessage,
-    chatData,
-    uploads as Message["uploads"]
-  ).catch((err) => {
-    dispatch({
-      type: "SET_ERROR",
-      payload: err.message
-    });
-    dispatch({
-      type: "DELETE_MESSAGE",
-      payload: true
-    });
-  })) as { text: string } | void;
-
-  if (prediction) {
-    dispatch({
-      type: "UPDATE_MESSAGE",
-      payload: { ...newApiMessage, content: prediction.text }
-    });
-  }
-
-  dispatch({
-    type: "SET_API_TYPING",
-    payload: false
-  });
-}

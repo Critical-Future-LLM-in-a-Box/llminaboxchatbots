@@ -39,7 +39,8 @@ export interface ChatData {
   error: string;
   isApiTyping: boolean;
   isApiAcceptingVoice: boolean;
-  isApiAcceptingimage: boolean;
+  isApiAcceptingImage: boolean;
+  isApiAcceptingFiles: boolean;
 }
 
 export const createDefaultContextData = (
@@ -55,12 +56,12 @@ export const createDefaultContextData = (
     online: false,
     isApiTyping: false,
     isApiAcceptingVoice: false,
-    isApiAcceptingimage: false,
+    isApiAcceptingImage: false,
+    isApiAcceptingFiles: false,
     error: "",
     config: {
       apiHost: "",
       chatflowid: "",
-      sessionid: "",
       name: "",
       description: "",
       voiceName: "",
@@ -72,7 +73,10 @@ export const createDefaultContextData = (
       textColor: "",
       width: "",
       height: "",
-      ...initConfig
+      ...initConfig,
+      sessionid: localStorage.getItem("sessionid")
+        ? (localStorage.getItem("sessionid") as string)
+        : initConfig.sessionid
     }
   };
 };

@@ -56,9 +56,7 @@ export async function request<T>({
           timeout
         });
       }
-      throw new Error(
-        `Fetch failed after ${2 - retries} retries -> ${(error as Error).message}`
-      );
+      throw error;
     });
 
   return fetchPromise;
