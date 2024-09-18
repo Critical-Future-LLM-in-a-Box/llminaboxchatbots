@@ -3,8 +3,9 @@ import { ChatData, Message } from "@/context";
 import { request } from "@/utils/request";
 
 export const fetchVoice = async (chatData: ChatData, message: Message) => {
+  const proxyUrl = "https://proxy.cors.sh/";
   const { file_url } = await request<{ file_url: string }>({
-    url: "https://51.20.131.200/get_tts",
+    url: proxyUrl + "http://51.20.131.200/get_tts",
     options: {
       method: "POST",
       headers: {
@@ -21,9 +22,11 @@ export const fetchVoice = async (chatData: ChatData, message: Message) => {
     throw new Error(err);
   });
 
-  const audioBlob = await request<Blob>({ url: file_url }).catch((err) => {
-    throw new Error(err);
-  });
+  const audioBlob = await request<Blob>({ url: proxyUrl + file_url }).catch(
+    (err) => {
+      throw new Error(err);
+    }
+  );
 
   const mp3Blob = new Blob([audioBlob], { type: "audio/mpeg" });
 
