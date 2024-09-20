@@ -5,7 +5,7 @@
   const apiHost = "https://llm.criticalfutureglobal.com";
 
   const ChatbotModule =
-    "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+    "https://cdn.jsdelivr.net/npm/flowise-embed@1.3.14/dist/web.js";
 
   const importChatbot = () => import(ChatbotModule);
 
