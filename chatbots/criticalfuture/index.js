@@ -54,32 +54,59 @@
     };
   }
 
-  function createSectionWithProfile(element, avatarSize) {
+  function createSection(element, avatarSize) {
+    if (window.innerWidth < 768) return;
+
     const parentElement = element.shadowRoot.querySelector("div");
-
     parentElement.style.display = "flex";
-    parentElement.style.backgroundColor = "#efefef";
 
-    const newSection = document.createElement("div");
-    newSection.style.minWidth = "40%";
-    newSection.style.display = "flex";
-    newSection.style.flexDirection = "column";
-    newSection.style.alignItems = "center";
-    newSection.style.justifyContent = "space-between";
-    newSection.style.background = themeColor + "11";
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "flex";
+    wrapper.style.flexDirection = "column";
+    wrapper.style.backgroundColor = "#efefef";
+    wrapper.style.minWidth = "40%";
+    wrapper.style.gap = "20px";
+    wrapper.style.alignItems = "center";
+    wrapper.style.background = themeColor + "11";
 
     const header = document.createElement("div");
     header.style.width = "100%";
     header.style.height = "50px";
     header.style.backgroundColor = themeColor;
     header.style.position = "relative";
-    const afterElement = document.createElement("div");
-    afterElement.style.position = "absolute";
-    afterElement.style.width = "10px";
-    afterElement.style.height = "100%";
-    afterElement.style.backgroundColor = "#212121";
-    afterElement.style.right = "-10px";
-    header.appendChild(afterElement);
+
+    const tabBar = document.createElement("div");
+    tabBar.style.display = "flex";
+    tabBar.style.justifyContent = "center";
+
+    const oldTab = document.createElement("button");
+    oldTab.textContent = "Static Avatar";
+    oldTab.style.padding = "10px 20px";
+    oldTab.style.border = "none";
+    oldTab.style.cursor = "pointer";
+    oldTab.style.backgroundColor = themeColor;
+    oldTab.style.color = "white";
+    oldTab.style.marginRight = "10px";
+
+    const newTab = document.createElement("button");
+    newTab.textContent = "Interactive Avatar";
+    newTab.style.padding = "10px 20px";
+    newTab.style.border = "none";
+    newTab.style.cursor = "pointer";
+    newTab.style.backgroundColor = "#ccc";
+    newTab.style.color = "black";
+
+    tabBar.appendChild(oldTab);
+    tabBar.appendChild(newTab);
+
+    wrapper.appendChild(header);
+    wrapper.appendChild(tabBar);
+
+    const oldSection = document.createElement("div");
+    oldSection.style.display = "flex";
+    oldSection.style.flexDirection = "column";
+    oldSection.style.alignItems = "center";
+    oldSection.style.gap = "20px";
 
     const profileContainer = document.createElement("div");
     profileContainer.style.display = "flex";
@@ -87,7 +114,7 @@
     profileContainer.style.alignItems = "center";
     profileContainer.style.width = `${avatarSize}px`;
     profileContainer.style.height = `${avatarSize}px`;
-    profileContainer.style.borderRadius = "50%";
+    profileContainer.style.borderRadius = "50px";
     profileContainer.style.overflow = "hidden";
 
     const profileImage = document.createElement("img");
@@ -107,7 +134,6 @@
     profileVideo.src =
       "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
 
-    const buttonGroup = document.createElement("div");
     const button = document.createElement("button");
     button.textContent = "About";
     button.onclick = () => {
@@ -135,24 +161,54 @@
     button.style.cursor = "pointer";
     button.style.transition = "background-color 0.5s ease";
     button.style.backgroundColor = themeColor;
-    button.addEventListener("mouseover", () => {
-      button.style.backgroundColor = "#0056b3";
-    });
-    button.addEventListener("mouseout", () => {
-      button.style.backgroundColor = themeColor;
-    });
-    buttonGroup.appendChild(button);
 
-    newSection.appendChild(header);
-    newSection.appendChild(profileContainer);
-    newSection.appendChild(buttonGroup);
+    oldSection.appendChild(profileContainer);
+    oldSection.appendChild(button);
 
-    parentElement.prepend(newSection);
+    const newSection = document.createElement("div");
+    newSection.style.display = "none";
+    newSection.style.flexDirection = "column";
 
-    if (window.innerWidth < 768) {
-      parentElement.style.display = "block";
+    const iframeContainer = document.createElement("div");
+    iframeContainer.style.width = `${avatarSize + 100}px`;
+    iframeContainer.style.height = `${avatarSize + 100}px`;
+    iframeContainer.style.borderRadius = "50px";
+    iframeContainer.style.overflow = "hidden";
+
+    const iframe = document.createElement("iframe");
+    iframe.src =
+      "https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiIyMTRjOWUzODgzYTA0ZmYzYTM5OWQ0ZjU4YjI2YWUzZCIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3YzLzIxNGM5ZTM4ODNhMDRmZjNhMzk5ZDRmNThiMjZhZTNkL2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0LndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6bnVsbCwidXNlcm5hbWUiOiJmZTcxYzk3NzA0NGI0MzI0YTlkNzdiMDExMDNiZmQ0ZiJ9&inIFrame=1";
+    iframe.style.border = "0";
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.allow = "microphone";
+    iframe.allowFullscreen = true;
+
+    iframeContainer.appendChild(iframe);
+    newSection.appendChild(iframeContainer);
+
+    wrapper.appendChild(oldSection);
+    wrapper.appendChild(newSection);
+
+    parentElement.prepend(wrapper);
+
+    oldTab.onclick = () => {
+      oldSection.style.display = "flex";
       newSection.style.display = "none";
-    }
+      oldTab.style.backgroundColor = themeColor;
+      oldTab.style.color = "white";
+      newTab.style.backgroundColor = "#ccc";
+      newTab.style.color = "black";
+    };
+
+    newTab.onclick = () => {
+      oldSection.style.display = "none";
+      newSection.style.display = "flex";
+      newTab.style.backgroundColor = themeColor;
+      newTab.style.color = "white";
+      oldTab.style.backgroundColor = "#ccc";
+      oldTab.style.color = "black";
+    };
   }
 
   function waitForElement(selector) {
@@ -194,7 +250,7 @@
     const flowiseFullChatbot = document.querySelector("flowise-fullchatbot");
 
     setTimeout(() => {
-      createSectionWithProfile(flowiseFullChatbot, 400);
+      createSection(flowiseFullChatbot, 300);
     }, 1000);
   } else {
     const standardChatbotConfig = createChatbotConfig(600, 600);
@@ -202,7 +258,7 @@
     Chatbot.init(standardChatbotConfig);
 
     waitForElement("flowise-chatbot").then((element) => {
-      createSectionWithProfile(element, 200);
+      createSection(element, 200);
       addStyle(
         element.shadowRoot,
         `
