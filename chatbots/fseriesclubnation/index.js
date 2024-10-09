@@ -1,5 +1,4 @@
 (async () => {
-  const url = location.href;
   const themeColor = "#212121";
   const chatflowid = "713ac6ba-4a32-40a0-9408-89478be4337b";
   const apiHost = "https://llm.criticalfutureglobal.com";
@@ -188,20 +187,38 @@
 
   const { default: Chatbot } = await importChatbot();
 
-  const standardChatbotConfig = createChatbotConfig(600, 600);
+  const outerContainer = document.querySelector("llminabox");
 
-  Chatbot.init(standardChatbotConfig);
+  if (outerContainer) {
+    const fullChatbotConfig = createChatbotConfig(600, "100%");
+    const internalContainer = document.createElement("flowise-fullchatbot");
+    outerContainer.appendChild(internalContainer);
 
-  waitForElement("flowise-chatbot").then((element) => {
-    createSectionWithProfile(element, 200);
-    addStyle(
-      element.shadowRoot,
+    Chatbot.initFull(fullChatbotConfig);
+
+    setTimeout(() => {
+      createSectionWithProfile(internalContainer, 400);
+    }, 1000);
+  } else {
+    const standardChatbotConfig = createChatbotConfig(600, 600);
+    Chatbot.init(standardChatbotConfig);
+    waitForElement("flowise-chatbot").then((element) => {
+      createSectionWithProfile(element, 200);
+      addStyle(
+        element.shadowRoot,
+        `
+        button > img.rounded-full {
+          width: 100% !important;
+          height: 100% !important;
+        }
       `
-      button > img.rounded-full {
-        width: 100% !important;
-        height: 100% !important;
-      }
-    `
-    );
-  });
+      );
+      document
+        .querySelector("body > flowise-chatbot")
+        .shadowRoot.querySelector(
+          "div > div.relative.h-full > div > div.flex.flex-col.w-full.h-full.justify-start.z-0 > div.overflow-y-scroll.flex.flex-col.flex-grow.min-w-full.w-full.px-3.pt-\\[70px\\].relative.scrollable-container.chatbot-chat-view.scroll-smooth"
+        )
+        .classList.remove("scrollable-container");
+    });
+  }
 })();
