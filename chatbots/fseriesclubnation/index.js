@@ -213,12 +213,14 @@
         }
       `
       );
-      document
-        .querySelector("body > flowise-chatbot")
-        .shadowRoot.querySelector(
-          "div > div.relative.h-full > div > div.flex.flex-col.w-full.h-full.justify-start.z-0 > div.overflow-y-scroll.flex.flex-col.flex-grow.min-w-full.w-full.px-3.pt-\\[70px\\].relative.scrollable-container.chatbot-chat-view.scroll-smooth"
-        )
-        .classList.remove("scrollable-container");
+      addStyle(
+        element.shadowRoot,
+        `
+        * {
+          scrollbar-width: thin !important;
+        }
+      `
+      );
     });
   }
 })();
