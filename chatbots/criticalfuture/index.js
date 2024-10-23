@@ -4,10 +4,11 @@
   const chatflowid = "95e01dd4-ff2f-4055-a6f1-3cfc35261831"
   const apiHost = "https://llm.criticalfutureglobal.com"
 
-  const ChatbotModule =
-    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/chatbots/base/web.js"
-
-  const importChatbot = () => import(ChatbotModule)
+  const importChatbot = async () =>
+    await import(
+      "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/chatbots/base/web.js"
+    )
+  const Chatbot = (await importChatbot()).default
 
   function createChatbotConfig(heigth = 600, width = 600) {
     return {
@@ -210,34 +211,6 @@
       oldTab.style.color = "black"
     }
   }
-
-  function waitForElement(selector) {
-    return new Promise((resolve) => {
-      if (document.querySelector(selector)) {
-        resolve(document.querySelector(selector))
-      }
-
-      const observer = new MutationObserver((mutations) => {
-        if (document.querySelector(selector)) {
-          resolve(document.querySelector(selector))
-          observer.disconnect()
-        }
-      })
-
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-      })
-    })
-  }
-
-  function addStyle(element, css) {
-    const style = document.createElement("style")
-    style.textContent = css
-    element.prepend(style)
-  }
-
-  const {default: Chatbot} = await importChatbot()
 
   if (url === "https://criticalfutureglobal.com/") {
     const fullchatbot = document.createElement("flowise-fullchatbot")
