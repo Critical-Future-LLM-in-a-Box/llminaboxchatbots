@@ -20,6 +20,7 @@ export async function createNewSection(element, options = {}) {
   newSectionParent.style.cssText = `
     width: 100%;
     height: 100%;
+    max-height: 90vh;
     display: flex;
     justify-content: space-between;
     flex-wrap: no-wrap;
