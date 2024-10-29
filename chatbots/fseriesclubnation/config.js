@@ -4,6 +4,7 @@ export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
     apiHost: apiHost,
     theme: {
       button: {
+        color: themeFront,
         backgroundColor: themeFront,
       },
       chatWindow: {
@@ -26,7 +27,8 @@ export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
         textInput: {
           placeholder: "How can I help you?",
           backgroundColor: themeBack,
-          color: themeFront,
+          textColor: themeFront,
+          sendButtonColor: themeFront,
           sendButtonColor: themeBack,
           maxChars: 2000,
           maxCharsWarningMessage: "You exceeded the character limit.",
