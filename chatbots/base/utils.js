@@ -237,3 +237,101 @@ export function waitForElement(
     });
   });
 }
+
+export function urlPreview() {
+  const apiKey = "334976853f91d9a79fac6e2816e0768b";
+
+  async function fetchMetadata(url) {
+    try {
+      const response = await fetch(
+        `https://api.linkpreview.net/?q=${encodeURIComponent(
+          url
+        )}&key=${apiKey}`
+      );
+      const data = await response.json();
+      return {
+        title: data.title,
+        description: data.description,
+        image: data.image,
+      };
+    } catch (error) {
+      console.error("Error fetching metadata:", error);
+      return null;
+    }
+  }
+
+  async function replaceUrlsWithPreviews() {
+    const messages = Array.from(
+      document
+        .querySelector("flowise-fullchatbot")
+        .shadowRoot.querySelector(
+          "div > div > div:last-child > div:last-child > div"
+        )
+        .querySelectorAll("div:first-child")
+    )
+      .slice(0, -1)
+      .filter((_, i) => i % 3 === 0)
+      .slice(1)
+      .map((message) => message.querySelector("div > span"));
+
+    for (const span of messages) {
+      if (span) {
+        const anchorTags = Array.from(span.querySelectorAll("a"));
+
+        for (const anchor of anchorTags) {
+          const url = anchor.href;
+          if (url) {
+            const metadata = await fetchMetadata(url);
+            if (metadata) {
+              const previewCardHTML = `
+                <a href="${url}" target="_blank" style="
+                  display: flex;
+                  align-items: center;
+                  width: 400px;
+                  height: 100px;
+                  overflow: hidden;
+                  border: 1px solid #ccc;
+                  border-radius: 8px;
+                  margin: 5px;
+                  cursor: pointer;
+                  text-decoration: none;
+                  color: inherit;">
+                  <img src="${metadata.image}" alt="${metadata.title}" style="
+                    width: 100px;
+                    height: 100%;
+                    object-fit: cover;
+                    border-right: 1px solid #ddd;">
+                  <div style="
+                    padding: 5px;
+                    flex: 1;
+                    overflow: hidden;">
+                    <h4 style="
+                      margin: 0;
+                      font-size: 12px;
+                      font-weight: bold;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;">${metadata.title}</h4>
+                    <p style="
+                      margin: 2px 0;
+                      font-size: 10px;
+                      color: #666;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;">${metadata.description}</p>
+                  </div>
+                </a>
+              `;
+
+              anchor.replaceWith(
+                document.createRange().createContextualFragment(previewCardHTML)
+              );
+            }
+          }
+        }
+      }
+    }
+  }
+
+  replaceUrlsWithPreviews();
+}
