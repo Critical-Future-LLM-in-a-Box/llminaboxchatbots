@@ -20,7 +20,8 @@ export async function createNewSection(element, options = {}) {
   newSectionParent.style.cssText = `
     width: 100%;
     height: 100%;
-    max-height: 80vh;
+    min-height: 80vh;
+    max-height: 100vh;
     display: flex;
     justify-content: space-between;
     flex-wrap: no-wrap;
@@ -45,7 +46,6 @@ export async function createNewSection(element, options = {}) {
   const button = createToggleButton(avatarContainer, options);
 
   if (options.interactiveAvatar) sectionWrapper.appendChild(tabBar);
-  // if (!options.interactiveAvatar) sectionWrapper.style.paddingTop = "20%";
 
   sectionWrapper.appendChild(avatarContainer);
   sectionWrapper.appendChild(button);
@@ -239,42 +239,51 @@ export function waitForElement(
 }
 
 export function urlPreview() {
-  const apiKey = "334976853f91d9a79fac6e2816e0768b";
+  let isRunning = false;
 
   async function fetchMetadata(url) {
-    try {
-      const response = await fetch(
-        `https://api.linkpreview.net/?q=${encodeURIComponent(
-          url
-        )}&key=${apiKey}`
-      );
-      const data = await response.json();
-      return {
-        title: data.title,
-        description: data.description,
-        image: data.image,
-      };
-    } catch (error) {
-      console.error("Error fetching metadata:", error);
-      return null;
-    }
+    const corsProxy = "https://corsproxy.io/?";
+
+    const response = await fetch(corsProxy + encodeURIComponent(url));
+
+    const html = await response.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const getMetaTag = (name) =>
+      doc.querySelector(`meta[name="${name}"]`)?.content ||
+      doc.querySelector(`meta[property="${name}"]`)?.content ||
+      "";
+
+    const metadata = {
+      title: doc.querySelector("title")?.innerText || getMetaTag("og:title"),
+      description: getMetaTag("description") || getMetaTag("og:description"),
+      image: getMetaTag("og:image"),
+    };
+
+    return metadata;
   }
 
-  async function replaceUrlsWithPreviews() {
-    const messages = Array.from(
-      document
-        .querySelector("flowise-fullchatbot")
-        .shadowRoot.querySelector(
-          "div > div > div:last-child > div:last-child > div"
-        )
-        .querySelectorAll("div:first-child")
-    )
-      .slice(0, -1)
-      .filter((_, i) => i % 3 === 0)
-      .slice(1)
-      .map((message) => message.querySelector("div > span"));
+  async function replaceUrlsWithPreviews(observer) {
+    if (isRunning) return;
+    isRunning = true;
 
-    for (const span of messages) {
+    observer.disconnect();
+
+    const messageContainer = document
+      .querySelector("flowise-fullchatbot")
+      .shadowRoot.querySelector(
+        "div > div > div:last-child > div:last-child > div"
+      );
+
+    const messages = Array.from(
+      messageContainer.querySelectorAll("div:first-child")
+    )
+      .filter((_, i) => i % 3 === 0)
+      .slice(-1);
+
+    for (const message of messages) {
+      const span = message.querySelector("div > span");
       if (span) {
         const anchorTags = Array.from(span.querySelectorAll("a"));
 
@@ -331,7 +340,31 @@ export function urlPreview() {
         }
       }
     }
+
+    isRunning = false;
+
+    observer.observe(messageContainer, {
+      childList: true,
+      subtree: true,
+    });
   }
 
-  replaceUrlsWithPreviews();
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      if (mutation.addedNodes.length && !isRunning) {
+        replaceUrlsWithPreviews(observer);
+      }
+    }
+  });
+
+  const messageContainer = document
+    .querySelector("flowise-fullchatbot")
+    .shadowRoot.querySelector(
+      "div > div > div:last-child > div:last-child > div"
+    );
+
+  observer.observe(messageContainer, {
+    childList: true,
+    subtree: true,
+  });
 }
