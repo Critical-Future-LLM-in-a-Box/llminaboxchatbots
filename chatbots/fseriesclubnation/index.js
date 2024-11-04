@@ -3,6 +3,8 @@ await (async () => {
   const chatflowid = "713ac6ba-4a32-40a0-9408-89478be4337b";
   const themeFront = "#212121";
   const themeBack = "#e2deea";
+  const avatarIcon =
+    "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs.png?raw=true";
   const avatarImage =
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs1.gif?raw=true";
   const avatarVideo =
@@ -12,32 +14,25 @@ await (async () => {
     const fullchatbot = document.createElement("flowise-fullchatbot");
     document.querySelector("header").parentElement.after(fullchatbot);
 
-    (
-      await import(
-        "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/chatbots/base/web.js"
-      )
-    ).default.initFull(
-      (
-        await import(
-          "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/chatbots/fseriesclubnation/config.js"
-        )
-      ).generateConfig({
+    (await import("../base/web.js")).default.initFull(
+      (await import("./config.js")).generateConfig({
         apiHost,
         chatflowid,
         themeFront,
         themeBack,
+        avatarIcon,
       })
     );
 
-    (
-      await import(
-        "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/chatbots/base/utils.js"
-      )
-    ).createNewSection(fullchatbot, {
+    const utils = await import("../base/utils.js");
+
+    await utils.createNewSection(fullchatbot, {
       themeFront,
       themeBack,
       avatarImage,
       avatarVideo,
     });
+
+    utils.urlPreview();
   }
 })();
