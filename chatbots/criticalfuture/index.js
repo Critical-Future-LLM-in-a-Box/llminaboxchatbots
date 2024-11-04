@@ -10,9 +10,9 @@
   const avatarVideo =
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
 
-  if (location.href !== "https://criticalfutureglobal.com/") {
+  if (location.href === "https://criticalfutureglobal.com/") {
     const fullchatbot = document.createElement("flowise-fullchatbot");
-    document.querySelector("body").after(fullchatbot);
+    document.querySelector("#header").after(fullchatbot);
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
         apiHost,
