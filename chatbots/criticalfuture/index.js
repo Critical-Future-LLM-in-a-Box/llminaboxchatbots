@@ -23,15 +23,19 @@
       })
     );
 
-    (await import("../base/utils.js")).createNewSection(fullchatbot, {
+    const utils = await import("../base/utils.js");
+
+    await utils.createNewSection(fullchatbot, {
       avatarImage,
       avatarVideo,
       themeFront,
       themeBack,
     });
 
-    (await import("../base/utils.js")).urlPreview();
+    utils.urlPreview();
 
-    window.scrollTo(0, 0);
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   }
 })();
