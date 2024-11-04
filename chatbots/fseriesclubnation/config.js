@@ -1,23 +1,27 @@
-export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
+export function generateConfig({
+  apiHost,
+  chatflowid,
+  themeFront,
+  themeBack,
+  avatarIcon,
+}) {
   return {
     chatflowid: chatflowid,
     apiHost: apiHost,
     theme: {
       button: {
-        color: themeFront,
         backgroundColor: themeFront,
       },
       chatWindow: {
         welcomeMessage: "Hi there, How can I help you?",
         errorMessage: "Error",
-        backgroundColor: "#efefef",
+        backgroundColor: themeBack,
         fontSize: 16,
         botMessage: {
           showAvatar: true,
           color: themeFront,
           backgroundColor: themeBack,
-          avatarSrc:
-            "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs.png?raw=true",
+          avatarSrc: avatarIcon,
         },
         userMessage: {
           showAvatar: true,
@@ -26,10 +30,8 @@ export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
         },
         textInput: {
           placeholder: "How can I help you?",
-          backgroundColor: themeBack,
-          textColor: themeFront,
+          color: themeFront,
           sendButtonColor: themeFront,
-          sendButtonColor: themeBack,
           maxChars: 2000,
           maxCharsWarningMessage: "You exceeded the character limit.",
         },
