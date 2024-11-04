@@ -13,6 +13,7 @@
   if (location.href === "https://criticalfutureglobal.com/") {
     const fullchatbot = document.createElement("flowise-fullchatbot");
     document.querySelector("#header").after(fullchatbot);
+
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
         apiHost,
