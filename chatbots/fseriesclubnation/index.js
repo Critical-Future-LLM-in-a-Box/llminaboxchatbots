@@ -26,17 +26,15 @@ await (async () => {
 
     const utils = await import("../base/utils.js");
 
-    await utils.createNewSection(fullchatbot, {
-      themeFront,
-      themeBack,
+    const newSection = await utils.createNewSection(fullchatbot, {
       avatarImage,
       avatarVideo,
+      themeFront,
+      themeBack,
     });
 
-    utils.urlPreview();
+    newSection.scrollIntoView({ behavior: "smooth" });
 
-    setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 0);
+    utils.urlPreview();
   }
 })();
