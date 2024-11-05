@@ -51,6 +51,8 @@ export async function createNewSection(element, options = {}) {
   sectionWrapper.appendChild(button);
 
   newSectionParent.prepend(sectionWrapper);
+
+  return newSectionParent;
 }
 
 function createAvatarContainer(options) {
@@ -290,51 +292,66 @@ export function urlPreview() {
         for (const anchor of anchorTags) {
           const url = anchor.href;
           if (url) {
-            const metadata = await fetchMetadata(url);
-            if (metadata) {
-              const previewCardHTML = `
-                <a href="${url}" target="_blank" style="
-                  display: flex;
-                  align-items: center;
-                  width: 400px;
-                  height: 100px;
-                  overflow: hidden;
-                  border: 1px solid #ccc;
-                  border-radius: 8px;
-                  margin: 5px;
-                  cursor: pointer;
-                  text-decoration: none;
-                  color: inherit;">
-                  <img src="${metadata.image}" alt="${metadata.title}" style="
-                    width: 100px;
-                    height: 100%;
-                    object-fit: cover;
-                    border-right: 1px solid #ddd;">
-                  <div style="
-                    padding: 5px;
-                    flex: 1;
-                    overflow: hidden;">
-                    <h4 style="
-                      margin: 0;
-                      font-size: 12px;
-                      font-weight: bold;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      white-space: nowrap;">${metadata.title}</h4>
-                    <p style="
-                      margin: 2px 0;
-                      font-size: 10px;
-                      color: #666;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                      white-space: nowrap;">${metadata.description}</p>
-                  </div>
-                </a>
-              `;
-
-              anchor.replaceWith(
-                document.createRange().createContextualFragment(previewCardHTML)
-              );
+            const youtubeRegex =
+              /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+            if (youtubeRegex.test(url)) {
+              const videoId = getYoutubeVideoId(url);
+              if (videoId) {
+                const iframeHTML = `
+                  <iframe width="400" height="225" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                `;
+                anchor.replaceWith(
+                  document.createRange().createContextualFragment(iframeHTML)
+                );
+              }
+            } else {
+              const metadata = await fetchMetadata(url);
+              if (metadata) {
+                const previewCardHTML = `
+                  <a href="${url}" target="_blank" style="
+                    display: flex;
+                    align-items: center;
+                    width: 400px;
+                    height: 100px;
+                    overflow: hidden;
+                    border: 1px solid #ccc;
+                    border-radius: 8px;
+                    margin: 5px;
+                    cursor: pointer;
+                    text-decoration: none;
+                    color: inherit;">
+                    <img src="${metadata.image}" alt="${metadata.title}" style="
+                      width: 100px;
+                      height: 100%;
+                      object-fit: cover;
+                      border-right: 1px solid #ddd;">
+                    <div style="
+                      padding: 5px;
+                      flex: 1;
+                      overflow: hidden;">
+                      <h4 style="
+                        margin: 0;
+                        font-size: 12px;
+                        font-weight: bold;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;">${metadata.title}</h4>
+                      <p style="
+                        margin: 2px 0;
+                        font-size: 10px;
+                        color: #666;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;">${metadata.description}</p>
+                    </div>
+                  </a>
+                `;
+                anchor.replaceWith(
+                  document
+                    .createRange()
+                    .createContextualFragment(previewCardHTML)
+                );
+              }
             }
           }
         }
@@ -349,9 +366,25 @@ export function urlPreview() {
     });
   }
 
+  function getYoutubeVideoId(url) {
+    const urlObj = new URL(url);
+    if (urlObj.hostname.includes("youtube.com")) {
+      return urlObj.searchParams.get("v");
+    } else if (urlObj.hostname.includes("youtu.be")) {
+      return urlObj.pathname.slice(1);
+    }
+    return null;
+  }
+
+  const sendButton = document
+    .querySelector("flowise-fullchatbot")
+    .shadowRoot.querySelector(
+      "div > div > div:last-child > div:last-child > div:nth-child(2) button:last-of-type"
+    );
+
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
-      if (mutation.addedNodes.length && !isRunning) {
+      if (mutation.addedNodes.length && !isRunning && !sendButton.disabled) {
         replaceUrlsWithPreviews(observer);
       }
     }
