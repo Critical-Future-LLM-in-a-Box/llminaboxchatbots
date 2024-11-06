@@ -13,7 +13,6 @@
       chatflowid,
       themeFront,
       themeBack,
-      avatarIcon,
     })
   );
 })();
