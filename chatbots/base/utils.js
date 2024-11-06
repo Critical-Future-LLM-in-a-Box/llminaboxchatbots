@@ -32,10 +32,6 @@ export async function createNewSection(element, options = {}) {
   const chatWrapper = await waitForElement("div > div", element, true);
   const chatContent = await waitForElement("div:last-child", chatWrapper);
 
-  chatContent.style.cssText = `
-    max-height: 100%;
-  `;
-
   const style = document.createElement("style");
   style.textContent = `
     * {
