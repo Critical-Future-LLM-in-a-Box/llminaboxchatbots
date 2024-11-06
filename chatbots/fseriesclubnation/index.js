@@ -11,8 +11,8 @@ await (async () => {
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/fs/Joe%20intro.mp4";
 
   if (location.href === "https://fseriesclubnation.com/") {
-    const fullchatbot = document.createElement("flowise-fullchatbot");
-    document.querySelector("header").parentElement.after(fullchatbot);
+    const chatbot = document.createElement("flowise-fullchatbot");
+    document.querySelector("header").parentElement.after(chatbot);
 
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
@@ -26,7 +26,7 @@ await (async () => {
 
     const utils = await import("../base/utils.js");
 
-    const newSection = await utils.createNewSection(fullchatbot, {
+    const newSection = await utils.createNewSection(chatbot, {
       avatarImage,
       avatarVideo,
       themeFront,
