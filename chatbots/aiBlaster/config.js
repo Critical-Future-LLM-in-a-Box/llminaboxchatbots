@@ -1,10 +1,4 @@
-export function generateConfig({
-  apiHost,
-  chatflowid,
-  themeFront,
-  themeBack,
-  avatarIcon,
-}) {
+export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
   return {
     chatflowid: chatflowid,
     apiHost: apiHost,
@@ -21,7 +15,6 @@ export function generateConfig({
           showAvatar: true,
           color: themeFront,
           backgroundColor: themeBack,
-          avatarSrc: avatarIcon,
         },
         userMessage: {
           showAvatar: true,
