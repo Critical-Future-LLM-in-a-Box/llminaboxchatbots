@@ -11,8 +11,8 @@
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
 
   if (location.href === "https://criticalfutureglobal.com/") {
-    const fullchatbot = document.createElement("flowise-fullchatbot");
-    document.querySelector("#header").after(fullchatbot);
+    const chatbot = document.createElement("flowise-fullchatbot");
+    document.querySelector("#header").after(chatbot);
 
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
@@ -26,7 +26,7 @@
 
     const utils = await import("../base/utils.js");
 
-    const newSection = await utils.createNewSection(fullchatbot, {
+    const newSection = await utils.createNewSection(chatbot, {
       avatarImage,
       avatarVideo,
       themeFront,
