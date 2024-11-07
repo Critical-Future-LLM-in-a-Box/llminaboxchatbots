@@ -20,7 +20,7 @@
 
     llminaboxWrapper.style.cssText = `
       display: block;
-      max-width: 80vh;
+      max-height: 80vh;
     `;
 
     (await import("../base/web.js")).default.initFull(
