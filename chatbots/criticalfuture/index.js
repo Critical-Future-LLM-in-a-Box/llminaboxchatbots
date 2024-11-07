@@ -15,12 +15,11 @@
       await import("../base/utils.js")
     ).waitForElement("llminabox");
 
-    console.log(llminaboxWrapper);
-
     const chatbot = document.createElement("flowise-fullchatbot");
     llminaboxWrapper.appendChild(chatbot);
 
     llminaboxWrapper.style.cssText = `
+      display: block;
       max-width: 80vh;
     `;
 
