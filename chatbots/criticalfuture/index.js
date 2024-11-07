@@ -18,11 +18,6 @@
     const chatbot = document.createElement("flowise-fullchatbot");
     llminaboxWrapper.appendChild(chatbot);
 
-    llminaboxWrapper.style.cssText = `
-      display: block;
-      max-height: 80vh;
-    `;
-
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
         apiHost,
