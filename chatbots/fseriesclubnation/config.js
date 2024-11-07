@@ -17,6 +17,8 @@ export function generateConfig({
         errorMessage: "Error",
         backgroundColor: themeBack,
         fontSize: 16,
+        height: "100%",
+        width: "100%",
         botMessage: {
           showAvatar: true,
           color: themeFront,
