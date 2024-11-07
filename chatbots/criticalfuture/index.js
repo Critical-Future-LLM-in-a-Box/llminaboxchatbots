@@ -20,7 +20,7 @@
     const chatbot = document.createElement("flowise-fullchatbot");
     llminaboxWrapper.appendChild(chatbot);
 
-    llminaboxWrapper.computedStyleMap.cssText = `
+    llminaboxWrapper.style.cssText = `
       max-width: 80vh;
     `;
 
