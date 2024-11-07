@@ -11,7 +11,12 @@
     "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
 
   if (location.href === "https://criticalfutureglobal.com/") {
-    const llminaboxWrapper = document.querySelector("llminabox");
+    const llminaboxWrapper = await (
+      await import("../base/utils.js")
+    ).waitForElement("llminabox");
+
+    console.log(llminaboxWrapper);
+
     const chatbot = document.createElement("flowise-fullchatbot");
     llminaboxWrapper.appendChild(chatbot);
 
