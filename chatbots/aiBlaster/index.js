@@ -3,9 +3,16 @@
   const chatflowid = "ef3dfcbb-0a6d-419c-a42c-31614ff7308e";
   const themeFront = "#1d0462";
   const themeBack = "#e2deea";
+  const avatarIcon = "../../Avatars/blaster/AIBlaster.png";
+  const avatarImage = "../../Avatars/blaster/AIBlaster.gif";
+  const avatarVideo = "../../Avatars/blaster/AIBlaster.mp4";
 
-  const fullchatbot = document.createElement("flowise-fullchatbot");
-  document.querySelector("llminabox").appendChild(fullchatbot);
+  const llminaboxWrapper = await (
+    await import("../base/utils.js")
+  ).waitForElement("llminabox");
+
+  const chatbot = document.createElement("flowise-fullchatbot");
+  llminaboxWrapper.appendChild(chatbot);
 
   (await import("../base/web.js")).default.initFull(
     (await import("./config.js")).generateConfig({
@@ -13,6 +20,20 @@
       chatflowid,
       themeFront,
       themeBack,
+      avatarIcon,
     })
   );
+
+  const utils = await import("../base/utils.js");
+
+  const newSection = await utils.createNewSection(chatbot, {
+    avatarImage,
+    avatarVideo,
+    themeFront,
+    themeBack,
+  });
+
+  newSection.scrollIntoView({ behavior: "smooth" });
+
+  utils.urlPreview();
 })();
