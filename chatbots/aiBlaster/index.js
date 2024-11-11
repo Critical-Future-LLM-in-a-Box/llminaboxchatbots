@@ -4,11 +4,11 @@
   const themeFront = "#1d0462";
   const themeBack = "#e2deea";
   const avatarIcon =
-    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.png";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/blaster.png";
   const avatarImage =
-    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.gif";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/blaster.gif";
   const avatarVideo =
-    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.mp4";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/blaster.mp4";
 
   const llminaboxWrapper = await (
     await import("../base/utils.js")
