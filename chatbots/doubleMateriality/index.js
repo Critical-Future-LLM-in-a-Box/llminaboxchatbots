@@ -8,7 +8,20 @@
     await import("../base/utils.js")
   ).waitForElement("llminabox");
 
+  if (llminaboxWrapper) {
+    llminaboxWrapper.style.cssText = `
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    `;
+  }
+
   const chatbot = document.createElement("flowise-fullchatbot");
+  chatbot.style.cssText = `
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+    `;
   llminaboxWrapper.appendChild(chatbot);
 
   (await import("../base/web.js")).default.initFull(
