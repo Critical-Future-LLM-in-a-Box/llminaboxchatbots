@@ -10,35 +10,33 @@
   const avatarVideo =
     "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/grace/grace.mp4";
 
-  if (location.href === "https://criticalfutureglobal.com/") {
-    const llminaboxWrapper = await (
-      await import("../base/utils.js")
-    ).waitForElement("llminabox");
+  const llminaboxWrapper = await (
+    await import("../base/utils.js")
+  ).waitForElement("llminabox");
 
-    const chatbot = document.createElement("flowise-fullchatbot");
-    llminaboxWrapper.appendChild(chatbot);
+  const chatbot = document.createElement("flowise-fullchatbot");
+  llminaboxWrapper.appendChild(chatbot);
 
-    (await import("../base/web.js")).default.initFull(
-      (await import("./config.js")).generateConfig({
-        apiHost,
-        chatflowid,
-        themeFront,
-        themeBack,
-        avatarIcon,
-      })
-    );
-
-    const utils = await import("../base/utils.js");
-
-    const newSection = await utils.createNewSection(chatbot, {
-      avatarImage,
-      avatarVideo,
+  (await import("../base/web.js")).default.initFull(
+    (await import("./config.js")).generateConfig({
+      apiHost,
+      chatflowid,
       themeFront,
       themeBack,
-    });
+      avatarIcon,
+    })
+  );
 
-    newSection.scrollIntoView({ behavior: "smooth" });
+  const utils = await import("../base/utils.js");
 
-    utils.urlPreview();
-  }
+  const newSection = await utils.createNewSection(chatbot, {
+    avatarImage,
+    avatarVideo,
+    themeFront,
+    themeBack,
+  });
+
+  newSection.scrollIntoView({ behavior: "smooth" });
+
+  utils.urlPreview();
 })();
