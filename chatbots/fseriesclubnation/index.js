@@ -4,11 +4,11 @@ await (async () => {
   const themeFront = "#212121";
   const themeBack = "#e2deea";
   const avatarIcon =
-    "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs.png?raw=true";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/fs/joe.png";
   const avatarImage =
-    "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/blob/main/Avatars/fs/fs1.gif?raw=true";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/fs/joe.gif";
   const avatarVideo =
-    "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/fs/Joe%20intro.mp4";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/fs/joe.mp4";
 
   if (location.href === "https://fseriesclubnation.com/") {
     const chatbot = document.createElement("flowise-fullchatbot");

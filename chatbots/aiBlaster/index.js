@@ -3,9 +3,12 @@
   const chatflowid = "ef3dfcbb-0a6d-419c-a42c-31614ff7308e";
   const themeFront = "#1d0462";
   const themeBack = "#e2deea";
-  const avatarIcon = "../../Avatars/blaster/AIBlaster.png";
-  const avatarImage = "../../Avatars/blaster/AIBlaster.gif";
-  const avatarVideo = "../../Avatars/blaster/AIBlaster.mp4";
+  const avatarIcon =
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.png";
+  const avatarImage =
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.gif";
+  const avatarVideo =
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/blaster/AIBlaster.mp4";
 
   const llminaboxWrapper = await (
     await import("../base/utils.js")

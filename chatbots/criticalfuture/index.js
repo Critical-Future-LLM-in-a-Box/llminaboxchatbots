@@ -4,11 +4,11 @@
   const themeFront = "#1d0462";
   const themeBack = "#e2deea";
   const avatarIcon =
-    "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai.png";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/mai/mai.png";
   const avatarImage =
-    "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/main/Avatars/mai/mai-new.gif";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/mai/mai.gif";
   const avatarVideo =
-    "https://github.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/raw/main/Avatars/mai/Mai%20intro%20V0.2%20(sonia%20voice).mp4";
+    "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/mai/mai.mp4";
 
   if (location.href === "https://criticalfutureglobal.com/") {
     const llminaboxWrapper = await (
