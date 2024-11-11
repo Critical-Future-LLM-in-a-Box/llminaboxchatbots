@@ -1,4 +1,10 @@
-export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
+export function generateConfig({
+  apiHost,
+  chatflowid,
+  themeFront,
+  themeBack,
+  avatarIcon,
+}) {
   return {
     chatflowid: chatflowid,
     apiHost: apiHost,
@@ -11,10 +17,13 @@ export function generateConfig({ apiHost, chatflowid, themeFront, themeBack }) {
         errorMessage: "Error",
         backgroundColor: themeBack,
         fontSize: 16,
+        height: 600,
+        width: 0,
         botMessage: {
           showAvatar: true,
           color: themeFront,
           backgroundColor: themeBack,
+          avatarSrc: avatarIcon,
         },
         userMessage: {
           showAvatar: true,
