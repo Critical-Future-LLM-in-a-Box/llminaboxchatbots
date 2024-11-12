@@ -6,8 +6,8 @@ export function generateConfig({
   avatarIcon,
 }) {
   return {
-    chatflowid: chatflowid,
     apiHost: apiHost,
+    chatflowid: chatflowid,
     theme: {
       button: {
         backgroundColor: themeFront,
