@@ -12,7 +12,7 @@ await (async () => {
 
   if (location.href === "https://fseriesclubnation.com/") {
     const chatbot = document.createElement("flowise-fullchatbot");
-    document.querySelector("header").parentNode.after(chatbot);
+    document.querySelector("#header-outer").after(chatbot);
 
     (await import("../base/web.js")).default.initFull(
       (await import("./config.js")).generateConfig({
