@@ -24,7 +24,7 @@
         chatflowid,
         themeFront,
         themeBack,
-        avatarIcon,
+        avatarIcon
       })
     );
 
@@ -34,11 +34,13 @@
       avatarImage,
       avatarVideo,
       themeFront,
-      themeBack,
+      themeBack
     });
 
     newSection.scrollIntoView({ behavior: "smooth" });
 
     utils.urlPreview();
+
+    await utils.ttsSupport(chatbot);
   }
 })();

@@ -20,7 +20,7 @@ await (async () => {
         chatflowid,
         themeFront,
         themeBack,
-        avatarIcon,
+        avatarIcon
       })
     );
 
@@ -30,7 +30,7 @@ await (async () => {
       avatarImage,
       avatarVideo,
       themeFront,
-      themeBack,
+      themeBack
     });
 
     newSection.scrollIntoView({ behavior: "smooth" });
