@@ -28,7 +28,7 @@ export function waitForElement(
 }
 
 export async function createNewSection(element, options = {}) {
-  if (window.innerWidth < 768 && !options.allowMobile) return;
+  if (window.innerWidth < 768) return;
 
   const chatWrapper = await waitForElement("div > div", element, true);
   const chatContent = await waitForElement("div:last-child", chatWrapper);
@@ -151,12 +151,19 @@ export async function createNewSection(element, options = {}) {
   }
 }
 
-export function urlPreview() {
-  const messageContainer = document
-    .querySelector("flowise-fullchatbot")
-    .shadowRoot.querySelector(
-      "div > div > div:last-child > div:last-child > div"
-    );
+export async function urlPreview(parent) {
+  let messageContainerSelector;
+
+  messageContainerSelector =
+    window.innerWidth < 768
+      ? "div > div > div:last-child > div"
+      : "div > div > div:last-child > div:last-child > div:first-child";
+
+  const messageContainer = await waitForElement(
+    messageContainerSelector,
+    parent,
+    true
+  );
 
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
@@ -171,11 +178,11 @@ export function urlPreview() {
     subtree: true
   });
 
-  const sendButton = document
-    .querySelector("flowise-fullchatbot")
-    .shadowRoot.querySelector(
-      "div > div > div:last-child > div:last-child > div:nth-child(2) button:last-of-type"
-    );
+  const sendButtonSelector =
+    window.innerWidth < 768
+      ? "div > div > div:last-child > div:last-child button:last-of-type"
+      : "div > div > div:last-child > div:last-child > div:nth-child(2) button:last-of-type";
+  const sendButton = await waitForElement(sendButtonSelector, parent, true);
 
   async function replaceUrlsWithPreviews() {
     if (sendButton.disabled) return;
@@ -193,7 +200,7 @@ export function urlPreview() {
             const videoId = getYoutubeVideoId(url);
             if (videoId) {
               const iframeHTML = `
-                  <iframe width="400" height="225" src="https://www.youtube.com/embed/${videoId}"></iframe>
+                  <iframe width="300" height="200" src="https://www.youtube.com/embed/${videoId}"></iframe>
                 `;
               const iframeWrapper = document.createElement("div");
               iframeWrapper.innerHTML = iframeHTML;
@@ -247,6 +254,9 @@ async function processMessages(parent) {
   const messages = await getMessages(parent);
   const messageOptions = await getMessageOptions(parent);
 
+  console.log("messages", messages);
+  console.log("messageOptions", messageOptions);
+
   messageOptions.forEach((messageOption, index) => {
     if (!messageOption.querySelector(".tts-button")) {
       addTTSButton(messageOption, messages[index]);
@@ -257,7 +267,9 @@ async function processMessages(parent) {
 // Function to observe new messages
 async function observeNewMessages(parent) {
   const messageContainerSelector =
-    "div > div > div:last-child > div:last-child > div:first-child";
+    window.innerWidth < 768
+      ? "div > div > div:last-child > div"
+      : "div > div > div:last-child > div:last-child > div:first-child";
   const messageContainer = await waitForElement(
     messageContainerSelector,
     parent,
@@ -283,7 +295,9 @@ async function observeNewMessages(parent) {
 // Function to get messages
 async function getMessages(parent) {
   const messagesSelector =
-    "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) span";
+    window.innerWidth < 768
+      ? "div > div > div:last-child > div:first-child > div:nth-child(2n + 3) span"
+      : "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) span";
   const messageElements = await waitForElement(
     messagesSelector,
     parent,
@@ -296,7 +310,9 @@ async function getMessages(parent) {
 // Function to get message options
 async function getMessageOptions(parent) {
   const messageOptionsSelector =
-    "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) > div:last-child";
+    window.innerWidth < 768
+      ? "div > div > div:last-child > div:first-child > div:nth-child(2n + 3) > div:last-child"
+      : "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) > div:last-child";
   const messageOptionsElements = await waitForElement(
     messageOptionsSelector,
     parent,
