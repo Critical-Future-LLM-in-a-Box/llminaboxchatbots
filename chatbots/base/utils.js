@@ -221,197 +221,272 @@ export function urlPreview() {
 }
 
 export async function ttsSupport(parent) {
-  const resetButton = await waitForElement(
-    "div > div > div button",
-    parent,
-    true
-  );
+  // Initialize reset button
+  await initializeResetButton(parent);
 
-  resetButton.addEventListener("click", () => {
-    localStorage.removeItem("tts");
-  });
-
-  // Initial setup to process existing messages
+  // Process existing messages
   await processMessages(parent);
 
-  // Create a MutationObserver to handle dynamically added messages
-  const observer = new MutationObserver(async (mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.addedNodes.length) {
-        await processMessages(parent);
-      }
+  // Observe mutations to process new messages
+  await observeNewMessages(parent);
+}
+
+// Function to initialize reset button
+async function initializeResetButton(parent) {
+  const resetButtonSelector = "div > div > div button";
+  const resetButton = await waitForElement(resetButtonSelector, parent, true);
+  if (resetButton) {
+    resetButton.addEventListener("click", () => {
+      localStorage.removeItem("tts");
+    });
+  }
+}
+
+// Function to process messages and add TTS buttons
+async function processMessages(parent) {
+  const messages = await getMessages(parent);
+  const messageOptions = await getMessageOptions(parent);
+
+  messageOptions.forEach((messageOption, index) => {
+    if (!messageOption.querySelector(".tts-button")) {
+      addTTSButton(messageOption, messages[index]);
     }
   });
+}
 
+// Function to observe new messages
+async function observeNewMessages(parent) {
+  const messageContainerSelector =
+    "div > div > div:last-child > div:last-child > div:first-child";
   const messageContainer = await waitForElement(
-    "div > div > div:last-child > div:last-child > div:first-child",
+    messageContainerSelector,
     parent,
     true
   );
 
-  console.log(messageContainer);
-
-  // Start observing the parent container
-  observer.observe(messageContainer, {
-    childList: true,
-    subtree: true
-  });
-
-  // Function to process messages and add TTS buttons
-  async function processMessages(parent) {
-    // Get span messages
-    const messages = Array.from(
-      await waitForElement(
-        "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) span",
-        parent,
-        true,
-        "querySelectorAll"
-      )
-    ).map((message) => message.textContent);
-
-    // Get message options div
-    const messageOptions = Array.from(
-      await waitForElement(
-        "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) > div:last-child",
-        parent,
-        true,
-        "querySelectorAll"
-      )
-    );
-
-    // Add TTS buttons to message options
-    messageOptions.forEach((messageOption, index) => {
-      if (!messageOption.querySelector(".tts-button")) {
-        addTTSButton(messageOption, messages[index], index);
-      }
-    });
-  }
-
-  // Function to add TTS button with click functionality
-  function addTTSButton(messageOption, messageText, index) {
-    const startVoice = createIcon("volumeUp");
-    const spinner = createIcon("spinner");
-    const endVoice = createIcon("volumeOff");
-
-    startVoice.style.cssText =
-      spinner.style.cssText =
-      endVoice.style.cssText =
-        `
-      cursor: pointer;
-      position: absolute;
-      top: 50%;
-      left: 28%;
-      transform: translateY(-60%);
-    `;
-
-    startVoice.classList.add("tts-button");
-    messageOption.style.position = "relative";
-    messageOption.appendChild(startVoice);
-
-    startVoice.addEventListener("click", async () => {
-      startVoice.replaceWith(spinner);
-
-      try {
-        const localtts = JSON.parse(localStorage.getItem("tts") || "{}");
-        const cachedTTS = localtts[index];
-
-        if (cachedTTS && cachedTTS.text === messageText) {
-          const binary = atob(cachedTTS.audioBlob);
-          const array = new Uint8Array(binary.length);
-          for (let i = 0; i < binary.length; i++) {
-            array[i] = binary.charCodeAt(i);
-          }
-          const audioBlob = new Blob([array], { type: "audio/mpeg" });
-
-          const mp3Url = URL.createObjectURL(audioBlob);
-          const tts = new Audio(mp3Url);
-          playAudio(tts, spinner, endVoice, startVoice);
-        } else {
-          const response = await fetch(
-            "https://tts.criticalfutureglobal.com/get_tts",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-api-key": "G7x9mVt2Q5bK8Jp4S1Zc"
-              },
-              body: JSON.stringify({
-                text: messageText,
-                voice: "en-GB-SoniaNeural",
-                id: "mai"
-              })
-            }
-          );
-
-          const result = await response.json();
-          const audioResponse = await fetch(result.file_url);
-          const audioBlob = await audioResponse.blob();
-
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64data = reader.result.split(",")[1];
-            localtts[index] = { text: messageText, audioBlob: base64data };
-            localStorage.setItem("tts", JSON.stringify(localtts));
-          };
-          reader.readAsDataURL(audioBlob);
-
-          const mp3Url = URL.createObjectURL(audioBlob);
-          const tts = new Audio(mp3Url);
-          playAudio(tts, spinner, endVoice, startVoice);
+  if (messageContainer) {
+    const observer = new MutationObserver(async (mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length) {
+          await processMessages(parent);
         }
-      } catch (error) {
-        console.error("Error processing TTS:", error);
-        spinner.replaceWith(startVoice);
       }
     });
 
-    // Function to play and control audio
-    function playAudio(tts, spinner, endVoice, startVoice) {
-      tts.play();
-      spinner.replaceWith(endVoice);
+    observer.observe(messageContainer, {
+      childList: true,
+      subtree: true
+    });
+  }
+}
 
-      endVoice.addEventListener("click", () => {
-        tts.pause();
-        endVoice.replaceWith(startVoice);
-      });
+// Function to get messages
+async function getMessages(parent) {
+  const messagesSelector =
+    "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) span";
+  const messageElements = await waitForElement(
+    messagesSelector,
+    parent,
+    true,
+    "querySelectorAll"
+  );
+  return Array.from(messageElements).map((el) => el.textContent);
+}
 
-      tts.onended = () => endVoice.replaceWith(startVoice);
+// Function to get message options
+async function getMessageOptions(parent) {
+  const messageOptionsSelector =
+    "div > div > div:last-child > div:last-child > div:first-child > div:nth-child(2n + 3) > div:last-child";
+  const messageOptionsElements = await waitForElement(
+    messageOptionsSelector,
+    parent,
+    true,
+    "querySelectorAll"
+  );
+  return Array.from(messageOptionsElements);
+}
+
+// Function to add TTS button
+function addTTSButton(messageOption, messageText) {
+  const startVoice = createIcon("volumeUp");
+  const spinner = createIcon("spinner");
+  const endVoice = createIcon("volumeOff");
+
+  const iconStyle = `
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    left: 150px;
+    transform: translateY(-60%);
+  `;
+  startVoice.style.cssText = iconStyle;
+  spinner.style.cssText = iconStyle;
+  endVoice.style.cssText = iconStyle;
+
+  messageOption.style.position = "relative";
+  messageOption.appendChild(startVoice);
+
+  startVoice.addEventListener("click", () => {
+    handleTTSButtonClick(startVoice, spinner, endVoice, messageText);
+  });
+}
+
+// Function to handle TTS button click
+async function handleTTSButtonClick(
+  startVoice,
+  spinner,
+  endVoice,
+  messageText
+) {
+  startVoice.replaceWith(spinner);
+
+  try {
+    const ttsKey = hashString(messageText);
+    const localtts = JSON.parse(localStorage.getItem("tts") || "{}");
+    const cachedTTS = localtts[ttsKey];
+
+    let audioBlob;
+    if (cachedTTS && cachedTTS.text === messageText) {
+      // Use cached audio
+      audioBlob = base64ToBlob(cachedTTS.audioBlob, "audio/mpeg");
+    } else {
+      // Fetch new TTS data
+      audioBlob = await fetchTTSData(messageText);
+
+      // Cache the audio data
+      const base64data = await blobToBase64(audioBlob);
+      localtts[ttsKey] = { text: messageText, audioBlob: base64data };
+      localStorage.setItem("tts", JSON.stringify(localtts));
     }
+
+    const mp3Url = URL.createObjectURL(audioBlob);
+    const tts = new Audio(mp3Url);
+    playAudio(tts, spinner, endVoice, startVoice);
+  } catch (error) {
+    console.error("Error processing TTS:", error);
+    spinner.replaceWith(startVoice);
+  }
+}
+
+// Function to fetch TTS data
+async function fetchTTSData(messageText) {
+  const response = await fetch("https://tts.criticalfutureglobal.com/get_tts", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": "G7x9mVt2Q5bK8Jp4S1Zc"
+    },
+    body: JSON.stringify({
+      text: messageText,
+      voice: "en-GB-SoniaNeural",
+      id: "mai"
+    })
+  });
+  const result = await response.json();
+  const audioResponse = await fetch(result.file_url);
+  return await audioResponse.blob();
+}
+
+// Function to play and control audio
+function playAudio(tts, spinner, endVoice, startVoice) {
+  tts.play();
+  spinner.replaceWith(endVoice);
+
+  const endVoiceClickHandler = () => {
+    tts.pause();
+    endVoice.replaceWith(startVoice);
+  };
+
+  endVoice.addEventListener("click", endVoiceClickHandler);
+
+  tts.onended = () => {
+    endVoice.replaceWith(startVoice);
+    endVoice.removeEventListener("click", endVoiceClickHandler);
+  };
+}
+
+// Helper function to create icons
+function createIcon(iconType, color = "navy") {
+  const icon = document.createElement("div");
+  icon.style.cssText = `
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    color: ${color};
+  `;
+
+  icon.classList.add("tts-button");
+
+  const icons = {
+    volumeUp: `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${color}" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M11 5l-6 6H3v2h2l6 6V5z" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M15 8.5a5 5 0 010 7m3-10a9 9 0 010 14" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    `,
+    volumeOff: `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${color}" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M11 5l-6 6H3v2h2l6 6V5z" stroke-linecap="round" stroke-linejoin="round"></path>
+        <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" stroke-linejoin="round"></line>
+        <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" stroke-linejoin="round"></line>
+      </svg>
+    `,
+    spinner: `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="${color}" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
+        <circle cx="12" cy="12" r="10" opacity="0.3"></circle>
+        <path d="M4 12a8 8 0 018-8" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    `
+  };
+
+  icon.innerHTML = icons[iconType] || "";
+
+  return icon;
+}
+
+// Helper functions to convert between Blob and base64
+function base64ToBlob(base64, contentType = "", sliceSize = 512) {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize);
+
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
   }
 
-  // Function to create icons
-  function createIcon(iconType) {
-    const icon = document.createElement("div");
-    icon.style.cssText = `
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      color: navy;
-    `;
+  const blob = new Blob(byteArrays, { type: contentType });
+  return blob;
+}
 
-    const icons = {
-      volumeUp: `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
-          <path d="M11 5l-6 6H3v2h2l6 6V5z" stroke-linecap="round" stroke-linejoin="round"></path>
-          <path d="M15 8.5a5 5 0 010 7m3-10a9 9 0 010 14" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      `,
-      volumeOff: `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
-          <path d="M11 5l-6 6H3v2h2l6 6V5z" stroke-linecap="round" stroke-linejoin="round"></path>
-          <line x1="18" y1="6" x2="6" y2="18" stroke-linecap="round" stroke-linejoin="round"></line>
-          <line x1="6" y1="6" x2="18" y2="18" stroke-linecap="round" stroke-linejoin="round"></line>
-        </svg>
-      `,
-      spinner: `
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="20" height="20">
-          <circle cx="12" cy="12" r="10" opacity="0.3"></circle>
-          <path d="M4 12a8 8 0 018-8" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      `
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64data = reader.result.split(",")[1];
+      resolve(base64data);
     };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
-    icon.innerHTML = icons[iconType] || "";
-    return icon;
+// Hash function
+function hashString(str) {
+  let hash = 0,
+    i,
+    chr;
+  if (str.length === 0) return hash.toString();
+  for (i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0;
   }
+  return hash.toString();
 }
