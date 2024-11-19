@@ -30,16 +30,14 @@
 
     const utils = await import("../base/utils.js");
 
-    const newSection = await utils.createNewSection(chatbot, {
+    await utils.createNewSection(chatbot, {
       avatarImage,
       avatarVideo,
       themeFront,
       themeBack
     });
 
-    newSection.scrollIntoView({ behavior: "smooth" });
-
-    utils.urlPreview();
+    await utils.urlPreview(chatbot);
 
     await utils.ttsSupport(chatbot);
   }
