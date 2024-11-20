@@ -3,14 +3,14 @@ export function generateConfig({
   chatflowid,
   themeFront,
   themeBack,
-  avatarIcon,
+  avatarIcon
 }) {
   return {
     chatflowid: chatflowid,
     apiHost: apiHost,
     theme: {
       button: {
-        backgroundColor: themeFront,
+        backgroundColor: themeFront
       },
       chatWindow: {
         welcomeMessage: "Hi there, How can I help you?",
@@ -23,32 +23,32 @@ export function generateConfig({
           showAvatar: true,
           color: themeFront,
           backgroundColor: themeBack,
-          avatarSrc: avatarIcon,
+          avatarSrc: avatarIcon
         },
         userMessage: {
           showAvatar: true,
           textColor: themeFront,
-          backgroundColor: themeBack,
+          backgroundColor: themeBack
         },
         textInput: {
           placeholder: "How can I help you?",
           color: themeFront,
           sendButtonColor: themeFront,
           maxChars: 2000,
-          maxCharsWarningMessage: "You exceeded the character limit.",
+          maxCharsWarningMessage: "You exceeded the character limit."
         },
         footer: {
           backgroundColor: themeFront,
           text: "Powered by",
           company: "Critical Future",
-          companyLink: "https://criticalfutureglobal.com/",
+          companyLink: "https://criticalfutureglobal.com/"
         },
         disclaimer: {
           title: "Disclaimer",
           message:
-            "By using this chatbot, you agree to criticalfuture Terms & Condition",
-        },
-      },
-    },
+            "By using this chatbot, you agree to criticalfuture Terms & Condition"
+        }
+      }
+    }
   };
 }
