@@ -1,3 +1,4 @@
+///////////////////////////////////////////////////////////////////////////////
 export function waitForElement(
   selector = "",
   parent = document,
@@ -27,6 +28,7 @@ export function waitForElement(
   });
 }
 
+///////////////////////////////////////////////////////////////////////////////
 export async function createNewSection(element, options = {}) {
   if (window.innerWidth < 768) return;
 
@@ -36,8 +38,8 @@ export async function createNewSection(element, options = {}) {
   const style = document.createElement("style");
   style.textContent = `
     * {
-        scrollbar-width: thin !important;
-      }
+      scrollbar-width: thin !important;
+    }
   `;
   chatWrapper.prepend(style);
 
@@ -45,6 +47,10 @@ export async function createNewSection(element, options = {}) {
   chatWrapper.append(newSectionParent);
   chatWrapper.removeChild(chatContent);
   newSectionParent.append(chatContent);
+
+  chatContent.style.cssText = `
+    max-height: 600px;
+  `;
 
   newSectionParent.style.cssText = `
     width: 100%;
@@ -61,7 +67,24 @@ export async function createNewSection(element, options = {}) {
   sectionWrapper.style.cssText = `
     width: 50%;
     max-width: 400px;
-    height: 100%;
+    max-height: 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 80px;
+    gap: 100px;
+  `;
+
+  const SIAvatarContainer = document.createElement("div");
+  const SAvatarContainer = document.createElement("div");
+  const IAvatarContainer = document.createElement("div");
+
+  SIAvatarContainer.style.cssText = `
+    margin-bottom: auto;
+  `;
+
+  SAvatarContainer.style.cssText = `
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -69,45 +92,134 @@ export async function createNewSection(element, options = {}) {
     gap: 20px;
   `;
 
+  IAvatarContainer.style.cssText = `
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    min-width: 300px;
+    min-height: 300px;
+    width: 100%;
+    height: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+  `;
+
+  SIAvatarContainer.appendChild(SAvatarContainer);
+  SIAvatarContainer.appendChild(IAvatarContainer);
+
+  const tabBar = createTabBar(options);
+
+  sectionWrapper.appendChild(tabBar);
+  sectionWrapper.appendChild(SIAvatarContainer);
+
   const avatarContainer = createAvatar(options);
   const button = createInfoButton(avatarContainer, options);
 
-  sectionWrapper.appendChild(avatarContainer);
-  sectionWrapper.appendChild(button);
+  SAvatarContainer.appendChild(avatarContainer);
+  SAvatarContainer.appendChild(button);
+
+  const iframeAvatar = createIFrameAvatar(options);
+  iframeAvatar.src =
+    "https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiIyMTRjOWUzODgzYTA0ZmYzYTM5OWQ0ZjU4%0D%0AYjI2YWUzZCIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3Yz%0D%0ALzIxNGM5ZTM4ODNhMDRmZjNhMzk5ZDRmNThiMjZhZTNkL2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0%0D%0ALndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6IjIw%0D%0AOWJlNWY5MzQ5NDQ2ZTFhZmIzNzAzZTdhMTI5MWZkIiwidXNlcm5hbWUiOiJmZTcxYzk3NzA0NGI0%0D%0AMzI0YTlkNzdiMDExMDNiZmQ0ZiJ9&inIFrame=1";
+  iframeAvatar.style.cssText = `
+    width: 100%;
+    height: 100%;
+    borde-radius: 20px;
+    object-fit: cover;
+  `;
+
+  IAvatarContainer.appendChild(iframeAvatar);
 
   newSectionParent.prepend(sectionWrapper);
 
   return newSectionParent;
 
+  function createTabBar(options) {
+    const tabBar = document.createElement("div");
+    tabBar.style.cssText = `
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    `;
+
+    const staticTab = document.createElement("button");
+    staticTab.textContent = "Static Avatar";
+    staticTab.style.cssText = `
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      background-color: ${options.themeFront};
+      color: ${options.themeBack};
+      margin-right: 10px;
+    `;
+
+    const interactiveTab = document.createElement("button");
+    interactiveTab.textContent = "Interactive Avatar";
+    interactiveTab.style.cssText = `
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      background-color: #ccc;
+      color: black;
+    `;
+
+    staticTab.addEventListener("click", () => {
+      SAvatarContainer.style.display = "flex";
+      IAvatarContainer.style.display = "none";
+      staticTab.style.backgroundColor = options.themeFront;
+      staticTab.style.color = options.themeBack;
+      interactiveTab.style.backgroundColor = "#ccc";
+      interactiveTab.style.color = "black";
+    });
+
+    interactiveTab.addEventListener("click", () => {
+      SAvatarContainer.style.display = "none";
+      IAvatarContainer.style.display = "flex";
+      interactiveTab.style.backgroundColor = options.themeFront;
+      interactiveTab.style.color = options.themeBack;
+      staticTab.style.backgroundColor = "#ccc";
+      staticTab.style.color = "black";
+    });
+
+    tabBar.appendChild(staticTab);
+    tabBar.appendChild(interactiveTab);
+
+    return tabBar;
+  }
+
   function createAvatar(options) {
     const avatarContainer = document.createElement("div");
     avatarContainer.style.cssText = `
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    overflow: hidden;
-  `;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      overflow: hidden;
+    `;
 
     const profileImage = document.createElement("img");
     profileImage.src = options.avatarImage;
     profileImage.alt = "profile-avatar";
     profileImage.style.cssText = `
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  `;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    `;
 
     const profileVideo = document.createElement("video");
     profileVideo.src = options.avatarVideo;
     profileVideo.preload = "auto";
     profileVideo.style.cssText = `
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  `;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    `;
 
     avatarContainer.profileImage = profileImage;
     avatarContainer.profileVideo = profileVideo;
@@ -136,21 +248,32 @@ export async function createNewSection(element, options = {}) {
     };
 
     button.style.cssText = `
-    display: block;
-    min-width: 200px;
-    padding: 10px;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    color: ${options.themeBack};
-    background-color: ${options.themeFront};
-  `;
+      display: block;
+      min-width: 200px;
+      padding: 10px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      color: ${options.themeBack};
+      background-color: ${options.themeFront};
+    `;
 
     return button;
   }
+
+  function createIFrameAvatar(options) {
+    const iframe = document.createElement("iframe");
+    iframe.src = options.interactiveAvatarUrl;
+    iframe.style.cssText = `
+      width: 100%;
+      height: 100%;
+      border: none;
+    `;
+    return iframe;
+  }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 export async function urlPreview(parent) {
   let messageContainerSelector;
 
@@ -227,6 +350,7 @@ export async function urlPreview(parent) {
   }
 }
 
+///////////////////////////////////////////////////////////////////////////////
 export async function ttsSupport(parent) {
   // Initialize reset button
   await initializeResetButton(parent);
@@ -253,9 +377,6 @@ async function initializeResetButton(parent) {
 async function processMessages(parent) {
   const messages = await getMessages(parent);
   const messageOptions = await getMessageOptions(parent);
-
-  console.log("messages", messages);
-  console.log("messageOptions", messageOptions);
 
   messageOptions.forEach((messageOption, index) => {
     if (!messageOption.querySelector(".tts-button")) {
@@ -506,3 +627,4 @@ function hashString(str) {
   }
   return hash.toString();
 }
+///////////////////////////////////////////////////////////////////////////////
