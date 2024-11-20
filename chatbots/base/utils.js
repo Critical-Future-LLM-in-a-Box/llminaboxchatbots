@@ -73,7 +73,7 @@ export async function createNewSection(element, options = {}) {
     justify-content: space-between;
     align-items: center;
     padding-top: 80px;
-    gap: 100px;
+    ${options.interactiveAvatar ? "gap: 100px;" : ""}
   `;
 
   const SIAvatarContainer = document.createElement("div");
@@ -82,6 +82,8 @@ export async function createNewSection(element, options = {}) {
 
   SIAvatarContainer.style.cssText = `
     margin-bottom: auto;
+    ${options.interactiveAvatar ? "" : "display: flex; justify-content: center; align-items: center; margin-top: auto;"}
+    boder: 1px solid #000;
   `;
 
   SAvatarContainer.style.cssText = `
@@ -105,11 +107,18 @@ export async function createNewSection(element, options = {}) {
   `;
 
   SIAvatarContainer.appendChild(SAvatarContainer);
-  SIAvatarContainer.appendChild(IAvatarContainer);
 
-  const tabBar = createTabBar(options);
+  if (options.interactiveAvatar) {
+    SIAvatarContainer.appendChild(IAvatarContainer);
 
-  sectionWrapper.appendChild(tabBar);
+    const tabBar = createTabBar(options);
+    sectionWrapper.appendChild(tabBar);
+
+    const iframeAvatar = createIFrameAvatar(options);
+
+    IAvatarContainer.appendChild(iframeAvatar);
+  }
+
   sectionWrapper.appendChild(SIAvatarContainer);
 
   const avatarContainer = createAvatar(options);
@@ -117,18 +126,6 @@ export async function createNewSection(element, options = {}) {
 
   SAvatarContainer.appendChild(avatarContainer);
   SAvatarContainer.appendChild(button);
-
-  const iframeAvatar = createIFrameAvatar(options);
-  iframeAvatar.src =
-    "https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiIyMTRjOWUzODgzYTA0ZmYzYTM5OWQ0ZjU4%0D%0AYjI2YWUzZCIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3Yz%0D%0ALzIxNGM5ZTM4ODNhMDRmZjNhMzk5ZDRmNThiMjZhZTNkL2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0%0D%0ALndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6IjIw%0D%0AOWJlNWY5MzQ5NDQ2ZTFhZmIzNzAzZTdhMTI5MWZkIiwidXNlcm5hbWUiOiJmZTcxYzk3NzA0NGI0%0D%0AMzI0YTlkNzdiMDExMDNiZmQ0ZiJ9&inIFrame=1";
-  iframeAvatar.style.cssText = `
-    width: 100%;
-    height: 100%;
-    borde-radius: 20px;
-    object-fit: cover;
-  `;
-
-  IAvatarContainer.appendChild(iframeAvatar);
 
   newSectionParent.prepend(sectionWrapper);
 
