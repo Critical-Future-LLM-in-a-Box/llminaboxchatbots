@@ -35,6 +35,6 @@ await (async () => {
 
     await utils.urlPreview(chatbot);
 
-    await utils.ttsSupport(chatbot);
+    await utils.ttsSupport(chatbot, "en-US-AndrewNeural");
   }
 })();

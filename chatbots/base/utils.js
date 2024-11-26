@@ -348,12 +348,12 @@ export async function urlPreview(parent) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-export async function ttsSupport(parent) {
+export async function ttsSupport(parent, voiceName) {
   // Initialize reset button
   await initializeResetButton(parent);
 
   // Process existing messages
-  await processMessages(parent);
+  await processMessages(parent, voiceName);
 
   // Observe mutations to process new messages
   await observeNewMessages(parent);
@@ -371,13 +371,13 @@ async function initializeResetButton(parent) {
 }
 
 // Function to process messages and add TTS buttons
-async function processMessages(parent) {
+async function processMessages(parent, voiceName) {
   const messages = await getMessages(parent);
   const messageOptions = await getMessageOptions(parent);
 
   messageOptions.forEach((messageOption, index) => {
     if (!messageOption.querySelector(".tts-button")) {
-      addTTSButton(messageOption, messages[index]);
+      addTTSButton(messageOption, messages[index], voiceName);
     }
   });
 }
@@ -441,7 +441,7 @@ async function getMessageOptions(parent) {
 }
 
 // Function to add TTS button
-function addTTSButton(messageOption, messageText) {
+function addTTSButton(messageOption, messageText, voiceName) {
   const startVoice = createIcon("volumeUp");
   const spinner = createIcon("spinner");
   const endVoice = createIcon("volumeOff");
@@ -461,7 +461,7 @@ function addTTSButton(messageOption, messageText) {
   messageOption.appendChild(startVoice);
 
   startVoice.addEventListener("click", () => {
-    handleTTSButtonClick(startVoice, spinner, endVoice, messageText);
+    handleTTSButtonClick(startVoice, spinner, endVoice, messageText, voiceName);
   });
 }
 
@@ -470,7 +470,8 @@ async function handleTTSButtonClick(
   startVoice,
   spinner,
   endVoice,
-  messageText
+  messageText,
+  voiceName
 ) {
   startVoice.replaceWith(spinner);
 
@@ -485,7 +486,7 @@ async function handleTTSButtonClick(
       audioBlob = base64ToBlob(cachedTTS.audioBlob, "audio/mpeg");
     } else {
       // Fetch new TTS data
-      audioBlob = await fetchTTSData(messageText);
+      audioBlob = await fetchTTSData(messageText, voiceName);
 
       // Cache the audio data
       const base64data = await blobToBase64(audioBlob);
@@ -503,7 +504,7 @@ async function handleTTSButtonClick(
 }
 
 // Function to fetch TTS data
-async function fetchTTSData(messageText) {
+async function fetchTTSData(messageText, voice = "en-GB-SoniaNeural") {
   const response = await fetch("https://tts.criticalfutureglobal.com/get_tts", {
     method: "POST",
     headers: {
@@ -512,7 +513,7 @@ async function fetchTTSData(messageText) {
     },
     body: JSON.stringify({
       text: messageText,
-      voice: "en-GB-SoniaNeural",
+      voice: voice,
       id: "mai"
     })
   });
