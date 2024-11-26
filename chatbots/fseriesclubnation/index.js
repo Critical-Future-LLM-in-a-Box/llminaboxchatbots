@@ -33,7 +33,7 @@ await (async () => {
       themeBack
     });
 
-    await utils.urlPreview(chatbot);
+    // await utils.urlPreview(chatbot);
 
     await utils.ttsSupport(chatbot, "en-US-AndrewNeural");
   }
