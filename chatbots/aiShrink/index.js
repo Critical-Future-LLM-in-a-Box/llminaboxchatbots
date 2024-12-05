@@ -1,5 +1,5 @@
 (async () => {
-  const apiHost = "https://llminabox.criticalfutureglobal.com";
+  const apiHost = "https://llm.criticalfutureglobal.com";
   const chatflowid = "be69f112-ee19-41e0-8550-555b35b4d113";
   const themeFront = "#1d0462";
   const themeBack = "#e2deea";
