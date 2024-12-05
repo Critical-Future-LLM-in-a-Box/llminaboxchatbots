@@ -11,7 +11,7 @@
   const chatbot = document.createElement("flowise-fullchatbot");
   llminaboxWrapper.appendChild(chatbot);
 
-  (await import("../base/web-new.js")).default.initFull(
+  (await import("../base/web.js")).default.initFull(
     (await import("./config.js")).generateConfig({
       apiHost,
       chatflowid,
