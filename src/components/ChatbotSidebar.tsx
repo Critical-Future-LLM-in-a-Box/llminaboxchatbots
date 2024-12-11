@@ -1,42 +1,140 @@
-import React, { useState } from "react";
-import { Box, IconButton } from "@mui/material";
+import React, { useState, useRef, useCallback } from "react";
+import { Box, Button, IconButton, Avatar, Drawer, Stack } from "@mui/material";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
-import { ChatAvatar } from "@/components/SideAvatar";
 import { useContextData } from "@/context";
 
-export default function ChatbotSidebar(): JSX.Element {
+const ChatbotSidebar = (): JSX.Element => {
   const [chatData] = useContextData();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const [isVideoOn, setIsVideoOn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const handleToggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  // Toggle the sidebar state
+  const toggleSidebar = useCallback(
+    () => setIsSidebarOpen((prev) => !prev),
+    []
+  );
+
+  // Toggle video playback
+  const toggleVideo = useCallback(() => {
+    if (isVideoOn) {
+      videoRef.current?.pause();
+    } else if (videoRef.current && videoRef.current.readyState >= 2) {
+      videoRef.current.play();
+    }
+    setIsVideoOn((prev) => !prev);
+  }, [isVideoOn]);
+
+  const { backgroundColor, foregroundColor } = chatData.config.ui || {};
+  const { avatar } = chatData.config.assistant || {};
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        bgcolor: chatData.config.ui?.backgroundColor,
-        color: chatData.config.ui?.foregroundColor,
-        width: isSidebarOpen ? "40%" : 0,
-        maxWidth: 200
-      }}
-    >
-      <ChatAvatar />
+    <Box sx={{ display: "flex", position: "relative" }}>
+      <Drawer
+        variant="persistent"
+        open={isSidebarOpen}
+        anchor="left"
+        sx={{
+          "position": "relative",
+          "& .MuiDrawer-paper": {
+            overflow: "hidden",
+            position: "relative",
+            width: isSidebarOpen ? "200px" : 0,
+            bgcolor: backgroundColor,
+            color: foregroundColor
+          }
+        }}
+      >
+        {isSidebarOpen && (
+          <Stack
+            spacing={2}
+            direction="column"
+            sx={{
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%"
+            }}
+          >
+            {/* Avatar/Video Section */}
+            <Box
+              sx={{
+                width: 120,
+                height: 120,
+                borderRadius: 2,
+                overflow: "hidden",
+                position: "relative",
+                bgcolor: "background.default",
+                marginBottom: 2
+              }}
+            >
+              {avatar?.liveUrl ? (
+                <Box
+                  component="img"
+                  src={avatar.liveUrl}
+                  alt="Avatar"
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    display: isVideoOn ? "none" : "block"
+                  }}
+                />
+              ) : (
+                <Avatar
+                  sx={{
+                    width: "100%",
+                    height: "100%",
+                    fontSize: 64,
+                    bgcolor: "primary.main"
+                  }}
+                >
+                  AI
+                </Avatar>
+              )}
+              <Box
+                component="video"
+                ref={videoRef}
+                src={avatar?.videoUrl}
+                onEnded={() => setIsVideoOn(false)}
+                sx={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: isVideoOn ? "block" : "none"
+                }}
+              >
+                <track
+                  kind="captions"
+                  srcLang="en"
+                  label="English"
+                />
+              </Box>
+            </Box>
 
+            {/* Video Toggle Button */}
+            <Button
+              variant="outlined"
+              onClick={toggleVideo}
+            >
+              {isVideoOn ? "Pause Video" : "Play Video"}
+            </Button>
+          </Stack>
+        )}
+      </Drawer>
       <IconButton
         sx={{
-          width: 32,
-          height: 32,
-          borderRadius: "50%",
-          position: "absolute",
-          top: "50%",
-          right: 0,
-          transform: "translateY(-50%) translateX(50%)",
-          border: "1px solid #eee"
+          borderRadius: 0,
+          width: 2,
+          color: foregroundColor,
+          bgcolor: backgroundColor
         }}
-        onClick={handleToggleSidebar}
+        onClick={toggleSidebar}
       >
         {isSidebarOpen ? <ArrowLeft /> : <ArrowRight />}
       </IconButton>
     </Box>
   );
-}
+};
+
+// Memoized export for performance
+export default React.memo(ChatbotSidebar);

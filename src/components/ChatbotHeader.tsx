@@ -1,10 +1,20 @@
-import React from "react";
-import { Box, IconButton, Typography } from "@mui/material";
+import React, { useCallback, useEffect, memo } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Avatar,
+  Typography,
+  Fab,
+  Stack,
+  Alert
+} from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import Person from "@mui/icons-material/Person";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import { HeaderAvatar } from "@/components/HeaderAvatar";
+import AddIcon from "@mui/icons-material/Add";
 import { useContextData } from "@/context";
+import { getOnlineStatus } from "@/utils";
 
 interface ChatbotHeaderProps {
   onClose?: () => void;
@@ -12,51 +22,145 @@ interface ChatbotHeaderProps {
   isFullscreen?: boolean;
 }
 
-export default function ChatbotHeader({
+const ChatbotHeader = ({
   onClose,
   onToggleFullscreen,
   isFullscreen = false
-}: ChatbotHeaderProps): JSX.Element {
-  const [chatData] = useContextData();
+}: ChatbotHeaderProps): JSX.Element => {
+  const [chatData, dispatch] = useContextData();
+
+  const startNewChat = useCallback(() => {
+    dispatch({ type: "START_NEW_CHAT" });
+  }, [dispatch]);
+
+  useEffect(() => {
+    let isMounted = true;
+    getOnlineStatus(chatData)
+      .then((isOnline) => {
+        if (isMounted) {
+          dispatch({ type: "SET_ONLINE_STATUS", payload: isOnline });
+        }
+      })
+      .catch((error: unknown) => {
+        if (isMounted) {
+          dispatch({
+            type: "SET_ERROR",
+            payload:
+              (error as Error).message ||
+              "server error: unable to get online status"
+          });
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [chatData.api, dispatch]);
 
   return (
-    <Box
+    <AppBar
+      position="relative"
       sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        p: 1,
         bgcolor: chatData.config.ui?.backgroundColor,
-        color: chatData.config.ui?.foregroundColor
+        color: chatData.config.ui?.foregroundColor,
+        boxShadow: 0
       }}
     >
-      {/* Assistant Avatar and Name */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <HeaderAvatar />
-        <Typography variant="h6">{chatData.config.assistant?.name}</Typography>
-      </Box>
+      <Toolbar
+        variant="regular"
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "0 8px"
+        }}
+      >
+        {/* Assistant Avatar and Name */}
+        <Stack
+          direction="row"
+          spacing={1}
+        >
+          <Avatar
+            alt={chatData.config.assistant?.name}
+            src={chatData.config.assistant?.avatar?.staticUrl || ""}
+            sx={{
+              width: 32,
+              height: 32,
+              border: chatData.api.online
+                ? "2px solid #00FF00"
+                : "2px solid #FF0000"
+            }}
+          >
+            <Person />
+          </Avatar>
+          <Typography variant="h6">
+            {chatData.config.assistant?.name}
+          </Typography>
+        </Stack>
 
-      {/* Fullscreen and Close Buttons (conditionally rendered) */}
-      {(onClose || onToggleFullscreen) && (
-        <Box sx={{ display: "flex", gap: 1 }}>
+        {/* Action Buttons */}
+        <Stack
+          direction="row"
+          spacing={1}
+        >
+          {/* Start New Chat */}
+          <Fab
+            size="small"
+            variant="circular"
+            onClick={startNewChat}
+            sx={{
+              boxShadow: 0
+            }}
+          >
+            <AddIcon />
+          </Fab>
+
+          {/* Fullscreen and Close Buttons */}
           {onToggleFullscreen && (
-            <IconButton
+            <Fab
+              size="small"
+              variant="circular"
+              sx={{
+                boxShadow: 0
+              }}
               onClick={onToggleFullscreen}
-              sx={{ color: "inherit" }}
             >
               {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            </IconButton>
+            </Fab>
           )}
           {onClose && (
-            <IconButton
+            <Fab
+              size="small"
+              variant="circular"
+              sx={{
+                boxShadow: 0
+              }}
               onClick={onClose}
-              sx={{ color: "inherit" }}
             >
               <CloseIcon />
-            </IconButton>
+            </Fab>
           )}
-        </Box>
+        </Stack>
+      </Toolbar>
+
+      {/* Error Alert */}
+      {chatData.error && (
+        <Alert
+          severity="error"
+          variant="filled"
+          sx={{
+            position: "absolute",
+            bottom: "-20px",
+            left: "50%",
+            transform: "translateX(-50%)"
+          }}
+        >
+          {chatData.error}
+        </Alert>
       )}
-    </Box>
+    </AppBar>
   );
-}
+};
+
+// Memoized export for performance
+export default memo(ChatbotHeader);

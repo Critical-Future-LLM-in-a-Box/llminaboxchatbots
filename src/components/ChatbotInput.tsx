@@ -1,216 +1,239 @@
-import React, { useState } from "react";
-import { Button, TextareaAutosize, IconButton, Box } from "@mui/material";
-import { Mic, Stop, Delete, Image, UploadFile } from "@mui/icons-material";
-import { getPrediction } from "@/utils/getPrediction";
-import { useContextData } from "@/context";
-import { Message } from "@/types";
+import React, { useState, useCallback } from "react";
+import { TextField, IconButton, Stack, Chip } from "@mui/material";
 import {
-  startAudioRecording,
-  stopAudioRecording
-} from "@/utils/getVoiceRecord";
+  Send,
+  Image as ImageIcon,
+  Description as FileIcon,
+  Mic
+} from "@mui/icons-material";
+import { useContextData } from "@/context";
+import { getPrediction } from "@/utils";
+import { Message, Upload } from "@/types";
+import { v4 as uuidv4 } from "uuid";
+import UploadButton from "@/components/ChatbotInputFilesUploads";
+import AudioRecordingButton from "@/components/ChatbotInputVoiceRecording";
 
 export default function ChatbotInput() {
   const [chatData, dispatch] = useContextData();
+  const isAudioUploadSupported = chatData.api.isApiAcceptingVoice;
 
-  const [userMessage, setUserMessage] = useState("");
-  const [userUploads, setUserUploads] = useState<Message["uploads"]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [userMessage, setUserMessage] = useState<Message>({
+    id: uuidv4(),
+    role: "user",
+    content: "",
+    timestamp: new Date().toISOString(),
+    uploads: [] as Upload[]
+  });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!userMessage && userUploads?.length === 0) return;
-    sendMessage(userMessage, chatData, dispatch, userUploads);
-    setUserMessage("");
-    setUserUploads([]);
-  };
+  const [apiMessage, setApiMessage] = useState<Message>({
+    id: uuidv4(),
+    role: "api",
+    content: "",
+    timestamp: new Date().toISOString()
+  });
 
-  const handleStartRecording = async () => {
-    const onRecordingStart = () => setIsRecording(true);
-    const onError = () =>
-      dispatch({ type: "SET_ERROR", payload: "Unsupported browser" });
-
-    await startAudioRecording(onRecordingStart, onError, () => {});
-  };
-
-  const handleStopRecording = async () => {
-    await stopAudioRecording(async (blob) => {
-      setIsRecording(false);
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = () => {
-        const audioUpload = {
-          name: `audio.${blob.type.split("/")[1]}`,
-          data: reader.result as string,
-          type: "audio",
-          mime: blob.type
-        };
-        setUserUploads((prev = []) => [
-          ...prev.filter((u) => u.type !== "audio"),
-          audioUpload
-        ]);
-      };
-    });
-  };
-
-  const handleUpload = (files: FileList, type: string) => {
-    const uploads = Array.from(files).map((file) => ({
-      name: file.name,
-      data: URL.createObjectURL(file),
-      type,
-      mime: file.type
+  const handleAddUpload = (upload: Upload) => {
+    setUserMessage((prev) => ({
+      ...prev,
+      uploads: [...(prev.uploads || []), upload]
     }));
-    setUserUploads((prevUploads) => [...prevUploads, ...uploads]);
   };
+
+  const handleResponseJSON = async () => {
+    const prediction = (await getPrediction({
+      chatData,
+      userMessage,
+      canStream: false
+    }).catch((error) => {
+      dispatch({ type: "SET_TYPING_STATUS", payload: false });
+      dispatch({ type: "DELETE_LAST_MESSAGE" });
+      dispatch({
+        type: "SET_ERROR",
+        payload: `Error: ${(error as Error).message}`
+      });
+    })) as { chatMessageId: string; text: string };
+
+    if (prediction) {
+      dispatch({
+        type: "UPDATE_LAST_MESSAGE",
+        payload: {
+          id: prediction.chatMessageId,
+          content: prediction.text
+        }
+      });
+      dispatch({ type: "SET_TYPING_STATUS", payload: false });
+    }
+  };
+
+  const handleResponseStream = async () => {
+    const prediction = await getPrediction({
+      chatData,
+      userMessage,
+      canStream: true
+    }).catch((error) => {
+      dispatch({ type: "DELETE_LAST_MESSAGE" });
+      dispatch({ type: "SET_TYPING_STATUS", payload: false });
+      dispatch({
+        type: "SET_ERROR",
+        payload: `Error: ${(error as Error).message}`
+      });
+    });
+
+    dispatch({ type: "SET_TYPING_STATUS", payload: false });
+
+    for await (const sse of prediction as AsyncIterable<{ data: string }>) {
+      const eventData = JSON.parse(sse.data);
+      const event = eventData.event;
+      const data = eventData.data;
+
+      if (event === "token") {
+        dispatch({
+          type: "UPDATE_LAST_MESSAGE",
+          payload: { content: data }
+        });
+      }
+
+      if (event === "metadata") {
+        dispatch({
+          type: "UPDATE_LAST_MESSAGE",
+          payload: { id: data.chatMessageId }
+        });
+      }
+    }
+  };
+
+  const handleSubmit = useCallback(async () => {
+    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
+
+    const isEmpty = !userMessage.content.trim() && !userMessage.uploads?.length;
+
+    if (isEmpty) return;
+
+    dispatch({ type: "ADD_NEW_MESSAGE", payload: userMessage });
+    dispatch({ type: "SET_TYPING_STATUS", payload: true });
+    dispatch({ type: "ADD_NEW_MESSAGE", payload: apiMessage });
+
+    if (chatData.api.canStream) await handleResponseStream();
+    if (!chatData.api.canStream) await handleResponseJSON();
+
+    if (chatData.config.onResponse) chatData.config.onResponse(apiMessage);
+
+    setUserMessage({
+      id: uuidv4(),
+      role: "user",
+      content: "",
+      timestamp: new Date().toISOString(),
+      uploads: []
+    });
+    setApiMessage({
+      id: uuidv4(),
+      role: "api",
+      content: "",
+      timestamp: new Date().toISOString()
+    });
+  }, [userMessage, apiMessage, chatData, dispatch]);
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 2
-      }}
-    >
-      {/* Upload Preview */}
-      {userUploads.length > 0 && (
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
-          {userUploads?.map((upload, index) => (
-            <Box
+    <>
+      {/* Upload Previews */}
+      {userMessage.uploads && userMessage.uploads.length > 0 && (
+        <Stack
+          useFlexGap
+          direction="row"
+          spacing={2}
+          sx={{
+            p: 2,
+            overflowX: "auto",
+            justifyContent: "start",
+            alignItems: "center"
+          }}
+        >
+          {userMessage.uploads.map((upload, index) => (
+            <Chip
               key={index}
-              sx={{ display: "flex", alignItems: "center", gap: 1 }}
-            >
-              {upload.type === "audio" ? (
-                <audio
-                  controls
-                  src={upload.data}
-                >
-                  <track kind="captions" />
-                </audio>
-              ) : upload.mime?.includes("image") ? (
-                <Box
-                  component="img"
-                  src={upload.data}
-                  alt={upload.name}
-                  sx={{
-                    height: 80,
-                    width: 80,
-                    objectFit: "cover",
-                    borderRadius: 1
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    p: 1,
-                    border: "1px solid",
-                    borderColor: "grey.300",
-                    borderRadius: 1,
-                    typography: "body2"
-                  }}
-                >
-                  {upload.name}
-                </Box>
-              )}
-              <IconButton
-                onClick={() =>
-                  setUserUploads((uploads) =>
-                    uploads?.filter((_, i) => i !== index)
-                  )
-                }
-              >
-                <Delete color="error" />
-              </IconButton>
-            </Box>
+              label={upload.name}
+              onDelete={() =>
+                setUserMessage((prev) => ({
+                  ...prev,
+                  uploads: prev.uploads?.filter((_, i) => i !== index)
+                }))
+              }
+              icon={
+                upload.type === "audio" ? (
+                  <Mic />
+                ) : upload.mime.includes("image") ? (
+                  <ImageIcon />
+                ) : (
+                  <FileIcon />
+                )
+              }
+            />
           ))}
-        </Box>
+        </Stack>
       )}
 
-      {/* Input and Action Buttons */}
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, p: 1 }}>
-        <TextareaAutosize
-          value={userMessage}
-          disabled={
-            !chatData.api.online || chatData.api.isApiTyping || isRecording
+      {/* Input Area */}
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={{ p: 1 }}
+      >
+        <UploadButton
+          onAddUpload={(file) =>
+            handleAddUpload({
+              name: file.name,
+              type: file.type,
+              mime: file.mime,
+              data: file.data
+            })
+          }
+        />
+
+        <TextField
+          value={userMessage.content}
+          onChange={(e) =>
+            setUserMessage((prev) => ({ ...prev, content: e.target.value }))
           }
           placeholder="Type your message..."
-          onChange={(e) => setUserMessage(e.target.value)}
+          multiline
+          fullWidth
+          minRows={1}
+          maxRows={4}
+          variant="outlined"
+          disabled={!chatData.api.online}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+              handleSubmit();
             }
-          }}
-          style={{
-            minHeight: 16,
-            resize: "none",
-            padding: "8px",
-            fontSize: "1rem",
-            borderRadius: "4px",
-            border: "1px solid #ccc"
           }}
         />
 
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <IconButton
-            onClick={isRecording ? handleStopRecording : handleStartRecording}
-            disabled={
-              !chatData.api.online ||
-              chatData.api.isApiTyping ||
-              !chatData.api.isApiAcceptingVoice
+        {isAudioUploadSupported && (
+          <AudioRecordingButton
+            onAddAudio={(audio) =>
+              handleAddUpload({
+                name: audio.name,
+                type: audio.type,
+                mime: audio.mime,
+                data: audio.data
+              })
             }
-          >
-            {isRecording ? <Stop color="error" /> : <Mic />}
-          </IconButton>
+          />
+        )}
 
-          <IconButton
-            component="label"
-            disabled={
-              !chatData.api.online ||
-              chatData.api.isApiTyping ||
-              !chatData.api.isApiAcceptingImage
-            }
-          >
-            <Image />
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => handleUpload(e.target.files as FileList, "file")}
-            />
-          </IconButton>
-
-          <IconButton
-            component="label"
-            disabled={
-              !chatData.api.online ||
-              chatData.api.isApiTyping ||
-              !chatData.api.isApiAcceptingFile
-            }
-          >
-            <UploadFile />
-            <input
-              type="file"
-              multiple
-              accept=".csv, .docx, .json, .pdf, .txt"
-              hidden
-              onChange={(e) => handleUpload(e.target.files as FileList, "file")}
-            />
-          </IconButton>
-
-          <Button
-            type="submit"
-            variant="outlined"
-            disabled={
-              !chatData.api.online ||
-              chatData.api.isApiTyping ||
-              (!userMessage && !userUploads?.length)
-            }
-          >
-            Send
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+        <IconButton
+          onClick={handleSubmit}
+          disabled={
+            !chatData.api.online ||
+            chatData.api.typing ||
+            (!userMessage.content && userMessage.uploads?.length === 0)
+          }
+        >
+          <Send />
+        </IconButton>
+      </Stack>
+    </>
   );
 }

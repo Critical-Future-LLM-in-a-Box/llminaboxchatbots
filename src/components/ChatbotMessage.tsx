@@ -1,142 +1,188 @@
-import React, { useState } from "react";
-import { CircularProgress, Box, IconButton, Typography } from "@mui/material";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import StopIcon from "@mui/icons-material/Stop";
-import ReactMarkdown from "react-markdown";
+import React, {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  useMemo
+} from "react";
+import {
+  Box,
+  Typography,
+  IconButton,
+  CircularProgress,
+  Skeleton,
+  Paper,
+  Stack,
+  Chip
+} from "@mui/material";
+import {
+  VolumeUp,
+  Stop,
+  ContentCopy,
+  Mic,
+  Image as ImageIcon,
+  InsertDriveFile as FileIcon
+} from "@mui/icons-material";
+
 import { useContextData } from "@/context";
 import { Message } from "@/types";
-import { getVoice } from "@/utils/getVoice";
+import { getVoice } from "@/utils/getTTSVoice";
+import { marked } from "marked";
 
-export default function MessageCard({ message }: { message: Message }) {
+const MessageCard = ({ message }: { message: Message }) => {
   const [chatData, dispatch] = useContextData();
   const [isFetchingVoice, setIsFetchingVoice] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioInstance, setAudioInstance] = useState<HTMLAudioElement | null>(
-    null
-  );
+  const messageRef = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const handleVoiceClick = async () => {
-    if (isPlaying && audioInstance) {
-      audioInstance.pause();
+  const isLastMessage = useMemo(() => {
+    return (
+      chatData.session.chatMessages[
+        chatData.session.chatMessages.length - 1
+      ] === message
+    );
+  }, [chatData.session.chatMessages]);
+
+  const handleVoiceClick = useCallback(async () => {
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
       setIsPlaying(false);
-    } else {
-      setIsFetchingVoice(true);
-      try {
-        const audio = await getVoice(message);
-        if (audio) {
-          setAudioInstance(audio);
-          audio.play();
-          setIsPlaying(true);
-          audio.onended = () => setIsPlaying(false);
-        }
-      } catch (error) {
-        dispatch({
-          type: "SET_ERROR",
-          payload: (error as Error).message
-        });
-      } finally {
-        setIsFetchingVoice(false);
-      }
+      return;
     }
-  };
 
-  const renderUploads = () =>
-    message.uploads?.map((upload, index) => (
-      <Box
-        key={index}
-        sx={{ mb: 1 }}
-      >
-        {upload.type === "file" && upload.mime?.startsWith("image") ? (
-          <Box
-            component="img"
-            src={upload.data}
-            alt={upload.name}
-            sx={{
-              width: 80,
-              height: 80,
-              objectFit: "cover",
-              borderRadius: 1
-            }}
-          />
-        ) : upload.type === "audio" ? (
-          <Box
-            component="audio"
-            controls
-            src={upload.data}
-            sx={{ width: "100%" }}
-          >
-            <track kind="captions" />
-          </Box>
-        ) : (
-          <Box
-            sx={{
-              p: 1,
-              border: "1px solid",
-              borderColor: "grey.300",
-              borderRadius: 1,
-              typography: "body2"
-            }}
-          >
-            {upload.name}
-          </Box>
-        )}
-      </Box>
-    ));
+    setIsFetchingVoice(true);
+
+    const audio = await getVoice(chatData, message).catch((error) => {
+      setIsFetchingVoice(false);
+      dispatch({
+        type: "SET_ERROR",
+        payload: (error as Error).message || "Failed to fetch voice"
+      });
+    });
+
+    setIsFetchingVoice(false);
+
+    if (audio) {
+      audioRef.current = audio;
+      audio.play();
+      setIsPlaying(true);
+      audio.onended = () => setIsPlaying(false);
+    }
+  }, [chatData, dispatch, isPlaying, message]);
+
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(message.content || "");
+  }, [message.content]);
+
+  useEffect(() => {
+    if (isLastMessage) {
+      messageRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatData.session.chatMessages]);
 
   return (
-    <Box
+    <Paper
+      variant="elevation"
+      elevation={0}
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: message.role === "apiMessage" ? "flex-start" : "flex-end",
-        m: 1,
-        width: "fit-content"
+        maxWidth: "90%",
+        alignSelf: message.role === "api" ? "flex-start" : "flex-end",
+        m: 1
       }}
     >
+      {/* Upload Previews */}
+      {message.uploads && message.uploads.length > 0 && (
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            p: 2,
+            overflowX: "auto",
+            justifyContent: "start",
+            alignItems: "center"
+          }}
+        >
+          {message.uploads.map((upload, index) => (
+            <Chip
+              key={index}
+              label={upload.name}
+              icon={
+                upload.type === "audio" ? (
+                  <Mic />
+                ) : upload.mime.includes("image") ? (
+                  <ImageIcon />
+                ) : (
+                  <FileIcon />
+                )
+              }
+            />
+          ))}
+        </Stack>
+      )}
       <Box
         sx={{
-          display: "inline-block",
-          p: 2,
-          borderRadius: 1,
-          bgcolor: chatData.config.ui?.backgroundColor
+          typography: "body2",
+          color: chatData.config.ui?.foregroundColor,
+          bgcolor: chatData.config.ui?.backgroundColor,
+          borderRadius: 2,
+          p: "2px 16px",
+          minHeight: "32px",
+          overflow: "auto"
         }}
+        ref={messageRef}
       >
-        {chatData.api.isApiTyping ? (
-          <CircularProgress size={16} />
+        {chatData.api.typing && isLastMessage ? (
+          <Skeleton
+            animation="wave"
+            height={32}
+          />
         ) : (
+          <div>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: marked(message.content || "")
+              }}
+            />
+          </div>
+        )}
+      </Box>
+
+      <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
+        <Typography
+          variant="caption"
+          color="textSecondary"
+        >
+          {new Date(message.timestamp || "").toLocaleString()}
+        </Typography>
+        {message.role === "api" && (
           <>
-            <ReactMarkdown>{message.content}</ReactMarkdown>
-            {(message.uploads?.length ?? 0) > 0 && (
-              <Box sx={{ mt: 1 }}>{renderUploads()}</Box>
-            )}
+            <IconButton
+              onClick={handleVoiceClick}
+              size="small"
+              disabled={isFetchingVoice}
+            >
+              {isFetchingVoice ? (
+                <CircularProgress size={16} />
+              ) : isPlaying ? (
+                <Stop fontSize="small" />
+              ) : (
+                <VolumeUp fontSize="small" />
+              )}
+            </IconButton>
+            <IconButton
+              onClick={handleCopy}
+              size="small"
+            >
+              <ContentCopy fontSize="small" />
+            </IconButton>
           </>
         )}
       </Box>
-
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center"
-        }}
-      >
-        <Typography variant="caption">
-          {new Date(message.timestamp).toLocaleString()}
-        </Typography>
-        {message.role === "apiMessage" && (
-          <IconButton
-            onClick={handleVoiceClick}
-            size="small"
-          >
-            {isFetchingVoice ? (
-              <CircularProgress size={16} />
-            ) : isPlaying ? (
-              <StopIcon fontSize="small" />
-            ) : (
-              <VolumeUpIcon fontSize="small" />
-            )}
-          </IconButton>
-        )}
-      </Box>
-    </Box>
+    </Paper>
   );
-}
+};
+
+// Memoized export for better performance
+export default React.memo(MessageCard);

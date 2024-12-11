@@ -1,9 +1,11 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Typography, Link } from "@mui/material";
 import { useContextData } from "@/context";
 
-export default function ChatbotFooter(): JSX.Element {
+const ChatbotFooter = (): JSX.Element => {
   const [chatData] = useContextData();
+
+  const { backgroundColor, foregroundColor } = chatData.config.ui || {};
 
   return (
     <Box
@@ -13,20 +15,19 @@ export default function ChatbotFooter(): JSX.Element {
         justifyContent: "center",
         alignItems: "center",
         padding: 2,
-        bgcolor: chatData.config.ui?.backgroundColor
+        bgcolor: backgroundColor
       }}
     >
       <Typography
-        typography={"caption"}
+        variant="caption"
         sx={{
-          color: chatData.config.ui?.foregroundColor
+          color: foregroundColor
         }}
       >
         &copy; {new Date().getFullYear()} LLMINABOX. Made by{" "}
         <Link
           href="https://criticalfutureglobal.com/"
           target="_blank"
-          rel="noopener noreferrer"
           sx={{
             color: "primary.main",
             textDecoration: "none"
@@ -37,4 +38,7 @@ export default function ChatbotFooter(): JSX.Element {
       </Typography>
     </Box>
   );
-}
+};
+
+// Memoized export to prevent unnecessary re-renders
+export default memo(ChatbotFooter);

@@ -3,7 +3,7 @@ export async function request<T>({
   options,
   retries = 2,
   delay = 2000,
-  timeout = 8000
+  timeout = 10000
 }: {
   url: string;
   options?: RequestInit;

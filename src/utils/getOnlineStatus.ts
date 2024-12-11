@@ -1,18 +1,10 @@
-import { ChatAction, ChatData } from "@/types";
-import { request } from "@/utils/request";
+import { ChatData } from "@/types";
+import { request } from "@/utils";
 
-export async function getOnlineStatus(
-  chatData: ChatData,
-  dispatch: React.Dispatch<ChatAction>
-): Promise<void> {
+export async function getOnlineStatus(chatData: ChatData): Promise<boolean> {
   const response = await request<string>({
     url: chatData.config.apiHost + "/api/v1/ping"
-  }).catch((err) => {
-    throw new Error(err);
-  });
+  }).catch((error) => error);
 
-  dispatch({
-    type: "SET_ONLINE_STATUS",
-    payload: response.includes("pong")
-  });
+  return response.includes("pong");
 }

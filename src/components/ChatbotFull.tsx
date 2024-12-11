@@ -1,23 +1,35 @@
-import React from "react";
-import { Box } from "@mui/material";
+import React, { memo } from "react";
+import Stack from "@mui/material/Stack";
+import Divider from "@mui/material/Divider";
+
 import ChatbotHeader from "@/components/ChatbotHeader";
 import ChatbotBody from "@/components/ChatbotBody";
 import ChatbotFooter from "@/components/ChatbotFooter";
 
-export default function ChatbotFull(): JSX.Element {
+const ChatbotFull = (): JSX.Element => {
   return (
-    <Box
+    <Stack
+      direction="column"
+      spacing={0}
+      divider={
+        <Divider
+          orientation="horizontal"
+          flexItem
+        />
+      }
       sx={{
-        width: "100%",
+        border: 1,
+        borderRadius: 2,
         height: "100%",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column"
+        width: "100%"
       }}
     >
       <ChatbotHeader />
       <ChatbotBody />
       <ChatbotFooter />
-    </Box>
+    </Stack>
   );
-}
+};
+
+// Memoize the component to prevent unnecessary re-renders
+export default memo(ChatbotFull);

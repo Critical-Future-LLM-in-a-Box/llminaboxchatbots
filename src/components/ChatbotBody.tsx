@@ -1,51 +1,84 @@
-import React from "react";
+import React, { memo } from "react";
 import { useContextData } from "@/context";
 import ChatbotInput from "@/components/ChatbotInput";
 import ChatbotSidebar from "@/components/ChatbotSidebar";
 import MessageCard from "@/components/ChatbotMessage";
-import { Box, Divider } from "@mui/material";
+import { Stack, Divider } from "@mui/material";
 
-export default function ChatbotBody(): JSX.Element {
+const ChatbotBody = (): JSX.Element => {
   const [chatData] = useContextData();
-  const chatBodyRef = React.useRef<HTMLDivElement>(null);
+
+  const { sidebar } = chatData?.config?.ui || {};
+  const messages = chatData.session?.chatMessages || [];
 
   return (
-    <Box
-      ref={chatBodyRef}
+    <Stack
+      direction="row"
+      spacing={0}
+      divider={
+        <Divider
+          orientation="vertical"
+          flexItem
+        />
+      }
       sx={{
-        display: "flex",
-        flex: 1
+        flex: 1,
+        overflow: "auto",
+        maxHeight: "100%",
+        maxWidth: "100%"
       }}
     >
       {/* Sidebar */}
-      {chatData.config.assistant.sidebar && <ChatbotSidebar />}
+      {sidebar && <ChatbotSidebar />}
 
       {/* Main Chat Area */}
-      <Box sx={{ display: "flex", flexDirection: "column", flexGrow: 1, p: 1 }}>
+      <Stack
+        direction="column"
+        spacing={0}
+        divider={
+          <Divider
+            orientation="horizontal"
+            flexItem
+          />
+        }
+        sx={{
+          flex: 1,
+          overflow: "auto",
+          maxHeight: "100%",
+          maxWidth: "100%"
+        }}
+      >
         {/* Messages List */}
-        <Box
+        <Stack
+          direction="column"
+          spacing={0}
+          divider={
+            <Divider
+              orientation="horizontal"
+              sx={{ opacity: 0.1 }}
+            />
+          }
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            flexGrow: 1,
-            overflowY: "auto",
-            p: 2
+            flex: 1,
+            overflow: "auto",
+            maxHeight: "100%",
+            maxWidth: "100%"
           }}
         >
-          {chatData.session?.chatMessages.map((message) => (
+          {messages.map((message) => (
             <MessageCard
               key={message.id}
               message={message}
             />
           ))}
-        </Box>
-
-        {/* Divider between messages and input */}
-        <Divider />
+        </Stack>
 
         {/* Chat Input Area */}
         <ChatbotInput />
-      </Box>
-    </Box>
+      </Stack>
+    </Stack>
   );
-}
+};
+
+// Memoized export for performance optimization
+export default memo(ChatbotBody);

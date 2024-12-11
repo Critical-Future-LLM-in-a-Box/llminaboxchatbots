@@ -1,15 +1,20 @@
 import { Config, ChatData } from "@/types";
 
 export const defaultChatData: ChatData = {
+  error: "",
   config: {
     apiHost: "",
     chatflowId: "",
+    authToken: "",
     assistant: {
-      name: "Assistant",
+      name: "AI Assistant",
       description: "Your AI Assistant",
       welcomeMessage: "Hello! How can I help you?",
-      voiceName: "en-GB-SoniaNeural",
-      sidebar: false,
+      voice: {
+        name: "",
+        apiKey: "",
+        apiHost: ""
+      },
       avatar: {
         staticUrl: "",
         liveUrl: "",
@@ -17,37 +22,43 @@ export const defaultChatData: ChatData = {
       }
     },
     ui: {
+      sidebar: true,
       foregroundColor: "#000000",
       backgroundColor: "#FFFFFF",
       width: "100%",
       height: "100%"
     }
   },
-  error: "",
   session: {
-    memory: false,
     chatId: "",
-    chatMessages: [],
-    allChats: []
+    chatMessages: []
   },
   api: {
     online: false,
-    isApiTyping: false,
+    typing: false,
+    canStream: false,
     isApiAcceptingVoice: false,
     isApiAcceptingImage: false,
-    isApiAcceptingFile: false
+    isApiAcceptingRAGFile: false,
+    isApiAcceptingFullFile: false,
+    imgUploadSizeAndTypes: [],
+    fileUploadSizeAndTypes: []
   }
 };
 
 export const config: Config = {
   apiHost: "https://llminabox.criticalfutureglobal.com",
-  chatflowId: "9c0ed472-203e-4199-833c-17ae3fd3f03f",
+  chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd",
 
   assistant: {
     name: "Ai Assistant",
     description: "Critical Future Chatbot Assistant",
     welcomeMessage: "Hello! How can I assist you today?",
-    sidebar: true,
+    voice: {
+      name: "en-GB-SoniaNeural",
+      apiHost: "https://tts.criticalfutureglobal.com/get_tts",
+      apiKey: "G7x9mVt2Q5bK8Jp4S1Zc"
+    },
     avatar: {
       staticUrl:
         "https://raw.githubusercontent.com/Critical-Future-LLM-in-a-Box/llminaboxchatbots/refs/heads/main/Avatars/mai/mai.png",
@@ -59,9 +70,18 @@ export const config: Config = {
   },
 
   ui: {
+    sidebar: true,
     foregroundColor: "#000000",
     backgroundColor: "#F8F8FF",
     width: "100%",
     height: "100%"
+  },
+
+  onRequest: (request) => {
+    console.log("Request: ", request);
+  },
+
+  onResponse: (response) => {
+    console.log("Response: ", response);
   }
 };

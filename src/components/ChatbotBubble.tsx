@@ -1,21 +1,29 @@
-import React, { useState } from "react";
-import { Box, Button } from "@mui/material";
+import React, { useState, useCallback } from "react";
+import { Box, Fab, Stack, Divider } from "@mui/material";
+
 import ChatIcon from "@mui/icons-material/Chat";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+
 import ChatbotHeader from "@/components/ChatbotHeader";
 import ChatbotBody from "@/components/ChatbotBody";
 import ChatbotFooter from "@/components/ChatbotFooter";
+
 import { useContextData } from "@/context";
 
-export default function ChatbotBubble(): JSX.Element {
+const ChatbotBubble = (): JSX.Element => {
   const [isVisible, setIsVisible] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const toggleChatbot = () => setIsVisible(!isVisible);
-  const toggleFullscreen = () => setIsFullscreen(!isFullscreen);
-  const closeChatbot = () => setIsVisible(false);
-
   const [chatData] = useContextData();
+
+  const toggleChatbot = useCallback(() => setIsVisible((prev) => !prev), []);
+  const toggleFullscreen = useCallback(
+    () => setIsFullscreen((prev) => !prev),
+    []
+  );
+  const closeChatbot = useCallback(() => setIsVisible(false), []);
+
+  const { backgroundColor, foregroundColor } = chatData.config.ui!;
 
   return (
     <Box
@@ -25,26 +33,33 @@ export default function ChatbotBubble(): JSX.Element {
         right: 16,
         display: "flex",
         flexDirection: "column",
+        justifyContent: "center",
         alignItems: "end",
-        gap: 1
+        gap: 2
       }}
     >
       {isVisible && (
-        <Box
+        <Stack
+          direction="column"
+          spacing={0}
+          divider={
+            <Divider
+              orientation="horizontal"
+              flexItem
+            />
+          }
           sx={{
-            position: isFullscreen ? "fixed" : "relative",
-            bottom: isFullscreen ? "50%" : 16,
-            right: isFullscreen ? "50%" : 16,
-            transform: isFullscreen ? "translate(50%, 50%)" : "none",
-            minWidth: isFullscreen ? "60vw" : "400px",
-            maxWidth: isFullscreen ? "80vw" : "600px",
-            minHeight: isFullscreen ? "60vh" : "400px",
-            maxHeight: isFullscreen ? "80vh" : "600px",
-            boxShadow: 4,
+            border: 1,
             borderRadius: 2,
             overflow: "hidden",
-            display: "flex",
-            flexDirection: "column"
+            position: isFullscreen ? "fixed" : "static",
+            bottom: isFullscreen ? "50%" : 0,
+            right: isFullscreen ? "50%" : 0,
+            transform: isFullscreen ? "translate(50%, 50%)" : "none",
+            minWidth: isFullscreen ? "80vw" : "400px",
+            maxWidth: isFullscreen ? "90vw" : "600px",
+            minHeight: isFullscreen ? "80vh" : "400px",
+            maxHeight: isFullscreen ? "90vh" : "600px"
           }}
         >
           <ChatbotHeader
@@ -54,26 +69,25 @@ export default function ChatbotBubble(): JSX.Element {
           />
           <ChatbotBody />
           <ChatbotFooter />
-        </Box>
+        </Stack>
       )}
 
-      <Button
+      <Fab
         onClick={toggleChatbot}
         sx={{
-          "bgcolor": chatData.config.ui?.backgroundColor,
-          "color": chatData.config.ui?.foregroundColor,
-          "width": 64,
-          "height": 64,
-          "borderRadius": "50%",
-          "boxShadow": 6,
+          "bgcolor": backgroundColor,
+          "color": foregroundColor,
           "&:hover": {
-            color: chatData.config.ui?.backgroundColor,
-            bgcolor: chatData.config.ui?.foregroundColor
+            color: backgroundColor,
+            bgcolor: foregroundColor
           }
         }}
       >
         {isVisible ? <KeyboardArrowDownIcon /> : <ChatIcon />}
-      </Button>
+      </Fab>
     </Box>
   );
-}
+};
+
+// Export with memoization to prevent unnecessary re-renders
+export default React.memo(ChatbotBubble);
