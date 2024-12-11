@@ -10,13 +10,19 @@ export default defineConfig({
       entry: resolve(__dirname, "src/index.tsx"),
       name: "llminaboxChat",
       fileName: "llminaboxChat",
-      formats: ["es", "umd"]
+      formats: ["es"]
     },
     rollupOptions: {
-      external: ["react", "react-dom"],
+      external: [],
       output: {
-        globals: { react: "React" }
+        globals: {
+          "react": "React",
+          "react-dom": "ReactDOM"
+        }
       }
     }
+  },
+  define: {
+    "process.env.NODE_ENV": JSON.stringify("production")
   }
 });

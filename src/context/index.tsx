@@ -31,8 +31,6 @@ const createContextData = (userConfig: Config): ChatData => {
     config: deepmerge(defaultChatData.config, userConfig)
   });
 
-  console.log("mergedChatData", mergedChatData);
-
   let localData = localStorage.getItem("chatData");
   if (localData) {
     localData = JSON.parse(localData);
