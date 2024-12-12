@@ -3,7 +3,7 @@ import { resolve } from "path";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
+export default defineConfig((mode) => ({
   plugins: [react(), tsconfigPaths()],
   build: {
     lib: {
@@ -14,6 +14,8 @@ export default defineConfig({
     }
   },
   define: {
-    "process.env.NODE_ENV": JSON.stringify("production")
+    "process.env.NODE_ENV": JSON.stringify(
+      mode.mode === "production" ? "production" : "development"
+    )
   }
-});
+}));

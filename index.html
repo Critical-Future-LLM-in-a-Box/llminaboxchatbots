@@ -15,25 +15,6 @@
       }
     </style>
 
-    <!-- <script type="module">
-      import { initChatbot } from "./src/index.tsx";
-      initChatbot({
-        apiHost: "https://llminabox.criticalfutureglobal.com",
-        chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd",
-
-        assistant: {
-          name: "Ai Assistant",
-          description: "Critical Future Chatbot Assistant",
-          welcomeMessage: "Hello! How can I assist you today?",
-          voice: {
-            name: "en-GB-SoniaNeural",
-            apiHost: "https://tts.criticalfutureglobal.com/get_tts",
-            apiKey: "G7x9mVt2Q5bK8Jp4S1Zc"
-          }
-        }
-      });
-    </script> -->
-
     <script type="module">
       import { initChatbot } from "./dist/llminaboxChat.js";
       initChatbot({
@@ -53,6 +34,6 @@
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <llminabox></llminabox>
+    <div id="llminabox"></div>
   </body>
 </html>

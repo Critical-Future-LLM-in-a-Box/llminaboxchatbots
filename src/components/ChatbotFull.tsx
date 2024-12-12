@@ -18,10 +18,12 @@ const ChatbotFull = (): JSX.Element => {
         />
       }
       sx={{
-        border: 1,
-        borderRadius: 2,
         height: "100%",
-        width: "100%"
+        width: "100%",
+        minWidth: "400px",
+        maxWidth: "100%",
+        minHeight: "100%",
+        maxHeight: "100%"
       }}
     >
       <ChatbotHeader />
@@ -31,5 +33,4 @@ const ChatbotFull = (): JSX.Element => {
   );
 };
 
-// Memoize the component to prevent unnecessary re-renders
 export default memo(ChatbotFull);
