@@ -27,6 +27,7 @@ export interface Message {
   role: "user" | "api";
   content: string;
   timestamp: string;
+  feedback?: string | null;
   uploads?: Upload[];
 }
 

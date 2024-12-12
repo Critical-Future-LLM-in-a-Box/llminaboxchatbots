@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { TextField, IconButton, Stack, Chip } from "@mui/material";
 import {
   Send,
@@ -40,6 +40,8 @@ export default function ChatbotInput() {
   };
 
   const handleResponseJSON = async () => {
+    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
+
     const prediction = (await getPrediction({
       chatData,
       userMessage,
@@ -54,6 +56,8 @@ export default function ChatbotInput() {
     })) as { chatMessageId: string; text: string };
 
     if (prediction) {
+      setApiMessage((prev) => ({ ...prev, content: prediction.text }));
+      dispatch({ type: "SET_TYPING_STATUS", payload: false });
       dispatch({
         type: "UPDATE_LAST_MESSAGE",
         payload: {
@@ -61,11 +65,15 @@ export default function ChatbotInput() {
           content: prediction.text
         }
       });
-      dispatch({ type: "SET_TYPING_STATUS", payload: false });
     }
+
+    if (chatData.config.onResponse)
+      chatData.config.onResponse({ ...apiMessage, content: prediction.text });
   };
 
   const handleResponseStream = async () => {
+    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
+
     const prediction = await getPrediction({
       chatData,
       userMessage,
@@ -81,33 +89,35 @@ export default function ChatbotInput() {
 
     dispatch({ type: "SET_TYPING_STATUS", payload: false });
 
+    let apiMessageContent = apiMessage.content;
     for await (const sse of prediction as AsyncIterable<{ data: string }>) {
       const eventData = JSON.parse(sse.data);
       const event = eventData.event;
       const data = eventData.data;
 
       if (event === "token") {
+        apiMessageContent = apiMessageContent + data;
+        setApiMessage((prev) => ({ ...prev, content: prev.content + data }));
         dispatch({
           type: "UPDATE_LAST_MESSAGE",
           payload: { content: data }
         });
       }
-
-      if (event === "metadata") {
-        dispatch({
-          type: "UPDATE_LAST_MESSAGE",
-          payload: { id: data.chatMessageId }
-        });
-      }
     }
+
+    if (chatData.config.onResponse)
+      chatData.config.onResponse({ ...apiMessage, content: apiMessageContent });
   };
 
   const handleSubmit = useCallback(async () => {
-    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
+    setApiMessage({
+      id: uuidv4(),
+      role: "api",
+      content: "",
+      timestamp: new Date().toISOString()
+    });
 
-    const isEmpty = !userMessage.content.trim() && !userMessage.uploads?.length;
-
-    if (isEmpty) return;
+    if (!userMessage.content.trim() && !userMessage.uploads?.length) return;
 
     dispatch({ type: "ADD_NEW_MESSAGE", payload: userMessage });
     dispatch({ type: "SET_TYPING_STATUS", payload: true });
@@ -116,20 +126,12 @@ export default function ChatbotInput() {
     if (chatData.api.canStream) await handleResponseStream();
     if (!chatData.api.canStream) await handleResponseJSON();
 
-    if (chatData.config.onResponse) chatData.config.onResponse(apiMessage);
-
     setUserMessage({
       id: uuidv4(),
       role: "user",
       content: "",
       timestamp: new Date().toISOString(),
       uploads: []
-    });
-    setApiMessage({
-      id: uuidv4(),
-      role: "api",
-      content: "",
-      timestamp: new Date().toISOString()
     });
   }, [userMessage, apiMessage, chatData, dispatch]);
 

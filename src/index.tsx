@@ -3,12 +3,11 @@ import ReactDOM from "react-dom/client";
 
 import { ContextProvider } from "@/context";
 import { Config } from "@/types";
-import { config } from "@/config";
-import CssBaseline from '@mui/material/CssBaseline';
+import CssBaseline from "@mui/material/CssBaseline";
 import ChatbotFull from "@/components/ChatbotFull";
 import ChatbotBubble from "@/components/ChatbotBubble";
 
-export default function init(config: Config): void {
+export function initChatbot(config: Config = {}): void {
   let chatbotRoot = document.querySelector("llminabox") as HTMLElement;
   let Chatbot = ChatbotFull;
 
@@ -18,7 +17,8 @@ export default function init(config: Config): void {
     Chatbot = ChatbotBubble;
   }
 
-  ReactDOM.createRoot(chatbotRoot).render(
+  const root = ReactDOM.createRoot(chatbotRoot);
+  root.render(
     <ContextProvider config={config}>
       <CssBaseline />
       <Chatbot />
@@ -26,4 +26,11 @@ export default function init(config: Config): void {
   );
 }
 
-init(config);
+export function destroyChatbot(): void {
+  const chatbotRoot = document.querySelector("llminabox") as HTMLElement;
+  if (chatbotRoot) {
+    const root = ReactDOM.createRoot(chatbotRoot);
+    root.unmount();
+    chatbotRoot.remove();
+  }
+}

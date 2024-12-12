@@ -56,9 +56,9 @@ const ChatbotBubble = (): JSX.Element => {
             bottom: isFullscreen ? "50%" : 0,
             right: isFullscreen ? "50%" : 0,
             transform: isFullscreen ? "translate(50%, 50%)" : "none",
-            minWidth: isFullscreen ? "80vw" : "400px",
+            minWidth: isFullscreen ? "80vw" : "500px",
             maxWidth: isFullscreen ? "90vw" : "600px",
-            minHeight: isFullscreen ? "80vh" : "400px",
+            minHeight: isFullscreen ? "80vh" : "500px",
             maxHeight: isFullscreen ? "90vh" : "600px"
           }}
         >

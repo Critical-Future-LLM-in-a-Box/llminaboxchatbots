@@ -124,8 +124,8 @@ const MessageCard = ({ message }: { message: Message }) => {
       <Box
         sx={{
           typography: "body2",
-          color: chatData.config.ui?.foregroundColor,
-          bgcolor: chatData.config.ui?.backgroundColor,
+          color: chatData.config.ui?.foregroundColor || "#111111",
+          bgcolor: chatData.config.ui?.backgroundColor || "#EFEFEF",
           borderRadius: 2,
           p: "2px 16px",
           minHeight: "32px",
@@ -156,7 +156,7 @@ const MessageCard = ({ message }: { message: Message }) => {
         >
           {new Date(message.timestamp || "").toLocaleString()}
         </Typography>
-        {message.role === "api" && (
+        {message.role === "api" && chatData.config.assistant?.voice?.name && (
           <>
             <IconButton
               onClick={handleVoiceClick}

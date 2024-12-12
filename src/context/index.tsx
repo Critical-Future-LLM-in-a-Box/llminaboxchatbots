@@ -33,8 +33,8 @@ const createContextData = (userConfig: Config): ChatData => {
 
   let localData = localStorage.getItem("chatData");
   if (localData) {
-    localData = JSON.parse(localData);
-    return deepmerge(mergedChatData, localData || {});
+    const localSession = JSON.parse(localData) as ChatData["session"];
+    return deepmerge(mergedChatData, { session: localSession } as ChatData);
   }
 
   const chatId = uuidv4();
@@ -49,7 +49,7 @@ const createContextData = (userConfig: Config): ChatData => {
   mergedChatData.session.chatId = chatId;
   mergedChatData.session.chatMessages = [defaultMessage];
 
-  localStorage.setItem("chatData", JSON.stringify(mergedChatData));
+  localStorage.setItem("chatData", JSON.stringify(mergedChatData.session));
 
   return mergedChatData;
 };
@@ -66,7 +66,7 @@ export const ContextProvider = ({
   const [state, dispatch] = useImmerReducer(chatReducer, initialContextData);
 
   useEffect(() => {
-    const serializedData = JSON.stringify(state);
+    const serializedData = JSON.stringify(state.session);
     localStorage.setItem("chatData", serializedData);
 
     if (state.error) {
@@ -106,17 +106,19 @@ export const ContextProvider = ({
 
       if (response) {
         const { uploads, fullFileUpload } = response;
-        dispatch({
-          type: "SET_UPLOAD_CONFIG",
-          payload: {
-            isApiAcceptingVoice: uploads.isSpeechToTextEnabled,
-            isApiAcceptingImage: uploads.isImageUploadAllowed,
-            isApiAcceptingRAGFile: uploads.isRAGFileUploadAllowed,
-            isApiAcceptingFullFile: fullFileUpload.status,
-            imgUploadSizeAndTypes: uploads.imgUploadSizeAndTypes,
-            fileUploadSizeAndTypes: uploads.fileUploadSizeAndTypes
-          }
-        });
+        if (uploads) {
+          dispatch({
+            type: "SET_UPLOAD_CONFIG",
+            payload: {
+              isApiAcceptingVoice: uploads.isSpeechToTextEnabled,
+              isApiAcceptingImage: uploads.isImageUploadAllowed,
+              isApiAcceptingRAGFile: uploads.isRAGFileUploadAllowed,
+              isApiAcceptingFullFile: fullFileUpload.status,
+              imgUploadSizeAndTypes: uploads.imgUploadSizeAndTypes,
+              fileUploadSizeAndTypes: uploads.fileUploadSizeAndTypes
+            }
+          });
+        }
       }
     };
 

@@ -11,18 +11,6 @@ export default defineConfig({
       name: "llminaboxChat",
       fileName: "llminaboxChat",
       formats: ["es"]
-    },
-    rollupOptions: {
-      external: [],
-      output: {
-        globals: {
-          "react": "React",
-          "react-dom": "ReactDOM"
-        }
-      }
     }
-  },
-  define: {
-    "process.env.NODE_ENV": JSON.stringify("production")
   }
 });

@@ -45,7 +45,9 @@ const ChatbotBody = (): JSX.Element => {
           flex: 1,
           overflow: "auto",
           maxHeight: "100%",
-          maxWidth: "100%"
+          maxWidth: "100%",
+          minHeight: "400px",
+          minWidth: "350px"
         }}
       >
         {/* Messages List */}
