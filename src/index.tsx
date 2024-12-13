@@ -38,6 +38,5 @@ export function destroyChatbot(): void {
   const chatbotRoot: HTMLElement | null = document.querySelector("#llminabox");
   if (chatbotRoot) {
     ReactDOM.createRoot(chatbotRoot).unmount();
-    chatbotRoot.remove();
   }
 }

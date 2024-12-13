@@ -19907,7 +19907,7 @@ const BT = ({ message: e }) => {
     }
   );
 }, UT = it.memo(BT), WT = () => {
-  var r, o;
+  var r, o, i, s, l, a;
   const [e] = lr(), { sidebar: t } = ((r = e == null ? void 0 : e.config) == null ? void 0 : r.ui) || {}, n = ((o = e.session) == null ? void 0 : o.chatMessages) || [];
   return /* @__PURE__ */ k.jsxs(
     Ft,
@@ -19925,7 +19925,9 @@ const BT = ({ message: e }) => {
         flex: 1,
         overflow: "auto",
         maxHeight: "100%",
-        maxWidth: "100%"
+        maxWidth: "100%",
+        color: ((s = (i = e == null ? void 0 : e.config) == null ? void 0 : i.ui) == null ? void 0 : s.foregroundColor) || "#111111",
+        backgroundColor: ((a = (l = e == null ? void 0 : e.config) == null ? void 0 : l.ui) == null ? void 0 : a.backgroundColor) || "#efefef"
       },
       children: [
         t && /* @__PURE__ */ k.jsx(cT, {}),
@@ -19968,12 +19970,12 @@ const BT = ({ message: e }) => {
                     maxHeight: "100%",
                     maxWidth: "100%"
                   },
-                  children: n.map((i) => /* @__PURE__ */ k.jsx(
+                  children: n.map((u) => /* @__PURE__ */ k.jsx(
                     UT,
                     {
-                      message: i
+                      message: u
                     },
-                    i.id
+                    u.id
                   ))
                 }
               ),
@@ -20162,7 +20164,7 @@ function o_(e = {}) {
 }
 function i_() {
   const e = document.querySelector("#llminabox");
-  e && (Qs.createRoot(e).unmount(), e.remove());
+  e && Qs.createRoot(e).unmount();
 }
 export {
   i_ as destroyChatbot,

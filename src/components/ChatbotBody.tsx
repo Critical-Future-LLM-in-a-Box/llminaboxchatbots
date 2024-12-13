@@ -25,7 +25,9 @@ const ChatbotBody = (): JSX.Element => {
         flex: 1,
         overflow: "auto",
         maxHeight: "100%",
-        maxWidth: "100%"
+        maxWidth: "100%",
+        color: chatData?.config?.ui?.foregroundColor || "#111111",
+        backgroundColor: chatData?.config?.ui?.backgroundColor || "#efefef"
       }}
     >
       {/* Sidebar */}
