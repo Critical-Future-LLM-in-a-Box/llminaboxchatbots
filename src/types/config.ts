@@ -21,6 +21,7 @@ export interface Config {
     sidebar?: boolean;
     foregroundColor?: string;
     backgroundColor?: string;
+    backgroundColorBody?: string;
     width?: string;
     height?: string;
   };

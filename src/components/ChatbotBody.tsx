@@ -27,7 +27,7 @@ const ChatbotBody = (): JSX.Element => {
         maxHeight: "100%",
         maxWidth: "100%",
         color: chatData?.config?.ui?.foregroundColor || "#111111",
-        backgroundColor: chatData?.config?.ui?.backgroundColor || "#efefef"
+        backgroundColor: chatData?.config?.ui?.backgroundColorBody || "#FFF"
       }}
     >
       {/* Sidebar */}

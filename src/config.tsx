@@ -25,6 +25,7 @@ export const defaultChatData: ChatData = {
       sidebar: false,
       foregroundColor: "#111111",
       backgroundColor: "#EFEFEF",
+      backgroundColorBody: "#FFF",
       width: "100%",
       height: "100%"
     }
