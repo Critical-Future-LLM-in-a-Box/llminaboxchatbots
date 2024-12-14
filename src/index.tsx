@@ -34,9 +34,11 @@ export function initChatbot(config: Config = {}): void {
   );
 }
 
-export function destroyChatbot(): void {
+export function destroyChatbot({
+  react = true,
+  dom = true
+}: { react?: boolean; dom?: boolean } = {}): void {
   const chatbotRoot: HTMLElement | null = document.querySelector("#llminabox");
-  if (chatbotRoot) {
-    ReactDOM.createRoot(chatbotRoot).unmount();
-  }
+  if (chatbotRoot && react) ReactDOM.createRoot(chatbotRoot).unmount();
+  if (chatbotRoot && dom) chatbotRoot.remove();
 }

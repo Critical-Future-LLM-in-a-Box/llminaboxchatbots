@@ -20163,9 +20163,12 @@ function o_(e = {}) {
     ] })
   );
 }
-function i_() {
-  const e = document.querySelector("#llminabox");
-  e && Qs.createRoot(e).unmount();
+function i_({
+  react: e = !0,
+  dom: t = !0
+} = {}) {
+  const n = document.querySelector("#llminabox");
+  n && e && Qs.createRoot(n).unmount(), n && t && n.remove();
 }
 export {
   i_ as destroyChatbot,

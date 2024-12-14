@@ -21,18 +21,10 @@
 
     <script type="module">
       // import { initChatbot } from "./src/index.tsx";
-      import { initChatbot } from "./dist/llminabox.js";
+      import { initChatbot } from "./dist/llminaboxChat.js";
       initChatbot({
         apiHost: "https://llminabox.criticalfutureglobal.com",
-        chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd",
-
-        onRequest: (request) => {
-          console.log("Request: ", request);
-        },
-
-        onResponse: (response) => {
-          console.log("Response: ", response);
-        }
+        chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd"
       });
     </script>
   </head>
