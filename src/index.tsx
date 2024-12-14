@@ -7,26 +7,32 @@ import CssBaseline from "@mui/material/CssBaseline";
 import ChatbotFull from "@/components/ChatbotFull";
 import ChatbotBubble from "@/components/ChatbotBubble";
 
+let chatbotRootElement: HTMLElement | null =
+  document.querySelector("#llminabox");
+let chatbotReactRoot: ReactDOM.Root | null = null;
+
 export function initChatbot(config: Config = {}): void {
   let Chatbot = ChatbotFull;
-  let chatbotRoot: HTMLElement | null = document.querySelector("#llminabox");
 
-  if (chatbotRoot) {
-    chatbotRoot.style.cssText = `
+  if (!chatbotRootElement) {
+    chatbotRootElement = document.createElement("div");
+    chatbotRootElement.id = "llminabox";
+    document.body.appendChild(chatbotRootElement);
+    Chatbot = ChatbotBubble;
+  }
+
+  chatbotRootElement.style.cssText = `
       display: block;
       width: 100%;
       height: 100%;
       overflow: hidden;
     `;
+
+  if (!chatbotReactRoot) {
+    chatbotReactRoot = ReactDOM.createRoot(chatbotRootElement);
   }
 
-  if (!chatbotRoot) {
-    chatbotRoot = document.createElement("llminabox");
-    document.body.appendChild(chatbotRoot);
-    Chatbot = ChatbotBubble;
-  }
-
-  ReactDOM.createRoot(chatbotRoot).render(
+  chatbotReactRoot.render(
     <ContextProvider config={config}>
       <CssBaseline />
       <Chatbot />
@@ -34,11 +40,15 @@ export function initChatbot(config: Config = {}): void {
   );
 }
 
-export function destroyChatbot({
-  react = true,
-  dom = true
-}: { react?: boolean; dom?: boolean } = {}): void {
-  const chatbotRoot: HTMLElement | null = document.querySelector("#llminabox");
-  if (chatbotRoot && react) ReactDOM.createRoot(chatbotRoot).unmount();
-  if (chatbotRoot && dom) chatbotRoot.remove();
+export function destroyChatbot(): void {
+  if (chatbotReactRoot) {
+    chatbotReactRoot.unmount();
+    chatbotReactRoot = null;
+  }
+
+  if (chatbotRootElement) {
+    chatbotRootElement.style.cssText = `
+      display: none;
+    `;
+  }
 }
