@@ -91,7 +91,7 @@ const MessageCard = ({ message }: { message: Message }) => {
         alignSelf: message.role === "api" ? "flex-start" : "flex-end",
         m: 1,
         color: chatData.config.ui?.foregroundColor || "#111111",
-        bgcolor: chatData.config.ui?.backgroundColor || "#EFEFEF"
+        bgcolor: chatData.config.ui?.backgroundColorBody || "#EFEFEF"
       }}
     >
       {/* Upload Previews */}
