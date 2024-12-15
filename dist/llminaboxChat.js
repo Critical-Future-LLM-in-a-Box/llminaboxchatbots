@@ -19824,7 +19824,7 @@ const WT = ({ message: e }) => {
         alignSelf: e.role === "api" ? "flex-start" : "flex-end",
         m: 1,
         color: ((d = t.config.ui) == null ? void 0 : d.foregroundColor) || "#111111",
-        bgcolor: ((m = t.config.ui) == null ? void 0 : m.backgroundColor) || "#EFEFEF"
+        bgcolor: ((m = t.config.ui) == null ? void 0 : m.backgroundColorBody) || "#EFEFEF"
       },
       children: [
         e.uploads && e.uploads.length > 0 && /* @__PURE__ */ k.jsx(
