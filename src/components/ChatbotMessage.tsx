@@ -89,7 +89,9 @@ const MessageCard = ({ message }: { message: Message }) => {
       sx={{
         maxWidth: "90%",
         alignSelf: message.role === "api" ? "flex-start" : "flex-end",
-        m: 1
+        m: 1,
+        color: chatData.config.ui?.foregroundColor || "#111111",
+        bgcolor: chatData.config.ui?.backgroundColor || "#EFEFEF"
       }}
     >
       {/* Upload Previews */}
