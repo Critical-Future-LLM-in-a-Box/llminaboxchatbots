@@ -20,6 +20,9 @@ export function initChatbot(config: Config = {}): void {
   const llminaboxFull = document.getElementById("llminabox-full");
 
   if (llminaboxFull) {
+    llminaboxFull.style.display = "block";
+    llminaboxFull.style.width = "100%";
+    llminaboxFull.style.height = "100%";
     renderChatbot(llminaboxFull, ChatbotFull, config);
   } else {
     const container = document.createElement("div");

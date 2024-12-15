@@ -20156,7 +20156,7 @@ function s_() {
 function l_(e = {}) {
   const t = document.getElementById("llminabox-full");
   if (t)
-    Sm(t, qT, e);
+    t.style.display = "block", t.style.width = "100%", t.style.height = "100%", Sm(t, qT, e);
   else {
     const n = document.createElement("div");
     n.id = "llminabox-bubble", document.body.appendChild(n), Sm(n, o_, e);
