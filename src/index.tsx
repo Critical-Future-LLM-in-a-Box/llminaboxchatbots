@@ -18,14 +18,14 @@ export function destroyChatbot(): void {
 
 export function initChatbot(config: Config = {}): void {
   const llminaboxFull = document.getElementById("llminabox-full");
-  const llminaboxBubble = document.getElementById("llminabox-bubble");
 
   if (llminaboxFull) {
     renderChatbot(llminaboxFull, ChatbotFull, config);
-  } else if (llminaboxBubble) {
-    renderChatbot(llminaboxBubble, ChatbotBubble, config);
   } else {
-    console.warn("No valid chatbot container found.");
+    const container = document.createElement("div");
+    container.id = "llminabox-bubble";
+    document.body.appendChild(container);
+    renderChatbot(container, ChatbotBubble, config);
   }
 }
 
