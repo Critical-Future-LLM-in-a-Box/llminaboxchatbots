@@ -1,5 +1,6 @@
-import React, { useState, useCallback } from "react";
-import { Box, Fab, Stack, Divider } from "@mui/material";
+import React, { useState, useEffect, useCallback } from "react";
+import { Box, Fab, Stack, Divider, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 import ChatIcon from "@mui/icons-material/Chat";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -13,6 +14,19 @@ import { useContextData } from "@/context";
 const ChatbotBubble = (): JSX.Element => {
   const [isVisible, setIsVisible] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const theme = useTheme();
+  const isSmUp = useMediaQuery(theme.breakpoints.up("sm"));
+
+  useEffect(() => {
+    console.log(isSmUp);
+
+    if (isSmUp) {
+      setIsFullscreen(false);
+    } else {
+      setIsFullscreen(true);
+    }
+  }, [isSmUp]);
 
   const [chatData] = useContextData();
 
@@ -51,15 +65,16 @@ const ChatbotBubble = (): JSX.Element => {
           sx={{
             border: 1,
             borderRadius: 2,
-            overflow: "hidden",
+            width: "100%",
+            height: "100%",
+            minWidth: isFullscreen ? "80vw" : "300px",
+            maxWidth: isFullscreen ? "100vw" : "600px",
+            minHeight: isFullscreen ? "60vh" : "300px",
+            maxHeight: isFullscreen ? "80vh" : "600px",
             position: isFullscreen ? "fixed" : "static",
             bottom: isFullscreen ? "50%" : 0,
             right: isFullscreen ? "50%" : 0,
-            transform: isFullscreen ? "translate(50%, 50%)" : "none",
-            minWidth: isFullscreen ? "80vw" : "500px",
-            maxWidth: isFullscreen ? "90vw" : "600px",
-            minHeight: isFullscreen ? "80vh" : "500px",
-            maxHeight: isFullscreen ? "90vh" : "600px"
+            transform: isFullscreen ? "translate(50%, 50%)" : "none"
           }}
         >
           <ChatbotHeader
