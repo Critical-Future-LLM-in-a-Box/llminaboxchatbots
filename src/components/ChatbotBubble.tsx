@@ -19,8 +19,6 @@ const ChatbotBubble = (): JSX.Element => {
   const isSmUp = useMediaQuery(theme.breakpoints.up("sm"));
 
   useEffect(() => {
-    console.log(isSmUp);
-
     if (isSmUp) {
       setIsFullscreen(false);
     } else {
