@@ -20128,7 +20128,7 @@ dy = Wf.default = s_;
 const l_ = () => {
   const [e, t] = x.useState(!1), [n, r] = x.useState(!1), o = Lr(), i = ZE(o.breakpoints.up("sm"));
   x.useEffect(() => {
-    console.log(i), r(!i);
+    r(!i);
   }, [i]);
   const [s] = lr(), l = x.useCallback(() => t((d) => !d), []), a = x.useCallback(
     () => r((d) => !d),
@@ -20145,7 +20145,8 @@ const l_ = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "end",
-        gap: 2
+        gap: 2,
+        zIndex: 9999
       },
       children: [
         e && /* @__PURE__ */ k.jsxs(
@@ -20195,6 +20196,7 @@ const l_ = () => {
             sx: {
               bgcolor: c,
               color: f,
+              zIndex: 9999,
               "&:hover": {
                 color: c,
                 bgcolor: f

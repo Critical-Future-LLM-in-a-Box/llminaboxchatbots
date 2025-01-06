@@ -47,7 +47,8 @@ const ChatbotBubble = (): JSX.Element => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "end",
-        gap: 2
+        gap: 2,
+        zIndex: 9999
       }}
     >
       {isVisible && (
@@ -90,6 +91,7 @@ const ChatbotBubble = (): JSX.Element => {
         sx={{
           "bgcolor": backgroundColor,
           "color": foregroundColor,
+          "zIndex": 9999,
           "&:hover": {
             color: backgroundColor,
             bgcolor: foregroundColor
@@ -102,5 +104,4 @@ const ChatbotBubble = (): JSX.Element => {
   );
 };
 
-// Export with memoization to prevent unnecessary re-renders
 export default React.memo(ChatbotBubble);
