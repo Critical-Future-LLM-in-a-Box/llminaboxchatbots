@@ -20,10 +20,7 @@ const ChatbotFull = (): JSX.Element => {
       sx={{
         height: "100%",
         width: "100%",
-        minWidth: "400px",
-        maxWidth: "100%",
-        minHeight: "100%",
-        maxHeight: "100%"
+        overflow: "hidden"
       }}
     >
       <ChatbotHeader />

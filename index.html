@@ -12,27 +12,31 @@
       html,
       body {
         height: 100%;
-      }
-
-      #llminabox-full,
-      #llminabox-bubble {
-        width: 100%;
-        height: 100%;
+        padding: 0;
+        margin: 0;
       }
     </style>
 
-    <script type="module">
-      // import { initChatbot, destroyChatbot } from "./src/index.tsx";
-      import { initChatbot, destroyChatbot } from "./dist/llminaboxChat.js";
-      initChatbot({
-        apiHost: "https://llminabox.criticalfutureglobal.com",
-        chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd"
-      });
+    <script
+      type="module"
+      defer
+    >
+      // import { initChatbot } from "./dist/llminaboxChat.js";
+      import { initChatbot } from "./src/index.tsx";
+
+      const chatbot = initChatbot(
+        {
+          apiHost: "https://llminabox.criticalfutureglobal.com",
+          chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd"
+        },
+        document.getElementById("llminabox"),
+        "full"
+      );
     </script>
   </head>
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="llminabox-full"></div>
+    <div id="llminabox"></div>
   </body>
 </html>

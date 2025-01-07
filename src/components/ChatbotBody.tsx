@@ -48,7 +48,7 @@ const ChatbotBody = (): JSX.Element => {
           overflow: "auto",
           maxHeight: "100%",
           maxWidth: "100%",
-          minHeight: "400px",
+          minHeight: "300px",
           minWidth: "350px"
         }}
       >
