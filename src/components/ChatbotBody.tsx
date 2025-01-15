@@ -49,7 +49,7 @@ const ChatbotBody = (): JSX.Element => {
           maxHeight: "100%",
           maxWidth: "100%",
           minHeight: "300px",
-          minWidth: "350px"
+          minWidth: "300px"
         }}
       >
         {/* Messages List */}
