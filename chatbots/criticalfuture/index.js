@@ -9,8 +9,6 @@
     "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/mai/mai.gif";
   const avatarVideo =
     "https://critical-future-llm-in-a-box.github.io/llminaboxchatbots/Avatars/mai/mai.mp4";
-  const interactiveAvatarUrl =
-    "https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiIyMTRjOWUzODgzYTA0ZmYzYTM5OWQ0ZjU4%0D%0AYjI2YWUzZCIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3Yz%0D%0ALzIxNGM5ZTM4ODNhMDRmZjNhMzk5ZDRmNThiMjZhZTNkL2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0%0D%0ALndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6IjIw%0D%0AOWJlNWY5MzQ5NDQ2ZTFhZmIzNzAzZTdhMTI5MWZkIiwidXNlcm5hbWUiOiJmZTcxYzk3NzA0NGI0%0D%0AMzI0YTlkNzdiMDExMDNiZmQ0ZiJ9&inIFrame=1";
 
   if (location.href === "https://criticalfutureglobal.com/") {
     const llminaboxWrapper = await (
@@ -36,9 +34,7 @@
       avatarImage,
       avatarVideo,
       themeFront,
-      themeBack,
-      interactiveAvatarUrl,
-      interactiveAvatar: true
+      themeBack
     });
 
     await utils.urlPreview(chatbot);
