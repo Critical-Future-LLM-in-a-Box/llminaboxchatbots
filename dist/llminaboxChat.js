@@ -39770,8 +39770,10 @@ function T9() {
                   value: u.content,
                   onChange: (V) => p((K) => ({ ...K, content: V.target.value })),
                   sx: {
-                    color: ((z = (N = n == null ? void 0 : n.config) == null ? void 0 : N.ui) == null ? void 0 : z.foregroundColor) || "#111111",
-                    backgroundColor: ((Z = (X = n == null ? void 0 : n.config) == null ? void 0 : X.ui) == null ? void 0 : Z.backgroundColor) || "#FFF"
+                    backgroundColor: ((z = (N = n == null ? void 0 : n.config) == null ? void 0 : N.ui) == null ? void 0 : z.backgroundColor) || "#FFF",
+                    "& .MuiInputBase-root": {
+                      color: ((Z = (X = n == null ? void 0 : n.config) == null ? void 0 : X.ui) == null ? void 0 : Z.foregroundColor) || "#111111"
+                    }
                   },
                   placeholder: "Type your message...",
                   multiline: !0,
