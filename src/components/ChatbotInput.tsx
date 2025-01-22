@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { TextField, IconButton, Stack, Chip } from "@mui/material";
+import { TextField, IconButton, Stack, Chip, Box } from "@mui/material";
 import {
   Send,
   Image as ImageIcon,
@@ -136,7 +136,12 @@ export default function ChatbotInput() {
   }, [userMessage, apiMessage, chatData, dispatch]);
 
   return (
-    <>
+    <Box
+      sx={{
+        color: chatData?.config?.ui?.foregroundColor || "#111111",
+        backgroundColor: chatData?.config?.ui?.backgroundColor || "#FFF"
+      }}
+    >
       {/* Upload Previews */}
       {userMessage.uploads && userMessage.uploads.length > 0 && (
         <Stack
@@ -236,6 +241,6 @@ export default function ChatbotInput() {
           <Send />
         </IconButton>
       </Stack>
-    </>
+    </Box>
   );
 }

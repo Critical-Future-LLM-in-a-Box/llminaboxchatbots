@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Fab,
   Menu,
@@ -8,7 +8,8 @@ import {
   DialogContent,
   DialogTitle,
   Button,
-  Stack
+  Stack,
+  Box
 } from "@mui/material";
 import {
   AttachFile,
@@ -115,6 +116,8 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
     });
   };
 
+  const dialogContainerRef = useRef<HTMLDivElement>(null);
+
   return (
     <>
       <Fab
@@ -125,10 +128,13 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
         <AttachFile />
       </Fab>
 
+      <Box ref={dialogContainerRef} />
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
+        container={dialogContainerRef.current}
       >
         <MenuItem
           onClick={handleStartPreview}
@@ -161,6 +167,7 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
       <Dialog
         open={isCameraOpen}
         onClose={handleCloseCamera}
+        container={dialogContainerRef.current}
       >
         <DialogTitle>Camera Preview</DialogTitle>
         <DialogContent>
