@@ -203,8 +203,10 @@ export default function ChatbotInput() {
             setUserMessage((prev) => ({ ...prev, content: e.target.value }))
           }
           sx={{
-            color: chatData?.config?.ui?.foregroundColor || "#111111",
-            backgroundColor: chatData?.config?.ui?.backgroundColor || "#FFF"
+            "backgroundColor": chatData?.config?.ui?.backgroundColor || "#FFF",
+            "& .MuiInputBase-root": {
+              color: chatData?.config?.ui?.foregroundColor || "#111111"
+            }
           }}
           placeholder="Type your message..."
           multiline
