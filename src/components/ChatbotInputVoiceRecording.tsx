@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Fab, Badge } from "@mui/material";
 import { Mic, Stop as StopIcon } from "@mui/icons-material";
 import { AudioRecorder } from "@/utils";
+import { useContextData } from "@/context";
 
 type AudioRecordingProps = {
   onAddAudio: (audio: {
@@ -15,6 +16,7 @@ type AudioRecordingProps = {
 export default function AudioRecordingButton({
   onAddAudio
 }: AudioRecordingProps) {
+  const [chatData] = useContextData();
   const [recorder] = useState(() => new AudioRecorder());
   const [timeRecorded, setTimeRecorded] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -78,7 +80,11 @@ export default function AudioRecordingButton({
     <Fab
       size="medium"
       onClick={isRecording ? handleStopRecording : handleStartRecording}
-      sx={{ boxShadow: 0, bgcolor: "transparent" }}
+      sx={{
+        color: chatData?.config?.ui?.foregroundColor || "#111111",
+        boxShadow: 0,
+        bgcolor: "transparent"
+      }}
     >
       {isRecording ? (
         <Badge

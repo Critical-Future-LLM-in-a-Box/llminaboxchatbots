@@ -122,7 +122,11 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
     <>
       <Fab
         size="small"
-        sx={{ boxShadow: 0, bgcolor: "transparent" }}
+        sx={{
+          color: chatData?.config?.ui?.foregroundColor || "#111111",
+          boxShadow: 0,
+          bgcolor: "transparent"
+        }}
         onClick={handleOpenMenu}
       >
         <AttachFile />

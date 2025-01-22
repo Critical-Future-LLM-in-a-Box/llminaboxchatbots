@@ -202,6 +202,10 @@ export default function ChatbotInput() {
           onChange={(e) =>
             setUserMessage((prev) => ({ ...prev, content: e.target.value }))
           }
+          sx={{
+            color: chatData?.config?.ui?.foregroundColor || "#111111",
+            backgroundColor: chatData?.config?.ui?.backgroundColor || "#FFF"
+          }}
           placeholder="Type your message..."
           multiline
           fullWidth
@@ -232,6 +236,9 @@ export default function ChatbotInput() {
 
         <IconButton
           onClick={handleSubmit}
+          sx={{
+            color: chatData?.config?.ui?.foregroundColor || "#111111"
+          }}
           disabled={
             !chatData.api.online ||
             chatData.api.typing ||
