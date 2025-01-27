@@ -9,7 +9,8 @@ import {
   DialogTitle,
   Button,
   Stack,
-  Box
+  Box,
+  Tooltip
 } from "@mui/material";
 import {
   AttachFile,
@@ -117,20 +118,31 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
   };
 
   const dialogContainerRef = useRef<HTMLDivElement>(null);
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   return (
     <>
-      <Fab
-        size="small"
-        sx={{
-          color: chatData?.config?.ui?.foregroundColor || "#111111",
-          boxShadow: 0,
-          bgcolor: "transparent"
+      <div ref={tooltipContainerRef} />
+
+      <Tooltip
+        title="Upload Files"
+        PopperProps={{
+          container: tooltipContainerRef.current,
+          disablePortal: true
         }}
-        onClick={handleOpenMenu}
       >
-        <AttachFile />
-      </Fab>
+        <Fab
+          size="small"
+          sx={{
+            color: chatData?.config?.ui?.foregroundColor || "#111111",
+            boxShadow: 0,
+            bgcolor: "transparent"
+          }}
+          onClick={handleOpenMenu}
+        >
+          <AttachFile />
+        </Fab>
+      </Tooltip>
 
       <Box ref={dialogContainerRef} />
 
@@ -156,7 +168,7 @@ export default function UploadButton({ onAddUpload }: UploadButtonProps) {
           onClick={() => handleFileUpload("*/*")}
           disabled={!isUploadFileSupported}
         >
-          <Description sx={{ mr: 1 }} /> Upload File
+          <Description sx={{ mr: 1 }} /> Upload text File
         </MenuItem>
       </Menu>
 

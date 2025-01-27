@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, memo } from "react";
+import React, { useCallback, useEffect, memo, useRef } from "react";
 import {
   AppBar,
   Toolbar,
@@ -6,7 +6,8 @@ import {
   Typography,
   Fab,
   Stack,
-  Alert
+  Alert,
+  Tooltip
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import Person from "@mui/icons-material/Person";
@@ -28,6 +29,7 @@ const ChatbotHeader = ({
   isFullscreen = false
 }: ChatbotHeaderProps): JSX.Element => {
   const [chatData, dispatch] = useContextData();
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   const startNewChat = useCallback(() => {
     dispatch({ type: "START_NEW_CHAT" });
@@ -66,6 +68,8 @@ const ChatbotHeader = ({
         boxShadow: 0
       }}
     >
+      <div ref={tooltipContainerRef} />
+
       <Toolbar
         variant="regular"
         sx={{
@@ -104,41 +108,65 @@ const ChatbotHeader = ({
           spacing={1}
         >
           {/* Start New Chat */}
-          <Fab
-            size="small"
-            variant="circular"
-            onClick={startNewChat}
-            sx={{
-              boxShadow: 0
+          <Tooltip
+            title="Start New Chat"
+            PopperProps={{
+              container: tooltipContainerRef.current,
+              disablePortal: true
             }}
           >
-            <AddIcon />
-          </Fab>
+            <Fab
+              size="small"
+              variant="circular"
+              onClick={startNewChat}
+              sx={{
+                boxShadow: 0
+              }}
+            >
+              <AddIcon />
+            </Fab>
+          </Tooltip>
 
           {/* Fullscreen and Close Buttons */}
           {onToggleFullscreen && (
-            <Fab
-              size="small"
-              variant="circular"
-              sx={{
-                boxShadow: 0
+            <Tooltip
+              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              PopperProps={{
+                container: tooltipContainerRef.current,
+                disablePortal: true
               }}
-              onClick={onToggleFullscreen}
             >
-              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            </Fab>
+              <Fab
+                size="small"
+                variant="circular"
+                sx={{
+                  boxShadow: 0
+                }}
+                onClick={onToggleFullscreen}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </Fab>
+            </Tooltip>
           )}
           {onClose && (
-            <Fab
-              size="small"
-              variant="circular"
-              sx={{
-                boxShadow: 0
+            <Tooltip
+              title="Close Chat"
+              PopperProps={{
+                container: tooltipContainerRef.current,
+                disablePortal: true
               }}
-              onClick={onClose}
             >
-              <CloseIcon />
-            </Fab>
+              <Fab
+                size="small"
+                variant="circular"
+                sx={{
+                  boxShadow: 0
+                }}
+                onClick={onClose}
+              >
+                <CloseIcon />
+              </Fab>
+            </Tooltip>
           )}
         </Stack>
       </Toolbar>

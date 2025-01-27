@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Fab, Badge } from "@mui/material";
 import { Mic, Stop as StopIcon } from "@mui/icons-material";
 import { AudioRecorder } from "@/utils";
 import { useContextData } from "@/context";
+import Tooltip from "@mui/material/Tooltip";
 
 type AudioRecordingProps = {
   onAddAudio: (audio: {
@@ -23,6 +24,7 @@ export default function AudioRecordingButton({
   const [recordingInterval, setRecordingInterval] = useState<number | null>(
     null
   );
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (recordingInterval && !isRecording) {
@@ -77,26 +79,38 @@ export default function AudioRecordingButton({
   };
 
   return (
-    <Fab
-      size="medium"
-      onClick={isRecording ? handleStopRecording : handleStartRecording}
-      sx={{
-        color: chatData?.config?.ui?.foregroundColor || "#111111",
-        boxShadow: 0,
-        bgcolor: "transparent"
-      }}
-    >
-      {isRecording ? (
-        <Badge
-          badgeContent={`${timeRecorded}s`}
-          color="secondary"
-          sx={{ boxShadow: 0, bgcolor: "transparent" }}
+    <>
+      <div ref={tooltipContainerRef} />
+
+      <Tooltip
+        title={isRecording ? "Stop Recording" : "Start Recording"}
+        PopperProps={{
+          container: tooltipContainerRef.current,
+          disablePortal: true
+        }}
+      >
+        <Fab
+          size="medium"
+          onClick={isRecording ? handleStopRecording : handleStartRecording}
+          sx={{
+            color: chatData?.config?.ui?.foregroundColor || "#111111",
+            boxShadow: 0,
+            bgcolor: "transparent"
+          }}
         >
-          <StopIcon sx={{ fontSize: 24 }} />
-        </Badge>
-      ) : (
-        <Mic sx={{ fontSize: 24 }} />
-      )}
-    </Fab>
+          {isRecording ? (
+            <Badge
+              badgeContent={`${timeRecorded}s`}
+              color="secondary"
+              sx={{ boxShadow: 0, bgcolor: "transparent" }}
+            >
+              <StopIcon sx={{ fontSize: 24 }} />
+            </Badge>
+          ) : (
+            <Mic sx={{ fontSize: 24 }} />
+          )}
+        </Fab>
+      </Tooltip>
+    </>
   );
 }

@@ -1,5 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
-import { TextField, IconButton, Stack, Chip, Box } from "@mui/material";
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  TextField,
+  IconButton,
+  Stack,
+  Chip,
+  Box,
+  Tooltip
+} from "@mui/material";
 import {
   Send,
   Image as ImageIcon,
@@ -31,6 +38,8 @@ export default function ChatbotInput() {
     content: "",
     timestamp: new Date().toISOString()
   });
+
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   const handleAddUpload = (upload: Upload) => {
     setUserMessage((prev) => ({
@@ -142,6 +151,8 @@ export default function ChatbotInput() {
         backgroundColor: chatData?.config?.ui?.backgroundColor || "#FFF"
       }}
     >
+      <div ref={tooltipContainerRef} />
+
       {/* Upload Previews */}
       {userMessage.uploads && userMessage.uploads.length > 0 && (
         <Stack
@@ -197,31 +208,40 @@ export default function ChatbotInput() {
           }
         />
 
-        <TextField
-          value={userMessage.content}
-          onChange={(e) =>
-            setUserMessage((prev) => ({ ...prev, content: e.target.value }))
-          }
-          sx={{
-            "backgroundColor": chatData?.config?.ui?.backgroundColor || "#FFF",
-            "& .MuiInputBase-root": {
-              color: chatData?.config?.ui?.foregroundColor || "#111111"
-            }
+        <Tooltip
+          title="Type your message"
+          PopperProps={{
+            container: tooltipContainerRef.current,
+            disablePortal: true
           }}
-          placeholder="Type your message..."
-          multiline
-          fullWidth
-          minRows={1}
-          maxRows={4}
-          variant="outlined"
-          disabled={!chatData.api.online}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit();
+        >
+          <TextField
+            value={userMessage.content}
+            onChange={(e) =>
+              setUserMessage((prev) => ({ ...prev, content: e.target.value }))
             }
-          }}
-        />
+            sx={{
+              "backgroundColor":
+                chatData?.config?.ui?.backgroundColor || "#FFF",
+              "& .MuiInputBase-root": {
+                color: chatData?.config?.ui?.foregroundColor || "#111111"
+              }
+            }}
+            placeholder="Type your message..."
+            multiline
+            fullWidth
+            minRows={1}
+            maxRows={4}
+            variant="outlined"
+            disabled={!chatData.api.online}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit();
+              }
+            }}
+          />
+        </Tooltip>
 
         {isAudioUploadSupported && (
           <AudioRecordingButton
@@ -236,19 +256,29 @@ export default function ChatbotInput() {
           />
         )}
 
-        <IconButton
-          onClick={handleSubmit}
-          sx={{
-            color: chatData?.config?.ui?.foregroundColor || "#111111"
+        <Tooltip
+          title="Send message"
+          PopperProps={{
+            container: tooltipContainerRef.current,
+            disablePortal: true
           }}
-          disabled={
-            !chatData.api.online ||
-            chatData.api.typing ||
-            (!userMessage.content && userMessage.uploads?.length === 0)
-          }
         >
-          <Send />
-        </IconButton>
+          <span>
+            <IconButton
+              onClick={handleSubmit}
+              sx={{
+                color: chatData?.config?.ui?.foregroundColor || "#111111"
+              }}
+              disabled={
+                !chatData.api.online ||
+                chatData.api.typing ||
+                (!userMessage.content && userMessage.uploads?.length === 0)
+              }
+            >
+              <Send />
+            </IconButton>
+          </span>
+        </Tooltip>
       </Stack>
     </Box>
   );

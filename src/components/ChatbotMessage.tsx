@@ -13,7 +13,8 @@ import {
   Skeleton,
   Paper,
   Stack,
-  Chip
+  Chip,
+  Tooltip
 } from "@mui/material";
 import {
   VolumeUp,
@@ -35,6 +36,7 @@ const MessageCard = ({ message }: { message: Message }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const messageRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   const isLastMessage = useMemo(() => {
     return (
@@ -94,6 +96,8 @@ const MessageCard = ({ message }: { message: Message }) => {
         bgcolor: chatData.config.ui?.backgroundColorBody || "#EFEFEF"
       }}
     >
+      <div ref={tooltipContainerRef} />
+
       {/* Upload Previews */}
       {message.uploads && message.uploads.length > 0 && (
         <Stack
@@ -160,25 +164,43 @@ const MessageCard = ({ message }: { message: Message }) => {
         </Typography>
         {message.role === "api" && chatData.config.assistant?.voice?.name && (
           <>
-            <IconButton
-              onClick={handleVoiceClick}
-              size="small"
-              disabled={isFetchingVoice}
+            <Tooltip
+              title={isPlaying ? "Stop Audio" : "Play Audio"}
+              PopperProps={{
+                container: tooltipContainerRef.current,
+                disablePortal: true
+              }}
             >
-              {isFetchingVoice ? (
-                <CircularProgress size={16} />
-              ) : isPlaying ? (
-                <Stop fontSize="small" />
-              ) : (
-                <VolumeUp fontSize="small" />
-              )}
-            </IconButton>
-            <IconButton
-              onClick={handleCopy}
-              size="small"
+              <span>
+                <IconButton
+                  onClick={handleVoiceClick}
+                  size="small"
+                  disabled={isFetchingVoice}
+                >
+                  {isFetchingVoice ? (
+                    <CircularProgress size={16} />
+                  ) : isPlaying ? (
+                    <Stop fontSize="small" />
+                  ) : (
+                    <VolumeUp fontSize="small" />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip
+              title="Copy Message"
+              PopperProps={{
+                container: tooltipContainerRef.current,
+                disablePortal: true
+              }}
             >
-              <ContentCopy fontSize="small" />
-            </IconButton>
+              <IconButton
+                onClick={handleCopy}
+                size="small"
+              >
+                <ContentCopy fontSize="small" />
+              </IconButton>
+            </Tooltip>
           </>
         )}
       </Box>

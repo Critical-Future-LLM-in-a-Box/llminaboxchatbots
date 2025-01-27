@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { Box, Fab, Stack, Divider, useMediaQuery } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
+import Tooltip from "@mui/material/Tooltip";
 
 import ChatIcon from "@mui/icons-material/Chat";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -37,6 +38,8 @@ const ChatbotBubble = (): JSX.Element => {
 
   const { backgroundColor, foregroundColor } = chatData.config.ui!;
 
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
+
   return (
     <Box
       sx={{
@@ -51,6 +54,8 @@ const ChatbotBubble = (): JSX.Element => {
         zIndex: 9999
       }}
     >
+      <div ref={tooltipContainerRef} />
+
       {isVisible && (
         <Stack
           direction="column"
@@ -86,20 +91,28 @@ const ChatbotBubble = (): JSX.Element => {
         </Stack>
       )}
 
-      <Fab
-        onClick={toggleChatbot}
-        sx={{
-          "bgcolor": backgroundColor,
-          "color": foregroundColor,
-          "zIndex": 9999,
-          "&:hover": {
-            color: backgroundColor,
-            bgcolor: foregroundColor
-          }
+      <Tooltip
+        title={isVisible ? "Hide Chat" : "Show Chat"}
+        PopperProps={{
+          container: tooltipContainerRef.current,
+          disablePortal: true
         }}
       >
-        {isVisible ? <KeyboardArrowDownIcon /> : <ChatIcon />}
-      </Fab>
+        <Fab
+          onClick={toggleChatbot}
+          sx={{
+            "bgcolor": backgroundColor,
+            "color": foregroundColor,
+            "zIndex": 9999,
+            "&:hover": {
+              color: backgroundColor,
+              bgcolor: foregroundColor
+            }
+          }}
+        >
+          {isVisible ? <KeyboardArrowDownIcon /> : <ChatIcon />}
+        </Fab>
+      </Tooltip>
     </Box>
   );
 };

@@ -2,12 +2,14 @@ import React, { useState, useRef, useCallback } from "react";
 import { Box, Button, IconButton, Avatar, Drawer, Stack } from "@mui/material";
 import { ArrowLeft, ArrowRight } from "@mui/icons-material";
 import { useContextData } from "@/context";
+import Tooltip from "@mui/material/Tooltip";
 
 const ChatbotSidebar = (): JSX.Element => {
   const [chatData] = useContextData();
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [isVideoOn, setIsVideoOn] = useState(false);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   // Toggle the sidebar state
   const toggleSidebar = useCallback(
@@ -30,6 +32,8 @@ const ChatbotSidebar = (): JSX.Element => {
 
   return (
     <Box sx={{ display: "flex", position: "relative" }}>
+      <div ref={tooltipContainerRef} />
+
       <Drawer
         variant="persistent"
         open={isSidebarOpen}
@@ -112,26 +116,43 @@ const ChatbotSidebar = (): JSX.Element => {
             </Box>
 
             {/* Video Toggle Button */}
-            <Button
-              variant="outlined"
-              onClick={toggleVideo}
+            <Tooltip
+              title={isVideoOn ? "Pause Video" : "Play Video"}
+              PopperProps={{
+                container: tooltipContainerRef.current,
+                disablePortal: true
+              }}
             >
-              {isVideoOn ? "Pause Video" : "Play Video"}
-            </Button>
+              <Button
+                variant="outlined"
+                onClick={toggleVideo}
+              >
+                {isVideoOn ? "Pause Video" : "Play Video"}
+              </Button>
+            </Tooltip>
           </Stack>
         )}
       </Drawer>
-      <IconButton
-        sx={{
-          borderRadius: 0,
-          width: 2,
-          color: foregroundColor,
-          bgcolor: backgroundColor
+
+      <Tooltip
+        title={isSidebarOpen ? "Hide Sidebar" : "Show Sidebar"}
+        PopperProps={{
+          container: tooltipContainerRef.current,
+          disablePortal: true
         }}
-        onClick={toggleSidebar}
       >
-        {isSidebarOpen ? <ArrowLeft /> : <ArrowRight />}
-      </IconButton>
+        <IconButton
+          sx={{
+            borderRadius: 0,
+            width: 2,
+            color: foregroundColor,
+            bgcolor: backgroundColor
+          }}
+          onClick={toggleSidebar}
+        >
+          {isSidebarOpen ? <ArrowLeft /> : <ArrowRight />}
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 };
