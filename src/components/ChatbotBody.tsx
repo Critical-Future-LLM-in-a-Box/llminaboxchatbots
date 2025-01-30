@@ -68,6 +68,7 @@ const ChatbotBody = (): JSX.Element => {
             maxHeight: "100%",
             maxWidth: "100%"
           }}
+          className="chat-container"
         >
           {messages.map((message) => (
             <MessageCard
