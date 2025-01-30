@@ -43571,8 +43571,13 @@ const I2 = ({ message: n }) => {
     navigator.clipboard.writeText(n.content || "");
   }, [n.content]);
   return $.useEffect(() => {
-    var V;
-    E && ((V = h.current) == null || V.scrollIntoView({ behavior: "smooth" }));
+    if (h.current) {
+      const V = h.current.closest(".chat-container");
+      V && V.scrollTo({
+        top: h.current.offsetTop,
+        behavior: "smooth"
+      });
+    }
   }, [r.session.chatMessages]), /* @__PURE__ */ z.jsxs(
     su,
     {
@@ -43753,6 +43758,7 @@ const I2 = ({ message: n }) => {
                     maxHeight: "100%",
                     maxWidth: "100%"
                   },
+                  className: "chat-container",
                   children: l.map((C) => /* @__PURE__ */ z.jsx(
                     F2,
                     {
