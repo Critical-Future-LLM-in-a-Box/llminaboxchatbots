@@ -79,8 +79,14 @@ const MessageCard = ({ message }: { message: Message }) => {
   }, [message.content]);
 
   useEffect(() => {
-    if (isLastMessage) {
-      messageRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messageRef.current) {
+      const chatContainer = messageRef.current.closest(".chat-container");
+      if (chatContainer) {
+        chatContainer.scrollTo({
+          top: messageRef.current.offsetTop,
+          behavior: "smooth"
+        });
+      }
     }
   }, [chatData.session.chatMessages]);
 
