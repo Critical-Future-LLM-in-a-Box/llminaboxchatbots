@@ -65,7 +65,7 @@ export default function ChatbotInput() {
     })) as { chatMessageId: string; text: string };
 
     if (prediction) {
-      setApiMessage((prev) => ({ ...prev, content: prediction.text }));
+      // setApiMessage((prev) => ({ ...prev, content: prediction.text }));
       dispatch({ type: "SET_TYPING_STATUS", payload: false });
       dispatch({
         type: "UPDATE_LAST_MESSAGE",
@@ -106,7 +106,7 @@ export default function ChatbotInput() {
 
       if (event === "token") {
         apiMessageContent = apiMessageContent + data;
-        setApiMessage((prev) => ({ ...prev, content: prev.content + data }));
+        // setApiMessage((prev) => ({ ...prev, content: prev.content + data }));
         dispatch({
           type: "UPDATE_LAST_MESSAGE",
           payload: { content: data }
@@ -132,9 +132,8 @@ export default function ChatbotInput() {
     dispatch({ type: "SET_TYPING_STATUS", payload: true });
     dispatch({ type: "ADD_NEW_MESSAGE", payload: apiMessage });
 
-    // if (chatData.api.canStream) await handleResponseStream();
-    // if (!chatData.api.canStream) await handleResponseJSON();
-    await handleResponseJSON();
+    if (chatData.api.canStream) await handleResponseStream();
+    if (!chatData.api.canStream) await handleResponseJSON();
 
     setUserMessage({
       id: uuidv4(),
