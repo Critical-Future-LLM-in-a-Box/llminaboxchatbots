@@ -132,8 +132,9 @@ export default function ChatbotInput() {
     dispatch({ type: "SET_TYPING_STATUS", payload: true });
     dispatch({ type: "ADD_NEW_MESSAGE", payload: apiMessage });
 
-    if (chatData.api.canStream) await handleResponseStream();
-    if (!chatData.api.canStream) await handleResponseJSON();
+    // if (chatData.api.canStream) await handleResponseStream();
+    // if (!chatData.api.canStream) await handleResponseJSON();
+    await handleResponseJSON();
 
     setUserMessage({
       id: uuidv4(),
