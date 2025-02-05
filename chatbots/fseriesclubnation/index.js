@@ -30,7 +30,8 @@ const config = {
 };
 
 if (location.href === "https://fseriesclubnation.com/") {
-  const container = document.getElementById("llminabox");
+  const container = document.createElement("llminabox");
+  document.querySelector("#header-outer").after(container);
   container.style.cssText = `
     display: block;
     width: 100%;
