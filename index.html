@@ -17,27 +17,36 @@
       }
     </style>
 
-    <!-- <script
+    <script
       type="module"
       defer
     >
-      // import { initChatbot } from "./dist/llminaboxChat.js";
-      import { initChatbot } from "./src/index.tsx";
+      import { initChatbot } from "./dist/llminaboxChat.js";
+      // import { initChatbot } from "./src/index.tsx";
 
       const chatbot = initChatbot(
         {
           apiHost: "https://llminabox.criticalfutureglobal.com",
-          chatflowId: "e89d6572-be23-4709-a1f5-ab2aaada13cd"
+          chatflowId: "f0269cb6-fe4d-4f4e-b1dc-d4da241b97e2",
+          assistant: {
+            name: "digital voice",
+            description: "CEO of Tigercomm",
+            welcomeMessage: "Hello! How can I help you?",
+            avatar: {
+              staticUrl:
+                "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
+            }
+          },
+          ui: {
+            foregroundColor: "#2D3748",
+            backgroundColor: "#E2E8F0",
+            backgroundColorBody: "#CBD5E0"
+          }
         },
         document.getElementById("llminabox"),
         "full"
       );
-    </script> -->
-    <script
-      src="./chatbots/fseriesclubnation/index.js"
-      type="module"
-      defer
-    ></script>
+    </script>
   </head>
 
   <body>
