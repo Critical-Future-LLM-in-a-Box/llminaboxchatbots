@@ -110,12 +110,12 @@ export const ContextProvider = ({
           dispatch({
             type: "SET_UPLOAD_CONFIG",
             payload: {
-              isApiAcceptingVoice: uploads.isSpeechToTextEnabled,
-              isApiAcceptingImage: uploads.isImageUploadAllowed,
-              isApiAcceptingRAGFile: uploads.isRAGFileUploadAllowed,
-              isApiAcceptingFullFile: fullFileUpload.status,
-              imgUploadSizeAndTypes: uploads.imgUploadSizeAndTypes,
-              fileUploadSizeAndTypes: uploads.fileUploadSizeAndTypes
+              isApiAcceptingVoice: uploads?.isSpeechToTextEnabled,
+              isApiAcceptingImage: uploads?.isImageUploadAllowed,
+              isApiAcceptingRAGFile: uploads?.isRAGFileUploadAllowed,
+              isApiAcceptingFullFile: fullFileUpload?.status,
+              imgUploadSizeAndTypes: uploads?.imgUploadSizeAndTypes,
+              fileUploadSizeAndTypes: uploads?.fileUploadSizeAndTypes
             }
           });
         }
