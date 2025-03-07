@@ -16,7 +16,9 @@ import { initChatbot } from "../../dist/llminaboxChat.js";
       ui: {
         foregroundColor: "#2D3748",
         backgroundColor: "#E2E8F0",
-        backgroundColorBody: "#CBD5E0"
+        backgroundColorBody: "#CBD5E0",
+        width: "100%",
+        height: "600px"
       }
     },
     document.getElementById("llminabox"),
