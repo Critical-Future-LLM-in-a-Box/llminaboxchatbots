@@ -71,14 +71,14 @@ interface Chatbot {
 export function initChatbot(
   config: Config = {},
   container?: HTMLElement,
-  type?: "full" | "bubble"
+  type: "full" | "bubble" = "bubble"
 ): Chatbot {
   if (container) {
     container.style.display = "block";
     container.style.width = "100%";
     container.style.height = "100%";
 
-    if (type && type === "bubble") {
+    if (type === "bubble") {
       renderChatbot(container, ChatbotBubble, config);
       return {
         config,
@@ -90,7 +90,7 @@ export function initChatbot(
       };
     }
 
-    if (type && type === "full") {
+    if (type === "full") {
       renderChatbot(container, ChatbotFull, config);
       return {
         config,
@@ -103,28 +103,27 @@ export function initChatbot(
     }
   }
 
-  const llminaboxFull = document.getElementById("llminabox-full");
-  if (llminaboxFull) {
-    llminaboxFull.style.display = "block";
-    llminaboxFull.style.width = "100%";
-    llminaboxFull.style.height = "100%";
-    renderChatbot(llminaboxFull, ChatbotFull, config);
+  let llminaboxContainer = document.getElementById("llminabox-full");
+  if (llminaboxContainer) {
+    llminaboxContainer.style.display = "block";
+    llminaboxContainer.style.width = "100%";
+    llminaboxContainer.style.height = "100%";
+    renderChatbot(llminaboxContainer, ChatbotFull, config);
   } else {
-    const container = document.createElement("div");
-    container.id = "llminabox-bubble";
-    document.body.appendChild(container);
-    renderChatbot(container, ChatbotBubble, config);
+    llminaboxContainer = document.createElement("div");
+    llminaboxContainer.id = "llminabox-bubble";
+    document.body.appendChild(llminaboxContainer);
+    renderChatbot(llminaboxContainer, ChatbotBubble, config);
   }
 
   return {
     config,
-    container: document.getElementById("llminabox-bubble")!,
+    container: llminaboxContainer,
     destroy: () => {
       chatbotReactRoot?.unmount();
       chatbotReactRoot = null;
-      const llminaboxBubble = document.getElementById("llminabox-bubble");
-      if (llminaboxBubble) {
-        llminaboxBubble.remove();
+      if (llminaboxContainer.id === "llminabox-bubble") {
+        llminaboxContainer.remove();
       }
     }
   };
