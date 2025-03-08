@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 import { CacheProvider } from "@emotion/react";
 import createCache from "@emotion/cache";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
 import { Config } from "@/types";
 import { ContextProvider } from "@/context";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -18,7 +17,6 @@ const ChatbotWrapper: React.FC<{
   config: Config;
 }> = ({ children, config }) => {
   const theme = useMemo(() => createTheme(), []);
-
   const shadowHost = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -43,30 +41,14 @@ const ChatbotWrapper: React.FC<{
 
   return (
     <div
-      style={{ height: "100%", maxHeight: "100%", overflow: "auto" }}
+      style={{
+        width: "100%",
+        height: "100%"
+      }}
       ref={shadowHost}
     ></div>
   );
 };
-
-function renderChatbot(
-  container: HTMLElement,
-  ChatbotComponent: React.FC,
-  config: Config
-): void {
-  chatbotReactRoot = ReactDOM.createRoot(container);
-  chatbotReactRoot.render(
-    <ChatbotWrapper config={config}>
-      <ChatbotComponent />
-    </ChatbotWrapper>
-  );
-}
-
-interface Chatbot {
-  config: Config;
-  container: HTMLElement;
-  destroy: () => void;
-}
 
 export function initChatbot(
   config: Config = {},
@@ -74,10 +56,6 @@ export function initChatbot(
   type: "full" | "bubble" = "bubble"
 ): Chatbot {
   if (container) {
-    container.style.display = "block";
-    container.style.width = "100%";
-    container.style.height = "100%";
-
     if (type === "bubble") {
       renderChatbot(container, ChatbotBubble, config);
       return {
@@ -105,9 +83,6 @@ export function initChatbot(
 
   let llminaboxContainer = document.getElementById("llminabox-full");
   if (llminaboxContainer) {
-    llminaboxContainer.style.display = "block";
-    llminaboxContainer.style.width = "100%";
-    llminaboxContainer.style.height = "100%";
     renderChatbot(llminaboxContainer, ChatbotFull, config);
   } else {
     llminaboxContainer = document.createElement("div");
@@ -127,4 +102,23 @@ export function initChatbot(
       }
     }
   };
+}
+
+function renderChatbot(
+  container: HTMLElement,
+  ChatbotComponent: React.FC,
+  config: Config
+): void {
+  chatbotReactRoot = ReactDOM.createRoot(container);
+  chatbotReactRoot.render(
+    <ChatbotWrapper config={config}>
+      <ChatbotComponent />
+    </ChatbotWrapper>
+  );
+}
+
+interface Chatbot {
+  config: Config;
+  container: HTMLElement;
+  destroy: () => void;
 }
