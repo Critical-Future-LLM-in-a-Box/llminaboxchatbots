@@ -26841,12 +26841,12 @@ const mM = $.createContext(null), lu = () => {
         C && d({
           type: "SET_UPLOAD_CONFIG",
           payload: {
-            isApiAcceptingVoice: C.isSpeechToTextEnabled,
-            isApiAcceptingImage: C.isImageUploadAllowed,
-            isApiAcceptingRAGFile: C.isRAGFileUploadAllowed,
-            isApiAcceptingFullFile: E.status,
-            imgUploadSizeAndTypes: C.imgUploadSizeAndTypes,
-            fileUploadSizeAndTypes: C.fileUploadSizeAndTypes
+            isApiAcceptingVoice: C == null ? void 0 : C.isSpeechToTextEnabled,
+            isApiAcceptingImage: C == null ? void 0 : C.isImageUploadAllowed,
+            isApiAcceptingRAGFile: C == null ? void 0 : C.isRAGFileUploadAllowed,
+            isApiAcceptingFullFile: E == null ? void 0 : E.status,
+            imgUploadSizeAndTypes: C == null ? void 0 : C.imgUploadSizeAndTypes,
+            fileUploadSizeAndTypes: C == null ? void 0 : C.fileUploadSizeAndTypes
           }
         });
       }
@@ -43830,9 +43830,8 @@ const I2 = ({ message: n }) => {
       }
     ),
     sx: {
-      height: "100%",
       width: "100%",
-      overflow: "hidden"
+      height: "100%"
     },
     children: [
       /* @__PURE__ */ z.jsx(M$, {}),
@@ -43971,19 +43970,17 @@ const J2 = ({ children: n, config: r }) => {
   }, [l, r, n]), /* @__PURE__ */ z.jsx(
     "div",
     {
-      style: { height: "100%", maxHeight: "100%", overflow: "auto" },
+      style: {
+        width: "100%",
+        height: "100%"
+      },
       ref: s
     }
   );
 };
-function b0(n, r, l) {
-  zi = $m.createRoot(n), zi.render(
-    /* @__PURE__ */ z.jsx(J2, { config: l, children: /* @__PURE__ */ z.jsx(r, {}) })
-  );
-}
-function oY(n = {}, r, l) {
+function oY(n = {}, r, l = "bubble") {
   if (r) {
-    if (r.style.display = "block", r.style.width = "100%", r.style.height = "100%", l && l === "bubble")
+    if (l === "bubble")
       return b0(r, SD, n), {
         config: n,
         container: r,
@@ -43991,7 +43988,7 @@ function oY(n = {}, r, l) {
           zi == null || zi.unmount(), zi = null;
         }
       };
-    if (l && l === "full")
+    if (l === "full")
       return b0(r, xD, n), {
         config: n,
         container: r,
@@ -44000,22 +43997,19 @@ function oY(n = {}, r, l) {
         }
       };
   }
-  const s = document.getElementById("llminabox-full");
-  if (s)
-    s.style.display = "block", s.style.width = "100%", s.style.height = "100%", b0(s, xD, n);
-  else {
-    const d = document.createElement("div");
-    d.id = "llminabox-bubble", document.body.appendChild(d), b0(d, SD, n);
-  }
-  return {
+  let s = document.getElementById("llminabox-full");
+  return s ? b0(s, xD, n) : (s = document.createElement("div"), s.id = "llminabox-bubble", document.body.appendChild(s), b0(s, SD, n)), {
     config: n,
-    container: document.getElementById("llminabox-bubble"),
+    container: s,
     destroy: () => {
-      zi == null || zi.unmount(), zi = null;
-      const d = document.getElementById("llminabox-bubble");
-      d && d.remove();
+      zi == null || zi.unmount(), zi = null, s.id === "llminabox-bubble" && s.remove();
     }
   };
+}
+function b0(n, r, l) {
+  zi = $m.createRoot(n), zi.render(
+    /* @__PURE__ */ z.jsx(J2, { config: l, children: /* @__PURE__ */ z.jsx(r, {}) })
+  );
 }
 export {
   oY as initChatbot
