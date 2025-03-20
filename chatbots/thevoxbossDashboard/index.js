@@ -5,7 +5,7 @@ import { initChatbot } from "../../dist/llminaboxChat.js";
       apiHost: "https://llminabox.criticalfutureglobal.com",
       chatflowId: "ab32d76c-75f2-49c7-8fb8-91c710dfca92",
       assistant: {
-        name: "digital voice",
+        name: "competitor analyst",
         description: "CEO of Tigercomm",
         welcomeMessage: "Hello! How can I help you?",
         avatar: {
