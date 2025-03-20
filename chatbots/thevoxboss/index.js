@@ -19,6 +19,7 @@ import { initChatbot } from "../../dist/llminaboxChat.js";
         backgroundColorBody: "#CBD5E0"
       }
     },
-    document.getElementById("llminabox")
+    document.getElementById("llminabox"),
+    "full"
   );
 })();
