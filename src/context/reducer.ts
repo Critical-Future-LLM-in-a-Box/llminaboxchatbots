@@ -86,7 +86,7 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
     ];
 
     if (draft.config.onResetChat) {
-      draft.config.onResetChat?.(draft);
+      draft.config.onResetChat?.(JSON.parse(JSON.stringify(draft)));
     }
   }
 
@@ -104,27 +104,21 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
     ).length;
 
     const apiMessageCount = draft.session.chatMessages.filter(
-      (msg) =>
-        msg.role === "api" &&
-        msg.content !== (draft.config.assistant?.welcomeMessage || "Welcome!")
+      (msg) => msg.role === "api"
     ).length;
 
     if (newMessage.role === "user") {
-      if (userMessageCount === 0 && draft.config.onFirstUserMessage) {
+      if (userMessageCount === 1 && draft.config.onFirstUserMessage) {
         draft.config.onFirstUserMessage?.(newMessage);
-      }
-
-      if (draft.config.onUserMessage) {
+      } else if (draft.config.onUserMessage) {
         draft.config.onUserMessage?.(newMessage);
       }
     }
 
     if (newMessage.role === "api") {
-      if (apiMessageCount === 0 && draft.config.onFirstAPIMessage) {
+      if (apiMessageCount === 2 && draft.config.onFirstAPIMessage) {
         draft.config.onFirstAPIMessage?.(newMessage);
-      }
-
-      if (draft.config.onAPIMessage) {
+      } else if (draft.config.onAPIMessage) {
         draft.config.onAPIMessage?.(newMessage);
       }
     }
