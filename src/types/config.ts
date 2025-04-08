@@ -24,11 +24,11 @@ export interface Config {
     bodyBackgroundColor?: string;
   };
 
-  onFirstUserMessage?: (userMessage?: Message) => void;
-  onFirstAPIMessage?: (apiMessage?: Message) => void;
+  onFirstUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
+  onFirstAPIMessage?: (apiMessage?: Message, chatData?: ChatData) => void;
 
-  onUserMessage?: (userMessage?: Message) => void;
-  onAPIMessage?: (apiMessage?: Message) => void;
+  onUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
+  onAPIMessage?: (apiMessage?: Message, chatData?: ChatData) => void;
 
   onResetChat?: (chatData?: ChatData) => void;
   onErrorMessage?: (chatData?: ChatData) => void;
