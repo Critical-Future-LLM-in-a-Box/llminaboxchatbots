@@ -9,9 +9,7 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
     draft.error = action.payload;
 
     if (draft.config.onErrorMessage) {
-      setTimeout(() => {
-        draft.config.onErrorMessage?.(draft);
-      }, 0);
+      draft.config.onErrorMessage?.(draft);
     }
   }
 
@@ -88,9 +86,7 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
     ];
 
     if (draft.config.onResetChat) {
-      setTimeout(() => {
-        draft.config.onResetChat?.(draft);
-      }, 0);
+      draft.config.onResetChat?.(draft);
     }
   }
 
@@ -115,29 +111,21 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
 
     if (newMessage.role === "user") {
       if (userMessageCount === 0 && draft.config.onFirstUserMessage) {
-        setTimeout(() => {
-          draft.config.onFirstUserMessage?.(newMessage);
-        }, 0);
+        draft.config.onFirstUserMessage?.(newMessage);
       }
 
       if (draft.config.onUserMessage) {
-        setTimeout(() => {
-          draft.config.onUserMessage?.(newMessage);
-        }, 0);
+        draft.config.onUserMessage?.(newMessage);
       }
     }
 
     if (newMessage.role === "api") {
       if (apiMessageCount === 0 && draft.config.onFirstAPIMessage) {
-        setTimeout(() => {
-          draft.config.onFirstAPIMessage?.(newMessage);
-        }, 0);
+        draft.config.onFirstAPIMessage?.(newMessage);
       }
 
       if (draft.config.onAPIMessage) {
-        setTimeout(() => {
-          draft.config.onAPIMessage?.(newMessage);
-        }, 0);
+        draft.config.onAPIMessage?.(newMessage);
       }
     }
   }
