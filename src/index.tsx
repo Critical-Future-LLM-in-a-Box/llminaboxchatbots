@@ -23,7 +23,7 @@ export function initChatbot(
       </IsolatedWrapper>
     );
 
-    if (config.onMount) config.onMount();
+    if (config.onMount) config.onMount(config);
 
     return {
       config,
@@ -31,7 +31,7 @@ export function initChatbot(
       destroy: () => {
         chatbotReactRoot?.unmount();
         chatbotReactRoot = null;
-        if (config.onUnmount) config.onUnmount();
+        if (config.onUnmount) config.onUnmount(config);
       }
     };
   }
@@ -56,7 +56,7 @@ export function initChatbot(
     </IsolatedWrapper>
   );
 
-  if (config.onMount) config.onMount();
+  if (config.onMount) config.onMount(config);
 
   return {
     config,
@@ -65,7 +65,7 @@ export function initChatbot(
       chatbotReactRoot?.unmount();
       chatbotReactRoot = null;
       llminaboxContainer.remove();
-      if (config.onUnmount) config.onUnmount();
+      if (config.onUnmount) config.onUnmount(config);
     }
   };
 }
