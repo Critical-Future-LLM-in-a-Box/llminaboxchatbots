@@ -99,7 +99,7 @@ const MessageCard = ({ message }: { message: Message }) => {
         alignSelf: message.role === "api" ? "flex-start" : "flex-end",
         m: 1,
         color: chatData.config.ui?.foregroundColor || "#111111",
-        bgcolor: chatData.config.ui?.backgroundColorBody || "#EFEFEF"
+        bgcolor: chatData.config.ui?.bodyBackgroundColor || "#EFEFEF"
       }}
     >
       <div ref={tooltipContainerRef} />
@@ -145,7 +145,7 @@ const MessageCard = ({ message }: { message: Message }) => {
         }}
         ref={messageRef}
       >
-        {chatData.api.typing && isLastMessage ? (
+        {chatData.api.isTyping && isLastMessage ? (
           <Skeleton
             animation="wave"
             height={32}

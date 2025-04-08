@@ -90,7 +90,7 @@ const ChatbotHeader = ({
             sx={{
               width: 32,
               height: 32,
-              border: chatData.api.online
+              border: chatData.api.isOnline
                 ? "2px solid #00FF00"
                 : "2px solid #FF0000"
             }}
@@ -190,5 +190,4 @@ const ChatbotHeader = ({
   );
 };
 
-// Memoized export for performance
 export default memo(ChatbotHeader);

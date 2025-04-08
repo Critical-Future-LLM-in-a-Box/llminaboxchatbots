@@ -7,10 +7,8 @@ import React, {
 } from "react";
 import { useImmerReducer } from "use-immer";
 import { Config, ChatData, ChatActions, Message } from "@/types";
-import { defaultChatData } from "@/config";
 import deepmerge from "deepmerge";
 import { chatReducer } from "@/context/reducer";
-import { v4 as uuidv4 } from "uuid";
 import { getAllowedUploads, isApiStreaming } from "@/utils";
 
 type Optional<T> = T | null;
@@ -26,32 +24,39 @@ export const useContextData = () => {
   return context;
 };
 
-const createContextData = (userConfig: Config): ChatData => {
-  const mergedChatData = deepmerge(defaultChatData, {
-    config: deepmerge(defaultChatData.config, userConfig)
-  });
-
-  let localData = localStorage.getItem("chatData");
-  if (localData) {
-    const localSession = JSON.parse(localData) as ChatData["session"];
-    return deepmerge(mergedChatData, { session: localSession } as ChatData);
+export const defaultChatData: ChatData = {
+  error: "",
+  config: {
+    apiHost: "",
+    chatflowId: "",
+    authToken: "",
+    assistant: {
+      name: "AI Assistant",
+      description: "Your AI Assistant",
+      welcomeMessage: "Hello! How can I help you?"
+    },
+    ui: {
+      sidebar: false,
+      foregroundColor: "#111111",
+      backgroundColor: "#EFEFEF",
+      bodyBackgroundColor: "#FFF"
+    }
+  },
+  session: {
+    chatId: "",
+    chatMessages: []
+  },
+  api: {
+    canStream: false,
+    isOnline: false,
+    isTyping: false,
+    isApiAcceptingVoice: false,
+    isApiAcceptingImage: false,
+    isApiAcceptingRAGFile: false,
+    isApiAcceptingFullFile: false,
+    imgUploadSizeAndTypes: [],
+    fileUploadSizeAndTypes: []
   }
-
-  const chatId = uuidv4();
-
-  const defaultMessage: Message = {
-    id: chatId,
-    role: "api",
-    content: mergedChatData.config.assistant?.welcomeMessage || "Welcome!",
-    timestamp: new Date().toISOString()
-  };
-
-  mergedChatData.session.chatId = chatId;
-  mergedChatData.session.chatMessages = [defaultMessage];
-
-  localStorage.setItem("chatData", JSON.stringify(mergedChatData.session));
-
-  return mergedChatData;
 };
 
 export const ContextProvider = ({
@@ -61,7 +66,32 @@ export const ContextProvider = ({
   children: ReactNode;
   config: Config;
 }): JSX.Element => {
-  const initialContextData = useMemo(() => createContextData(config), [config]);
+  let initialContextData = deepmerge(defaultChatData, {
+    config: deepmerge(defaultChatData.config, config)
+  });
+
+  let localData = localStorage.getItem("chatData");
+  if (!localData) {
+    const defaultMessage: Message = {
+      id: Date.now().toString(),
+      role: "api",
+      content: initialContextData.config.assistant?.welcomeMessage!,
+      timestamp: new Date().toISOString()
+    };
+
+    initialContextData.session.chatId = defaultMessage.id;
+    initialContextData.session.chatMessages = [defaultMessage];
+
+    localStorage.setItem(
+      "chatData",
+      JSON.stringify(initialContextData.session)
+    );
+
+    localData = localStorage.getItem("chatData");
+  }
+
+  const localSession: ChatData["session"] = JSON.parse(localData!);
+  initialContextData.session = localSession;
 
   const [state, dispatch] = useImmerReducer(chatReducer, initialContextData);
 
@@ -79,27 +109,18 @@ export const ContextProvider = ({
   }, [state]);
 
   useEffect(() => {
-    const fetchStreamingStatus = async () => {
+    (async () => {
       const streamingStatus = await isApiStreaming(state).catch((error) => {
         dispatch({ type: "SET_ERROR", payload: error.message });
       });
 
-      if (streamingStatus) {
-        dispatch({
-          type: "SET_STREAMING_STATUS",
-          payload: streamingStatus
-        });
-      }
+      dispatch({
+        type: "SET_STREAMING_STATUS",
+        payload: streamingStatus || false
+      });
+    })();
 
-      if (!streamingStatus) {
-        dispatch({
-          type: "SET_STREAMING_STATUS",
-          payload: false
-        });
-      }
-    };
-    fetchStreamingStatus();
-    const fetchAllowedUploads = async () => {
+    (async () => {
       const response = await getAllowedUploads(state).catch((error) => {
         dispatch({ type: "SET_ERROR", payload: error.message });
       });
@@ -120,9 +141,7 @@ export const ContextProvider = ({
           });
         }
       }
-    };
-
-    fetchAllowedUploads();
+    })();
   }, []);
 
   const contextValue: [ChatData, React.Dispatch<ChatActions>] = useMemo(

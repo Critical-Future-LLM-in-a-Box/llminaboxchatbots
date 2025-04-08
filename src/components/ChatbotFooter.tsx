@@ -40,5 +40,4 @@ const ChatbotFooter = (): JSX.Element => {
   );
 };
 
-// Memoized export to prevent unnecessary re-renders
 export default memo(ChatbotFooter);

@@ -10,9 +10,9 @@ export interface ChatData {
   };
 
   api: {
-    online: boolean;
-    typing: boolean;
     canStream: boolean;
+    isOnline: boolean;
+    isTyping: boolean;
     isApiAcceptingVoice: boolean;
     isApiAcceptingImage: boolean;
     isApiAcceptingRAGFile: boolean;
@@ -28,10 +28,10 @@ export interface Message {
   content: string;
   timestamp: string;
   feedback?: string | null;
-  uploads?: Upload[];
+  uploads?: Uploads[];
 }
 
-export interface Upload {
+export interface Uploads {
   name: string;
   type: "audio" | "file" | "file:full";
   mime: string;

@@ -1,4 +1,4 @@
-import { Message } from "@/types";
+import { ChatData, Message } from "@/types";
 
 export interface Config {
   apiHost?: string;
@@ -21,11 +21,18 @@ export interface Config {
     sidebar?: boolean;
     foregroundColor?: string;
     backgroundColor?: string;
-    backgroundColorBody?: string;
-    width?: string;
-    height?: string;
+    bodyBackgroundColor?: string;
   };
 
-  onRequest?: (request?: Message) => void;
-  onResponse?: (response?: Message) => void;
+  onFirstUserMessage?: (userMessage?: Message) => void;
+  onFirstAPIMessage?: (apiMessage?: Message) => void;
+
+  onUserMessage?: (userMessage?: Message) => void;
+  onAPIMessage?: (apiMessage?: Message) => void;
+
+  onResetChat?: (chatData?: ChatData) => void;
+  onErrorMessage?: (chatData?: ChatData) => void;
+
+  onMount?: (config?: Config) => void;
+  onUnmount?: (config?: Config) => void;
 }

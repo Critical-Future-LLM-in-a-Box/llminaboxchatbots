@@ -15,7 +15,7 @@ import {
 } from "@mui/icons-material";
 import { useContextData } from "@/context";
 import { getPrediction } from "@/utils";
-import { Message, Upload } from "@/types";
+import { Message, Uploads } from "@/types";
 import { v4 as uuidv4 } from "uuid";
 import UploadButton from "@/components/ChatbotInputFilesUploads";
 import AudioRecordingButton from "@/components/ChatbotInputVoiceRecording";
@@ -29,7 +29,7 @@ export default function ChatbotInput() {
     role: "user",
     content: "",
     timestamp: new Date().toISOString(),
-    uploads: [] as Upload[]
+    uploads: [] as Uploads[]
   });
 
   const [apiMessage, setApiMessage] = useState<Message>({
@@ -41,7 +41,7 @@ export default function ChatbotInput() {
 
   const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
-  const handleAddUpload = (upload: Upload) => {
+  const handleAddUpload = (upload: Uploads) => {
     setUserMessage((prev) => ({
       ...prev,
       uploads: [...(prev.uploads || []), upload]
@@ -49,8 +49,6 @@ export default function ChatbotInput() {
   };
 
   const handleResponseJSON = async () => {
-    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
-
     const prediction = (await getPrediction({
       chatData,
       userMessage,
@@ -65,7 +63,6 @@ export default function ChatbotInput() {
     })) as { chatMessageId: string; text: string };
 
     if (prediction) {
-      // setApiMessage((prev) => ({ ...prev, content: prediction.text }));
       dispatch({ type: "SET_TYPING_STATUS", payload: false });
       dispatch({
         type: "UPDATE_LAST_MESSAGE",
@@ -75,14 +72,9 @@ export default function ChatbotInput() {
         }
       });
     }
-
-    if (chatData.config.onResponse)
-      chatData.config.onResponse({ ...apiMessage, content: prediction.text });
   };
 
   const handleResponseStream = async () => {
-    if (chatData.config.onRequest) chatData.config.onRequest(userMessage);
-
     const prediction = await getPrediction({
       chatData,
       userMessage,
@@ -106,16 +98,12 @@ export default function ChatbotInput() {
 
       if (event === "token") {
         apiMessageContent = apiMessageContent + data;
-        // setApiMessage((prev) => ({ ...prev, content: prev.content + data }));
         dispatch({
           type: "UPDATE_LAST_MESSAGE",
           payload: { content: data }
         });
       }
     }
-
-    if (chatData.config.onResponse)
-      chatData.config.onResponse({ ...apiMessage, content: apiMessageContent });
   };
 
   const handleSubmit = useCallback(async () => {
@@ -233,7 +221,7 @@ export default function ChatbotInput() {
             minRows={1}
             maxRows={4}
             variant="outlined"
-            disabled={!chatData.api.online}
+            disabled={!chatData.api.isOnline}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -270,8 +258,8 @@ export default function ChatbotInput() {
                 color: chatData?.config?.ui?.foregroundColor || "#111111"
               }}
               disabled={
-                !chatData.api.online ||
-                chatData.api.typing ||
+                !chatData.api.isOnline ||
+                chatData.api.isTyping ||
                 (!userMessage.content && userMessage.uploads?.length === 0)
               }
             >
