@@ -48,7 +48,7 @@ export default function ChatbotInput() {
     }));
   };
 
-  const handleResponseJSON = async () => {
+  const handleResponseJSON = async (prevApiCount: number) => {
     const prediction = (await getPrediction({
       chatData,
       userMessage,
@@ -71,10 +71,19 @@ export default function ChatbotInput() {
           content: prediction.text
         }
       });
+
+      const lastMessage =
+        chatData.session.chatMessages[chatData.session.chatMessages.length - 1];
+
+      if (chatData.config.onFirstAPIMessage && prevApiCount < 2)
+        chatData.config.onFirstAPIMessage(lastMessage, chatData);
+
+      if (chatData.config.onAPIMessage)
+        chatData.config.onAPIMessage(lastMessage, chatData);
     }
   };
 
-  const handleResponseStream = async () => {
+  const handleResponseStream = async (prevApiCount: number) => {
     const prediction = await getPrediction({
       chatData,
       userMessage,
@@ -97,13 +106,22 @@ export default function ChatbotInput() {
       const data = eventData.data;
 
       if (event === "token") {
-        apiMessageContent = apiMessageContent + data;
+        apiMessageContent += data;
         dispatch({
           type: "UPDATE_LAST_MESSAGE",
           payload: { content: data }
         });
       }
     }
+
+    const lastMessage =
+      chatData.session.chatMessages[chatData.session.chatMessages.length - 1];
+
+    if (chatData.config.onFirstAPIMessage && prevApiCount < 2)
+      chatData.config.onFirstAPIMessage(lastMessage, chatData);
+
+    if (chatData.config.onAPIMessage)
+      chatData.config.onAPIMessage(lastMessage, chatData);
   };
 
   const handleSubmit = useCallback(async () => {
@@ -117,11 +135,26 @@ export default function ChatbotInput() {
     if (!userMessage.content.trim() && !userMessage.uploads?.length) return;
 
     dispatch({ type: "ADD_NEW_MESSAGE", payload: userMessage });
+
+    const prevUserCount = chatData.session.chatMessages.filter(
+      (msg) => msg.role === "user"
+    ).length;
+
+    const prevApiCount = chatData.session.chatMessages.filter(
+      (msg) => msg.role === "api"
+    ).length;
+
+    if (chatData.config.onFirstUserMessage && prevUserCount < 1)
+      chatData.config.onFirstUserMessage(userMessage, chatData);
+
+    if (chatData.config.onUserMessage)
+      chatData.config.onUserMessage(userMessage, chatData);
+
     dispatch({ type: "SET_TYPING_STATUS", payload: true });
     dispatch({ type: "ADD_NEW_MESSAGE", payload: apiMessage });
 
-    if (chatData.api.canStream) await handleResponseStream();
-    if (!chatData.api.canStream) await handleResponseJSON();
+    if (chatData.api.canStream) await handleResponseStream(prevApiCount);
+    if (!chatData.api.canStream) await handleResponseJSON(prevApiCount);
 
     setUserMessage({
       id: uuidv4(),
@@ -255,7 +288,14 @@ export default function ChatbotInput() {
             <IconButton
               onClick={handleSubmit}
               sx={{
-                color: chatData?.config?.ui?.foregroundColor || "#111111"
+                boxShadow: 0,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexShrink: 0,
+                width: 32,
+                height: 32,
+                backgroundColor: chatData?.config?.ui?.backgroundColor
               }}
               disabled={
                 !chatData.api.isOnline ||

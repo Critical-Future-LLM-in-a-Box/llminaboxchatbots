@@ -24,8 +24,9 @@ const ChatbotBody = (): JSX.Element => {
       sx={{
         flex: 1,
         overflow: "auto",
-        maxHeight: "100%",
-        maxWidth: "100%",
+        minHeight: "300px",
+        height: chatData?.config?.ui?.height || "100%",
+        width: chatData?.config?.ui?.width || "100%",
         color: chatData?.config?.ui?.foregroundColor || "#111111",
         backgroundColor: chatData?.config?.ui?.bodyBackgroundColor || "#FFF"
       }}
@@ -45,11 +46,7 @@ const ChatbotBody = (): JSX.Element => {
         }
         sx={{
           flex: 1,
-          overflow: "auto",
-          maxHeight: "100%",
-          maxWidth: "100%",
-          minHeight: "300px",
-          minWidth: "300px"
+          overflow: "auto"
         }}
       >
         {/* Messages List */}
@@ -64,9 +61,7 @@ const ChatbotBody = (): JSX.Element => {
           }
           sx={{
             flex: 1,
-            overflow: "auto",
-            maxHeight: "100%",
-            maxWidth: "100%"
+            overflow: "auto"
           }}
           className="chat-container"
         >

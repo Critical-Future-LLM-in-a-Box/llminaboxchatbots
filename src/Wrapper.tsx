@@ -32,9 +32,14 @@ export const IsolatedWrapper: React.FC<{
         </CacheProvider>
       );
     }
-  }, [config, children]);
+  }, [shadowHost, children, config]);
 
-  return <div ref={shadowHost}></div>;
+  return (
+    <div
+      style={{ width: "100%", height: "100%" }}
+      ref={shadowHost}
+    ></div>
+  );
 };
 
 export default memo(IsolatedWrapper);

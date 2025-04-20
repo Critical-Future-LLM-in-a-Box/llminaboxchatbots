@@ -7,10 +7,6 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
    */
   if (action.type === "SET_ERROR") {
     draft.error = action.payload;
-
-    if (draft.config.onErrorMessage) {
-      draft.config.onErrorMessage?.(draft);
-    }
   }
 
   /**
@@ -71,10 +67,9 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
   /**
    * Starts a new chat session
    * Clears local storage, generates a new chat ID, and adds a welcome message
-   * Triggers onResetChat callback if configured
    */
   if (action.type === "START_NEW_CHAT") {
-    localStorage.removeItem("chatData");
+    localStorage.removeItem(`chatData_${location.pathname}`);
     draft.session.chatId = Date.now().toString();
     draft.session.chatMessages = [
       {
@@ -84,10 +79,6 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
         timestamp: new Date().toISOString()
       }
     ];
-
-    if (draft.config.onResetChat) {
-      draft.config.onResetChat?.(JSON.parse(JSON.stringify(draft)));
-    }
   }
 
   /**
@@ -98,32 +89,6 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
   if (action.type === "ADD_NEW_MESSAGE") {
     const newMessage = action.payload;
     draft.session.chatMessages.push(newMessage);
-
-    const userMessageCount = draft.session.chatMessages.filter(
-      (msg) => msg.role === "user"
-    ).length;
-
-    const apiMessageCount = draft.session.chatMessages.filter(
-      (msg) =>
-        msg.role === "api" &&
-        msg.content !== (draft.config.assistant?.welcomeMessage || "Welcome!")
-    ).length;
-
-    if (newMessage.role === "user") {
-      if (userMessageCount === 1 && draft.config.onFirstUserMessage) {
-        draft.config.onFirstUserMessage?.(newMessage, JSON.parse(JSON.stringify(draft)));
-      } else if (draft.config.onUserMessage) {
-        draft.config.onUserMessage?.(newMessage, JSON.parse(JSON.stringify(draft)));
-      }
-    }
-
-    if (newMessage.role === "api") {
-      if (apiMessageCount === 1 && draft.config.onFirstAPIMessage) {
-        draft.config.onFirstAPIMessage?.(newMessage, JSON.parse(JSON.stringify(draft)));
-      } else if (draft.config.onAPIMessage) {
-        draft.config.onAPIMessage?.(newMessage, JSON.parse(JSON.stringify(draft)));
-      }
-    }
   }
 
   /**

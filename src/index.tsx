@@ -15,6 +15,8 @@ export function initChatbot(
   container: HTMLElement;
   destroy: () => void;
 } {
+  if (config.onMount) config.onMount(config);
+
   if (container) {
     chatbotReactRoot = ReactDOM.createRoot(container);
     chatbotReactRoot.render(
@@ -23,21 +25,22 @@ export function initChatbot(
       </IsolatedWrapper>
     );
 
-    if (config.onMount) config.onMount();
-
     return {
       config,
       container,
       destroy: () => {
         chatbotReactRoot?.unmount();
         chatbotReactRoot = null;
-        if (config.onUnmount) config.onUnmount();
+        if (config.onUnmount) config.onUnmount(config);
       }
     };
   }
 
   let llminaboxContainer = document.getElementById("llminabox-full");
   if (llminaboxContainer) {
+    llminaboxContainer.style.display = "block";
+    llminaboxContainer.style.width = config.ui?.width || "100%";
+    llminaboxContainer.style.height = config.ui?.height || "100%";
     chatbotReactRoot = ReactDOM.createRoot(llminaboxContainer);
   } else {
     llminaboxContainer = document.createElement("div");
@@ -56,8 +59,6 @@ export function initChatbot(
     </IsolatedWrapper>
   );
 
-  if (config.onMount) config.onMount();
-
   return {
     config,
     container: llminaboxContainer,
@@ -65,7 +66,7 @@ export function initChatbot(
       chatbotReactRoot?.unmount();
       chatbotReactRoot = null;
       llminaboxContainer.remove();
-      if (config.onUnmount) config.onUnmount();
+      if (config.onUnmount) config.onUnmount(config);
     }
   };
 }

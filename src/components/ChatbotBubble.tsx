@@ -64,21 +64,28 @@ const ChatbotBubble = (): JSX.Element => {
             <Divider
               orientation="horizontal"
               flexItem
+              sx={{ borderColor: chatData.config.ui?.backgroundColor }}
             />
           }
           sx={{
             border: 1,
+            borderColor: chatData.config.ui?.backgroundColor,
+            overflow: "hidden",
             borderRadius: 2,
-            width: "100%",
-            height: "100%",
-            minWidth: isFullscreen ? "80vw" : "300px",
-            maxWidth: isFullscreen ? "100vw" : "600px",
-            minHeight: isFullscreen ? "60vh" : "300px",
-            maxHeight: isFullscreen ? "80vh" : "600px",
+            width: isFullscreen
+              ? chatData.config.ui?.width !== "100%"
+                ? chatData.config.ui?.width
+                : "80vw"
+              : "400px",
+            height: isFullscreen
+              ? chatData.config.ui?.height !== "100%"
+                ? chatData.config.ui?.height
+                : "60vh"
+              : "500px",
             position: isFullscreen ? "fixed" : "static",
-            bottom: isFullscreen ? "50%" : 0,
-            right: isFullscreen ? "50%" : 0,
-            transform: isFullscreen ? "translate(50%, 50%)" : "none"
+            top: isFullscreen ? "50%" : 0,
+            left: isFullscreen ? "50%" : 0,
+            transform: isFullscreen ? "translate(-50%, -50%)" : "none"
           }}
         >
           <ChatbotHeader
@@ -101,6 +108,7 @@ const ChatbotBubble = (): JSX.Element => {
         <Fab
           onClick={toggleChatbot}
           sx={{
+            "visibility": isFullscreen ? "hidden" : "visible",
             "bgcolor": backgroundColor,
             "color": foregroundColor,
             "zIndex": 9999,

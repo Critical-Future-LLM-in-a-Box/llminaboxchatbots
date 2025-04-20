@@ -37,6 +37,8 @@ export const defaultChatData: ChatData = {
     },
     ui: {
       sidebar: false,
+      width: "100%",
+      height: "100%",
       foregroundColor: "#111111",
       backgroundColor: "#EFEFEF",
       bodyBackgroundColor: "#FFF"
@@ -70,7 +72,7 @@ export const ContextProvider = ({
     config: deepmerge(defaultChatData.config, config)
   });
 
-  let localData = localStorage.getItem("chatData");
+  let localData = localStorage.getItem(`chatData_${location.pathname}`);
   if (!localData) {
     const defaultMessage: Message = {
       id: Date.now().toString(),
@@ -83,11 +85,11 @@ export const ContextProvider = ({
     initialContextData.session.chatMessages = [defaultMessage];
 
     localStorage.setItem(
-      "chatData",
+      `chatData_${location.pathname}`,
       JSON.stringify(initialContextData.session)
     );
 
-    localData = localStorage.getItem("chatData");
+    localData = localStorage.getItem(`chatData_${location.pathname}`);
   }
 
   const localSession: ChatData["session"] = JSON.parse(localData!);
@@ -97,16 +99,19 @@ export const ContextProvider = ({
 
   useEffect(() => {
     const serializedData = JSON.stringify(state.session);
-    localStorage.setItem("chatData", serializedData);
+    localStorage.setItem(`chatData_${location.pathname}`, serializedData);
+  }, [state.session]);
 
+  useEffect(() => {
     if (state.error) {
+      if (state.config.onErrorMessage) state.config.onErrorMessage?.(state);
+
       const timeoutId = setTimeout(() => {
         dispatch({ type: "SET_ERROR", payload: "" });
-      }, 5000);
-
+      }, 3000);
       return () => clearTimeout(timeoutId);
     }
-  }, [state]);
+  }, [state.error]);
 
   useEffect(() => {
     (async () => {

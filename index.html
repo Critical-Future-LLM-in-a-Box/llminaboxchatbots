@@ -24,91 +24,9 @@
       // import { initChatbot } from "./dist/llminaboxChat.js";
       import { initChatbot } from "./src/index.tsx";
 
-      initChatbot(
-        {
-          apiHost: "https://llminabox.criticalfutureglobal.com",
-          chatflowId: "020c608f-0611-4d6a-b66c-7f4bd2639202",
-          assistant: {
-            name: "digital voice",
-            description: "CEO of Tigercomm",
-            welcomeMessage: "Hello! How can I help you?",
-            avatar: {
-              staticUrl:
-                "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
-            }
-          },
-          ui: {
-            foregroundColor: "#2D3748",
-            backgroundColor: "#E2E8F0",
-            backgroundColorBody: "#CBD5E0"
-          },
-          // onMount: (config) => console.log("onMount", config),
-          // onUnmount: (config) => console.log("onUnmount", config),
-          // onErrorMessage: (chatData) => console.log("onErrorMessage", chatData),
-          // onResetChat: (chatData) => console.log("onResetChat", chatData),
-          // onFirstUserMessage: (message) => console.log("onFirstUserMessage", message),
-          // onFirstAPIMessage: (message) => console.log("onFirstAPIMessage", message),
-          onUserMessage: (message, chatData) => {
-            if (message.content.toLowerCase().includes("use this persona")) {
-              if (
-                chatData.session.chatMessages[
-                  chatData.session.chatMessages.length - 2
-                ].content
-                  .toLowerCase()
-                  .includes("use this persona")
-              ) {
-                window.persona =
-                  chatData.session.chatMessages[
-                    chatData.session.chatMessages.length - 2
-                  ].content.toLowerCase();
-              }
-            }
-          }
-        },
-        document.getElementById("llminabox1")
-      );
-
-      initChatbot(
-        {
-          apiHost: "https://llminabox.criticalfutureglobal.com",
-          chatflowId: "020c608f-0611-4d6a-b66c-7f4bd2639202",
-          assistant: {
-            name: "digital voice",
-            description: "CEO of Tigercomm",
-            welcomeMessage: "Hello! How can I help you?",
-            avatar: {
-              staticUrl:
-                "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
-            }
-          },
-          ui: {
-            foregroundColor: "#2D3748",
-            backgroundColor: "#E2E8F0",
-            backgroundColorBody: "#CBD5E0"
-          },
-          onUserMessage: (message, chatData) => {
-            if (message.content.toLowerCase().includes("use this persona")) {
-              if (
-                chatData.session.chatMessages[
-                  chatData.session.chatMessages.length - 2
-                ].content
-                  .toLowerCase()
-                  .includes("use this persona")
-              ) {
-                window.persona =
-                  chatData.session.chatMessages[
-                    chatData.session.chatMessages.length - 2
-                  ].content.toLowerCase();
-              }
-            }
-          }
-        },
-        document.getElementById("llminabox1")
-      );
-
       initChatbot({
         apiHost: "https://llminabox.criticalfutureglobal.com",
-        chatflowId: "59840532-de66-4978-aef5-33cb215c8b8d",
+        chatflowId: "020c608f-0611-4d6a-b66c-7f4bd2639202",
         assistant: {
           name: "digital voice",
           description: "CEO of Tigercomm",
@@ -119,34 +37,81 @@
           }
         },
         ui: {
+          // sidebar: true,
+          width: "100%",
+          height: "600px",
           foregroundColor: "#2D3748",
           backgroundColor: "#E2E8F0",
-          backgroundColorBody: "#CBD5E0"
+          bodyBackgroundColor: "#CBD5E0"
         },
-        onResetChat: (chatData) => {
-          fetch(
-            "https://llminabox.criticalfutureglobal.com/api/v1/prediction/59840532-de66-4978-aef5-33cb215c8b8d",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                question: window.persona,
-                chatId: chatData.session.chatId
-              })
-            }
-          );
-        }
+        // onMount: (config) => console.log("onMount", config),
+        // onUnmount: (config) => console.log("onUnmount", config)
+        // onErrorMessage: (chatData) => console.log("onErrorMessage", chatData),
+        // onNewChat: (chatData) => console.log("onResetChat", chatData)
+        onFirstUserMessage: (message) =>
+          console.log("onFirstUserMessage", message),
+        onFirstAPIMessage: (message) =>
+          console.log("onFirstAPIMessage", message),
+        onUserMessage: (message) => console.log("onUserMessage", message),
+        onAPIMessage: (message) => console.log("onAPIMessage", message)
+        // onUserMessage: (message, chatData) => {
+        //   if (message.content.toLowerCase().includes("use this persona")) {
+        //     if (
+        //       chatData.session.chatMessages[
+        //         chatData.session.chatMessages.length - 2
+        //       ].content
+        //         .toLowerCase()
+        //         .includes("use this persona")
+        //     ) {
+        //       window.persona =
+        //         chatData.session.chatMessages[
+        //           chatData.session.chatMessages.length - 2
+        //         ].content.toLowerCase();
+
+        //       localStorage.setItem("llminabox_persona", window.persona);
+        //     }
+        //   }
+        // }
       });
+
+      // initChatbot({
+      //   apiHost: "https://llminabox.criticalfutureglobal.com",
+      //   chatflowId: "59840532-de66-4978-aef5-33cb215c8b8d",
+      //   assistant: {
+      //     name: "digital voice",
+      //     description: "CEO of Tigercomm",
+      //     welcomeMessage: "Hello! How can I help you?",
+      //     avatar: {
+      //       staticUrl:
+      //         "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y"
+      //     }
+      //   },
+      //   ui: {
+      //     foregroundColor: "#2D3748",
+      //     backgroundColor: "#E2E8F0",
+      //     bodyBackgroundColor: "#CBD5E0"
+      //   },
+      //   onResetChat: (chatData) => {
+      //     fetch(
+      //       "https://llminabox.criticalfutureglobal.com/api/v1/prediction/59840532-de66-4978-aef5-33cb215c8b8d",
+      //       {
+      //         method: "POST",
+      //         headers: {
+      //           "Content-Type": "application/json"
+      //         },
+      //         body: JSON.stringify({
+      //           question: localStorage.getItem("llminabox_persona"),
+      //           chatId: chatData.session.chatId
+      //         })
+      //       }
+      //     );
+      //   }
+      // });
     </script>
   </head>
 
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div
-      id="llminabox1"
-      style="max-height: 500px"
-    ></div>
+    <div id="llminabox-full"></div>
   </body>
 </html>

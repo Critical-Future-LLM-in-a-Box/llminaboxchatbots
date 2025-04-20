@@ -19,18 +19,20 @@ export interface Config {
 
   ui?: {
     sidebar?: boolean;
+    width?: string;
+    height?: string;
     foregroundColor?: string;
     backgroundColor?: string;
     bodyBackgroundColor?: string;
   };
 
-onFirstUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
+  onFirstUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
   onFirstAPIMessage?: (apiMessage?: Message, chatData?: ChatData) => void;
 
-onUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
+  onUserMessage?: (userMessage?: Message, chatData?: ChatData) => void;
   onAPIMessage?: (apiMessage?: Message, chatData?: ChatData) => void;
 
-  onResetChat?: (chatData?: ChatData) => void;
+  onNewChat?: (chatData?: ChatData) => void;
   onErrorMessage?: (chatData?: ChatData) => void;
 
   onMount?: (config?: Config) => void;

@@ -93,9 +93,14 @@ export default function AudioRecordingButton({
           size="medium"
           onClick={isRecording ? handleStopRecording : handleStartRecording}
           sx={{
-            color: chatData?.config?.ui?.foregroundColor || "#111111",
             boxShadow: 0,
-            bgcolor: "transparent"
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            flexShrink: 0,
+            width: 32,
+            height: 32,
+            backgroundColor: chatData?.config?.ui?.backgroundColor
           }}
         >
           {isRecording ? (
