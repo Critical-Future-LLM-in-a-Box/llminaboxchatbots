@@ -4,6 +4,8 @@ export interface Config {
   apiHost?: string;
   chatflowId?: string;
   authToken?: string;
+  chatDataId?: string;
+  
 
   assistant?: {
     name?: string;

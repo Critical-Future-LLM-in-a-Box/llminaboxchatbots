@@ -72,7 +72,10 @@ export const ContextProvider = ({
     config: deepmerge(defaultChatData.config, config)
   });
 
-  let localData = localStorage.getItem(`chatData_${location.pathname}`);
+
+  const storageKey = `chatData_${config.chatDataId || location.pathname}`;
+  
+  let localData = localStorage.getItem(storageKey);
   if (!localData) {
     const defaultMessage: Message = {
       id: Date.now().toString(),
@@ -85,11 +88,11 @@ export const ContextProvider = ({
     initialContextData.session.chatMessages = [defaultMessage];
 
     localStorage.setItem(
-      `chatData_${location.pathname}`,
+      storageKey,
       JSON.stringify(initialContextData.session)
     );
 
-    localData = localStorage.getItem(`chatData_${location.pathname}`);
+    localData = localStorage.getItem(storageKey);
   }
 
   const localSession: ChatData["session"] = JSON.parse(localData!);
@@ -99,7 +102,7 @@ export const ContextProvider = ({
 
   useEffect(() => {
     const serializedData = JSON.stringify(state.session);
-    localStorage.setItem(`chatData_${location.pathname}`, serializedData);
+    localStorage.setItem(storageKey, serializedData);
   }, [state.session]);
 
   useEffect(() => {

@@ -69,7 +69,8 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
    * Clears local storage, generates a new chat ID, and adds a welcome message
    */
   if (action.type === "START_NEW_CHAT") {
-    localStorage.removeItem(`chatData_${location.pathname}`);
+    const storageKey = `chatData_${draft.config.chatDataId}`;
+    localStorage.removeItem(storageKey);
     draft.session.chatId = Date.now().toString();
     draft.session.chatMessages = [
       {
