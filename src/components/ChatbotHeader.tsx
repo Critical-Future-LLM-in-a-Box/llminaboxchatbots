@@ -32,9 +32,9 @@ const ChatbotHeader = ({
   const tooltipContainerRef = useRef<HTMLDivElement>(null);
 
   const startNewChat = useCallback(() => {
-    if (chatData.config.onNewChat) chatData.config.onNewChat(chatData);
-
     dispatch({ type: "START_NEW_CHAT" });
+
+    if (chatData.config.onNewChat) chatData.config.onNewChat(chatData);
   }, [dispatch]);
 
   useEffect(() => {
