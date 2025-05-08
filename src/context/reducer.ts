@@ -80,6 +80,7 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
         timestamp: new Date().toISOString()
       }
     ];
+    localStorage.setItem(storageKey, JSON.stringify(draft));
   }
 
   /**
