@@ -71,7 +71,8 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
   if (action.type === "START_NEW_CHAT") {
     const storageKey = `chatData_${draft.config.chatDataId}`;
     localStorage.removeItem(storageKey);
-    draft.session.chatId = Date.now().toString();
+    const newChatId = Date.now().toString();
+    draft.session.chatId =newChatId;
     draft.session.chatMessages = [
       {
         id: Date.now().toString(),
@@ -79,9 +80,8 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
         content: draft.config.assistant?.welcomeMessage || "Welcome!",
         timestamp: new Date().toISOString()
       }
-
     ];
-    localStorage.setItem(storageKey, JSON.stringify({...draft, session: draft.session}));
+    localStorage.setItem(storageKey, JSON.stringify({...draft, session: {...draft.session, chatId: newChatId}}));
   }
 
   /**
