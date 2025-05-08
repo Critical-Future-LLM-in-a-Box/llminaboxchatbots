@@ -41181,7 +41181,7 @@ const D$ = A.createContext(null), su = () => {
 }) => {
   var h, x, C, E, w, _;
   const [s, p] = su(), v = A.useRef(null), g = A.useCallback(() => {
-    s.config.onNewChat && s.config.onNewChat(s), p({ type: "START_NEW_CHAT" });
+    p({ type: "START_NEW_CHAT" }), s.config.onNewChat && s.config.onNewChat(s);
   }, [p]);
   return A.useEffect(() => {
     let $ = !0;
