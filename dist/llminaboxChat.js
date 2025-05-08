@@ -40750,14 +40750,16 @@ const fM = /* @__PURE__ */ tx(k7), O7 = (n, r) => {
   var a;
   if (r.type === "SET_ERROR" && (n.error = r.payload), r.type === "SET_ONLINE_STATUS" && (n.api.isOnline = r.payload), r.type === "SET_STREAMING_STATUS" && (n.api.canStream = r.payload), r.type === "SET_TYPING_STATUS" && (n.api.isTyping = r.payload), r.type === "SET_UPLOAD_CONFIG" && (r.payload.isApiAcceptingVoice && (n.api.isApiAcceptingVoice = r.payload.isApiAcceptingVoice), r.payload.isApiAcceptingImage && (n.api.isApiAcceptingImage = r.payload.isApiAcceptingImage), r.payload.isApiAcceptingRAGFile && (n.api.isApiAcceptingRAGFile = r.payload.isApiAcceptingRAGFile), r.payload.isApiAcceptingFullFile && (n.api.isApiAcceptingFullFile = r.payload.isApiAcceptingFullFile), r.payload.imgUploadSizeAndTypes && (n.api.imgUploadSizeAndTypes = r.payload.imgUploadSizeAndTypes), r.payload.fileUploadSizeAndTypes && (n.api.fileUploadSizeAndTypes = r.payload.fileUploadSizeAndTypes)), r.type === "SET_CHAT_ID" && (n.session.chatId = r.payload), r.type === "START_NEW_CHAT") {
     const s = `chatData_${n.config.chatDataId}`;
-    localStorage.removeItem(s), n.session.chatId = Date.now().toString(), n.session.chatMessages = [
+    localStorage.removeItem(s);
+    const p = Date.now().toString();
+    n.session.chatId = p, n.session.chatMessages = [
       {
         id: Date.now().toString(),
         role: "api",
         content: ((a = n.config.assistant) == null ? void 0 : a.welcomeMessage) || "Welcome!",
         timestamp: (/* @__PURE__ */ new Date()).toISOString()
       }
-    ], localStorage.setItem(s, JSON.stringify({ ...n, session: n.session }));
+    ], localStorage.setItem(s, JSON.stringify({ ...n, session: { ...n.session, chatId: p } }));
   }
   if (r.type === "ADD_NEW_MESSAGE") {
     const s = r.payload;
