@@ -40759,7 +40759,7 @@ const fM = /* @__PURE__ */ tx(k7), O7 = (n, r) => {
         content: ((a = n.config.assistant) == null ? void 0 : a.welcomeMessage) || "Welcome!",
         timestamp: (/* @__PURE__ */ new Date()).toISOString()
       }
-    ], localStorage.setItem(s, JSON.stringify({ ...n, session: { ...n.session, chatId: p } }));
+    ], console.log(p), console.log(n.session.chatId), localStorage.setItem(s, JSON.stringify({ ...n, session: { ...n.session, chatId: p } }));
   }
   if (r.type === "ADD_NEW_MESSAGE") {
     const s = r.payload;
