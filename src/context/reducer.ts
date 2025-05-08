@@ -79,8 +79,9 @@ export const chatReducer = (draft: ChatData, action: ChatActions) => {
         content: draft.config.assistant?.welcomeMessage || "Welcome!",
         timestamp: new Date().toISOString()
       }
+
     ];
-    localStorage.setItem(storageKey, JSON.stringify(draft));
+    localStorage.setItem(storageKey, JSON.stringify({...draft, session: draft.session}));
   }
 
   /**
