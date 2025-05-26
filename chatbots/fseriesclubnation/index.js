@@ -1,9 +1,10 @@
 import { initChatbot } from "../../dist/llminaboxChat.js";
 (async () => {
-  // Create the container after the header with the correct new name
   const header = document.querySelector("#header-outer");
   const container = document.createElement("div");
   container.id = "llminabox-fseries";
+  container.style.width = "100%";
+  container.style.height = "600px";
   header && header.after(container);
 
   initChatbot(

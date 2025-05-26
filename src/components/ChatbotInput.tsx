@@ -125,6 +125,7 @@ export default function ChatbotInput() {
   };
 
   const handleSubmit = useCallback(async () => {
+    if (chatData.api.isTyping) return;
     setApiMessage({
       id: uuidv4(),
       role: "api",
@@ -256,7 +257,7 @@ export default function ChatbotInput() {
             variant="outlined"
             disabled={!chatData.api.isOnline}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
+              if (e.key === "Enter" && !e.shiftKey && !chatData.api.isTyping) {
                 e.preventDefault();
                 handleSubmit();
               }
