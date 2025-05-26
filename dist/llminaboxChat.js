@@ -41897,9 +41897,9 @@ const a2 = () => {
                 xl,
                 {
                   sx: {
-                    width: 120,
-                    height: 120,
-                    borderRadius: 2,
+                    width: 160,
+                    height: 160,
+                    borderRadius: "50%",
                     overflow: "hidden",
                     position: "relative",
                     bgcolor: "background.default",
@@ -41925,7 +41925,7 @@ const a2 = () => {
                         sx: {
                           width: "100%",
                           height: "100%",
-                          fontSize: 64,
+                          fontSize: 80,
                           bgcolor: "primary.main"
                         },
                         children: "AI"
@@ -41960,7 +41960,7 @@ const a2 = () => {
               /* @__PURE__ */ L.jsx(
                 oa,
                 {
-                  title: s ? "Pause Video" : "Play Video",
+                  title: s ? "Cancel" : "More information?",
                   PopperProps: {
                     container: g.current,
                     disablePortal: !0
@@ -41970,7 +41970,15 @@ const a2 = () => {
                     {
                       variant: "outlined",
                       onClick: x,
-                      children: s ? "Pause Video" : "Play Video"
+                      sx: {
+                        bgcolor: E,
+                        color: C,
+                        "&:hover": {
+                          bgcolor: C,
+                          color: E
+                        }
+                      },
+                      children: s ? "Cancel" : "More information?"
                     }
                   )
                 }
@@ -43672,8 +43680,8 @@ const L2 = ({ message: n }) => {
               children: new Date(n.timestamp || "").toLocaleString()
             }
           ),
-          n.role === "api" && ((X = (G = r.config.assistant) == null ? void 0 : G.voice) == null ? void 0 : X.name) && /* @__PURE__ */ L.jsxs(L.Fragment, { children: [
-            /* @__PURE__ */ L.jsx(
+          n.role === "api" && /* @__PURE__ */ L.jsxs(L.Fragment, { children: [
+            ((X = (G = r.config.assistant) == null ? void 0 : G.voice) == null ? void 0 : X.name) && /* @__PURE__ */ L.jsx(
               oa,
               {
                 title: v ? "Stop Audio" : "Play Audio",

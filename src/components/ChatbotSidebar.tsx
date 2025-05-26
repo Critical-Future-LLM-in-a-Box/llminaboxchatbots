@@ -62,9 +62,9 @@ const ChatbotSidebar = (): JSX.Element => {
             {/* Avatar/Video Section */}
             <Box
               sx={{
-                width: 120,
-                height: 120,
-                borderRadius: 2,
+                width: 160,
+                height: 160,
+                borderRadius: "50%",
                 overflow: "hidden",
                 position: "relative",
                 bgcolor: "background.default",
@@ -88,7 +88,7 @@ const ChatbotSidebar = (): JSX.Element => {
                   sx={{
                     width: "100%",
                     height: "100%",
-                    fontSize: 64,
+                    fontSize: 80,
                     bgcolor: "primary.main"
                   }}
                 >
@@ -117,7 +117,7 @@ const ChatbotSidebar = (): JSX.Element => {
 
             {/* Video Toggle Button */}
             <Tooltip
-              title={isVideoOn ? "Pause Video" : "Play Video"}
+              title={isVideoOn ? "Cancel" : "More information?"}
               PopperProps={{
                 container: tooltipContainerRef.current,
                 disablePortal: true
@@ -126,8 +126,16 @@ const ChatbotSidebar = (): JSX.Element => {
               <Button
                 variant="outlined"
                 onClick={toggleVideo}
+                sx={{
+                  "bgcolor": foregroundColor,
+                  "color": backgroundColor,
+                  "&:hover": {
+                    bgcolor: backgroundColor,
+                    color: foregroundColor
+                  }
+                }}
               >
-                {isVideoOn ? "Pause Video" : "Play Video"}
+                {isVideoOn ? "Cancel" : "More information?"}
               </Button>
             </Tooltip>
           </Stack>

@@ -168,31 +168,33 @@ const MessageCard = ({ message }: { message: Message }) => {
         >
           {new Date(message.timestamp || "").toLocaleString()}
         </Typography>
-        {message.role === "api" && chatData.config.assistant?.voice?.name && (
+        {message.role === "api" && (
           <>
-            <Tooltip
-              title={isPlaying ? "Stop Audio" : "Play Audio"}
-              PopperProps={{
-                container: tooltipContainerRef.current,
-                disablePortal: true
-              }}
-            >
-              <span>
-                <IconButton
-                  onClick={handleVoiceClick}
-                  size="small"
-                  disabled={isFetchingVoice}
-                >
-                  {isFetchingVoice ? (
-                    <CircularProgress size={16} />
-                  ) : isPlaying ? (
-                    <Stop fontSize="small" />
-                  ) : (
-                    <VolumeUp fontSize="small" />
-                  )}
-                </IconButton>
-              </span>
-            </Tooltip>
+            {chatData.config.assistant?.voice?.name && (
+              <Tooltip
+                title={isPlaying ? "Stop Audio" : "Play Audio"}
+                PopperProps={{
+                  container: tooltipContainerRef.current,
+                  disablePortal: true
+                }}
+              >
+                <span>
+                  <IconButton
+                    onClick={handleVoiceClick}
+                    size="small"
+                    disabled={isFetchingVoice}
+                  >
+                    {isFetchingVoice ? (
+                      <CircularProgress size={16} />
+                    ) : isPlaying ? (
+                      <Stop fontSize="small" />
+                    ) : (
+                      <VolumeUp fontSize="small" />
+                    )}
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
             <Tooltip
               title="Copy Message"
               PopperProps={{
