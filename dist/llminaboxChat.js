@@ -41700,12 +41700,12 @@ function i2() {
     n.config.onFirstAPIMessage && H < 2 && n.config.onFirstAPIMessage(fe, n), n.config.onAPIMessage && n.config.onAPIMessage(fe, n);
   }, w = A.useCallback(async () => {
     var fe;
-    if (g({
+    if (n.api.isTyping || (g({
       id: b0(),
       role: "api",
       content: "",
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
-    }), !s.content.trim() && !((fe = s.uploads) != null && fe.length)) return;
+    }), !s.content.trim() && !((fe = s.uploads) != null && fe.length))) return;
     r({ type: "ADD_NEW_MESSAGE", payload: s });
     const H = n.session.chatMessages.filter(
       (ie) => ie.role === "user"
@@ -41804,7 +41804,7 @@ function i2() {
                       variant: "outlined",
                       disabled: !n.api.isOnline,
                       onKeyDown: (H) => {
-                        H.key === "Enter" && !H.shiftKey && (H.preventDefault(), w());
+                        H.key === "Enter" && !H.shiftKey && !n.api.isTyping && (H.preventDefault(), w());
                       }
                     }
                   )
