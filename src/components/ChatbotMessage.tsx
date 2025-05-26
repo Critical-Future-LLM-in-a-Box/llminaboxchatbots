@@ -135,13 +135,28 @@ const MessageCard = ({ message }: { message: Message }) => {
       )}
       <Box
         sx={{
-          typography: "body2",
-          color: chatData.config.ui?.foregroundColor || "#111111",
-          bgcolor: chatData.config.ui?.backgroundColor || "#EFEFEF",
-          borderRadius: 2,
-          p: "2px 16px",
-          minHeight: "32px",
-          overflow: "auto"
+          "typography": "body2",
+          "color": chatData.config.ui?.foregroundColor || "#111111",
+          "bgcolor": chatData.config.ui?.backgroundColor || "#EFEFEF",
+          "borderRadius": 2,
+          "p": "2px 16px",
+          "minHeight": "32px",
+          "overflow": "auto",
+          "& table": {
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: 1,
+            marginBottom: 1
+          },
+          "& th, & td": {
+            border: "1px solid #ccc",
+            padding: "8px",
+            textAlign: "left"
+          },
+          "& th": {
+            backgroundColor: "#f5f5f5",
+            fontWeight: "bold"
+          }
         }}
         ref={messageRef}
       >
